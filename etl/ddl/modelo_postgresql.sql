@@ -1,6 +1,18 @@
 -- DDL do modelo semantico Ambiental/Qualidade (postgresql)
 -- Gerado por etl/etl_excel_para_db.py em 2026-09-15
 
+CREATE TABLE _carga_execucao (
+	iniciado_em VARCHAR(32), 
+	terminado_em VARCHAR(32), 
+	status VARCHAR(16), 
+	arquivo_origem VARCHAR(512), 
+	origem_modificado_em VARCHAR(32), 
+	origem_tamanho VARCHAR(24), 
+	origem_sha256 VARCHAR(64), 
+	linhas_total VARCHAR(16), 
+	mensagem VARCHAR(1024)
+);
+
 CREATE TABLE _carga_log (
 	carregado_em VARCHAR(32), 
 	arquivo_origem VARCHAR(512), 

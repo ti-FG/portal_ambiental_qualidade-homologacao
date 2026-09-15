@@ -577,14 +577,16 @@ def main(argv=None):
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--excel', help='caminho do .xlsx de origem')
     p.add_argument('--db-url', default=DB_URL_PADRAO,
-                   help='URL SQLAlchemy do destino (padrao: SQLite em etl/banco/)')
+                   help='URL SQLAlchemy do destino. O destino do modelo e '
+                        'PostgreSQL; sem este argumento a carga vai para um '
+                        'SQLite de rascunho em etl/banco/, so para conferencia')
     p.add_argument('--schema', default=None, help='schema do banco (ex: ambiental)')
     p.add_argument('--parquet', help='diretorio para exportar .parquet tambem')
     p.add_argument('--csv', help='diretorio para exportar .csv tambem')
     p.add_argument('--ddl', help='arquivo onde gravar o DDL gerado')
-    p.add_argument('--dialeto', default='sqlite',
+    p.add_argument('--dialeto', default='postgresql',
                    choices=['sqlite', 'postgresql', 'mssql'],
-                   help='dialeto do DDL (padrao: sqlite)')
+                   help='dialeto do DDL (padrao: postgresql, o destino do modelo)')
     p.add_argument('--somente-validar', action='store_true',
                    help='le e valida, mas nao grava em lugar nenhum')
     p.add_argument('--somente-ddl', action='store_true',
@@ -681,6 +683,14 @@ def main(argv=None):
         return 0
 
     if a.db_url.startswith('sqlite:///'):
+        # O destino do modelo e PostgreSQL; o SQLite so serve de rascunho. Sem
+        # este aviso, quem roda sem --db-url carrega um arquivo local achando
+        # que preparou o banco.
+        print('\nATENCAO: carregando em SQLite (%s), nao no banco de destino.'
+              % a.db_url[len('sqlite:///'):])
+        print('         Para carregar em PostgreSQL, passe --db-url, ex.:')
+        print('         --db-url "postgresql+psycopg2://usuario@servidor/base" '
+              '--schema ambiental')
         os.makedirs(os.path.dirname(a.db_url[len('sqlite:///'):]), exist_ok=True)
 
     # --se-mudou so pula DEPOIS de ler e validar a planilha: assim a tarefa

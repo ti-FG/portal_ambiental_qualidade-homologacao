@@ -47,21 +47,25 @@ da sua tabela, e o campo `m` de cada `Tabela` resume esses passos.
 
 ## Rodando
 
+> **O destino do modelo é PostgreSQL.** SQLite e SQL Server continuam
+> suportados, mas só como rascunho/alternativa — o DDL sai em PostgreSQL por
+> padrão, e uma carga sem `--db-url` avisa que foi para o SQLite de conferência.
+
 ```powershell
 # 1) conferir sem gravar nada
 py -3.12 etl_excel_para_db.py --somente-validar
 
-# 2) carga local em SQLite (padrao: etl\banco\ambiental.db)
-py -3.12 etl_excel_para_db.py
-
-# 3) carga em SQL Server
-py -3.12 etl_excel_para_db.py --db-url "mssql+pyodbc://usuario:senha@servidor/BaseAmbiental?driver=ODBC+Driver+17+for+SQL+Server"
-
-# 4) carga em PostgreSQL, em schema proprio
+# 2) carga em PostgreSQL, em schema proprio  <-- o caminho de verdade
 py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usuario:senha@servidor/base" --schema ambiental
 
-# 5) so o DDL, sem tocar em banco
-py -3.12 etl_excel_para_db.py --somente-ddl --dialeto mssql --ddl ddl\modelo_mssql.sql
+# 3) so o DDL do PostgreSQL, sem tocar em banco
+py -3.12 etl_excel_para_db.py --somente-ddl --ddl ddl\modelo_postgresql.sql
+
+# 4) carga local em SQLite, so para conferencia (padrao: etl\banco\ambiental.db)
+py -3.12 etl_excel_para_db.py
+
+# 5) carga em SQL Server
+py -3.12 etl_excel_para_db.py --db-url "mssql+pyodbc://usuario:senha@servidor/BaseAmbiental?driver=ODBC+Driver+17+for+SQL+Server"
 
 # 6) exportar tambem em parquet/csv
 py -3.12 etl_excel_para_db.py --parquet saida\parquet --csv saida\csv
@@ -386,8 +390,21 @@ Nada disso foi feito, porque muda o modelo e precisa de decisão da área:
 
 ## Dependências
 
-`pandas`, `numpy`, `openpyxl`, `sqlalchemy` — todas já instaladas no Python
-usado em produção (`C:\Users\julio.comin\AppData\Local\Programs\Python\Python312`).
-Só para SQL Server é preciso `pyodbc` + o *ODBC Driver 17/18 for SQL Server*
-(o driver **não** está instalado no servidor de homologação 10.1.1.155).
-`pbixray` só é necessário para rodar `validar_vs_pbix.py`.
+Todas estão no `requirements.txt` da raiz do projeto:
+
+```powershell
+py -3.12 -m pip install -r ..\requirements.txt
+```
+
+- `pandas`, `numpy`, `openpyxl` — leitura da planilha e transformações.
+- `sqlalchemy` + **`psycopg2-binary`** — carga em PostgreSQL, o destino do
+  modelo. Sem o `psycopg2` o ETL só valida e gera DDL; não carrega.
+- `pbixray` — só para rodar `validar_vs_pbix.py`.
+
+No servidor de homologação (10.1.1.155) o Python usado
+(`C:\Users\julio.comin\AppData\Local\Programs\Python\Python312`) já tem
+`sqlalchemy 2.0.49` e `psycopg2 2.9.9`. **Em produção (10.1.1.151) isso ainda
+precisa ser conferido** — os dois entraram no `requirements.txt` só em 15/09/2026.
+
+Para SQL Server, em vez do `psycopg2`: `pyodbc` + o *ODBC Driver 17/18 for SQL
+Server* (o driver **não** está instalado em 10.1.1.155).

@@ -148,6 +148,10 @@ A migração do `.pbix` para banco relacional **já está construída e validada
 `etl/`. Ela não faz parte deste deploy do dashboard — o dashboard continua lendo
 o `.pbix` —, mas é o que o Eduardo precisa para preparar o banco.
 
+**O destino é PostgreSQL.** O ETL também gera SQLite e SQL Server, mas só como
+rascunho: o DDL sai em PostgreSQL por padrão e uma carga sem `--db-url` avisa que
+foi para um SQLite de conferência, não para o banco de verdade.
+
 O que existe hoje:
 
 | Item | Onde |
@@ -155,10 +159,10 @@ O que existe hoje:
 | Documentação completa (como rodar, agendar, monitorar) | `etl/README.md` |
 | As 19 tabelas do modelo: origem, colunas, tipos, chave | `etl/tabelas.py` |
 | Transformações equivalentes às do Power Query | `etl/modelo_semantico.py` |
-| **DDL pronto para PostgreSQL, SQL Server e SQLite** | `etl/ddl/modelo_*.sql` |
-| As 26 FOREIGN KEYs (13 aplicáveis, 13 comentadas por órfãos) | `etl/ddl/modelo_*_fk.sql` |
+| **DDL do PostgreSQL** — 22 `CREATE TABLE` (19 do modelo + 3 de controle) | `etl/ddl/modelo_postgresql.sql` |
+| **As 26 FOREIGN KEYs** — 13 ativas, 13 comentadas por órfãos | `etl/ddl/modelo_postgresql_fk.sql` |
+| O mesmo DDL para SQL Server e SQLite, se um dia for preciso | `etl/ddl/modelo_{mssql,sqlite}*.sql` |
 | Comparação ETL × `.pbix`, tabela a tabela | `etl/validar_vs_pbix.py` |
-| Carga local em SQLite, para conferência | `etl/banco/ambiental.db` |
 
 A receita não foi inventada: o código Power Query (M) de cada tabela foi extraído
 de dentro do próprio `.pbix` com `PBIXRay(...).power_query`, e cada função em
@@ -170,21 +174,39 @@ planilha já em set/2026), não erro do ETL.
 Para criar o banco:
 
 ```powershell
+# drivers do PostgreSQL (sqlalchemy + psycopg2) vêm do requirements.txt da raiz
+py -3.12 -m pip install -r requirements.txt
+
 cd etl
-py -3.12 etl_excel_para_db.py --somente-validar          # confere sem gravar
-py -3.12 etl_excel_para_db.py --somente-ddl --dialeto postgresql --ddl ddl\modelo_postgresql.sql
-py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usuario:senha@servidor/base" --schema ambiental
+py -3.12 etl_excel_para_db.py --somente-validar   # confere a planilha, não grava
+py -3.12 etl_excel_para_db.py --somente-ddl       # gera o DDL do PostgreSQL
+
+# aplicar o schema e carregar
+psql -h SERVIDOR -U etl_ambiental -d ambiental -f ddl\modelo_postgresql.sql
+py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://etl_ambiental@SERVIDOR/ambiental" --schema ambiental
+psql -h SERVIDOR -U etl_ambiental -d ambiental -f ddl\modelo_postgresql_fk.sql
 ```
 
-**Dois pontos de atenção antes de agendar a carga** (detalhados no
-`etl/README.md`):
+As FKs vão **depois** da carga: 13 das 26 só passam com o dado já dentro, e as
+outras 13 saem comentadas no arquivo porque hoje têm órfãos (`North Tower` e
+`Outros` não existem em `Dim_Obras`). Isso é o estado do modelo no `.pbix`, que
+não impõe integridade referencial — não é defeito do ETL.
 
-1. **Falta descobrir o caminho UNC da planilha.** Todos os scripts usam `U:`, e
+Depois, `etl/Atualizar_Banco.bat` já está escrito para PostgreSQL: ajuste
+`PLANILHA`, `PGHOST`/`PGBASE`/`PGUSER` e a senha, e agende (o `etl/README.md`
+traz o `Register-ScheduledTask` pronto, sugerindo 02:30 — meia hora antes do
+refresh do dashboard).
+
+**Três pontos de atenção** (detalhados no `etl/README.md`):
+
+1. **A instância PostgreSQL ainda não existe.** É o primeiro bloqueio.
+2. **Falta descobrir o caminho UNC da planilha.** Todos os scripts usam `U:`, e
    unidade mapeada não existe para tarefa agendada nem para serviço Windows. A
    origem tem que ser `\\servidor\share\...` e a conta da tarefa precisa de
    leitura nesse share.
-2. **A instância do banco ainda não existe.** Enquanto não houver, a carga em
-   SQLite (`etl/banco/ambiental.db`) serve para conferência.
+3. **Conferir `sqlalchemy` e `psycopg2` em produção.** Entraram no
+   `requirements.txt` só em 15/09/2026; em homologação já estavam instalados,
+   em 10.1.1.151 não foi verificado.
 
 ---
 
