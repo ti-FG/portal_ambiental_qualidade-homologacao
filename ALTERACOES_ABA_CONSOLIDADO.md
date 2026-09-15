@@ -137,14 +137,29 @@ dela. Meta 36,6 kg/m² em todas as obras, exceto Senna Tower (50).
 
 ### Resíduos Gerados kg/m² por obra
 - Renomeado de "Resíduos kg/m² por obra"
-- **Senna Tower separado** — tem meta 50, as demais 36,6; misturar as réguas
-  distorcia a leitura. Botão **"Ver Senna Tower"** alterna para o modo dela
-- **Dois modos:** sem filtro → uma barra por obra (últimos 6 meses); com obra
-  filtrada ou botão Senna → uma barra por mês
-- Card do acumulado aparece no modo Senna
-- Linha de meta em degraus (50 / 36,6) no modo consolidado; some quando
-  filtrado por empreendimento
-- Rótulos de dados nas barras
+- **(15/09/2026) Virou dois cards lado a lado** (`cards-grid cols-res`), em vez
+  do card único com o botão "Ver Senna Tower" (`toggleSenna()`/`resModoSenna`,
+  removidos): **"Resíduos Gerados kg/m² por obra"** (demais obras) +
+  **"Resíduos Gerados kg/m² — Senna Tower"** ao lado, sempre visível — não é
+  mais preciso clicar num botão para ver a Senna. Mesmo padrão depois
+  reaproveitado na aba Resíduos, ver `ALTERACOES_ABA_RESIDUOS.md`
+- **Senna Tower separado** porque tem meta 50, as demais 36,6; misturar as
+  réguas no mesmo eixo distorcia a leitura
+- **Card principal:** sem obra filtrada → uma barra por obra (média das
+  intensidades mensais dos últimos 6 meses, SEM a Senna); com obra filtrada no
+  topo → vira mês a mês daquela obra (sem linha de meta, pedido da área)
+- **Card da Senna:** sempre mês a mês (últimos 6 meses), com linha de meta
+  (50) e badge extra de **acumulado** (média de todos os meses lançados, não
+  só os últimos 6); se o filtro global de obra estiver em outra obra, mostra
+  "fora do filtro"
+- Agregação (definida em 15/09/2026, função `resGraficoMensal`/`renderResBarras`):
+  intensidade do obra-mês = **soma** das linhas daquele mês; barra da obra no
+  consolidado = **média** dessas intensidades mensais (não soma os meses —
+  ver pendência 1 e a memória `kgm2-soma-acumula-entre-meses`)
+- Linha de meta em degraus (50 / 36,6) no card principal; ausente no modo mês
+  a mês do card principal (obra filtrada), presente no card da Senna
+- Rótulos de dados nas barras; tooltip do card principal detalha os valores
+  mês a mês da obra no `afterBody`
 - Obras sem lançamento não ocupam espaço no eixo — voltam sozinhas quando
   houver dado
 
@@ -325,11 +340,14 @@ Top NC ................... Ruído (8)
 
 ## 8. Pendências
 
-1. **Alinhar gráfico e card à soma.** O gerador usa soma, mas o template ainda
-   usa `mediaLinhas` no gráfico do Consolidado. E `media_kg_m2` virou **3.469,18**
-   — soma de todas as linhas de todas as obras e meses, sem significado físico.
-   Ver também a memória `kgm2-soma-acumula-entre-meses`: a soma acumula entre
-   meses e é comparada com meta mensal
+1. ~~Alinhar gráfico e card à soma~~ — **resolvido para o gráfico** em
+   15/09/2026: `renderResBarras`/`resGraficoMensal` agora fazem soma-no-mês +
+   média-entre-meses (ver seção 2 acima). **Ainda aberto para o KPI card**
+   "Resíduos gerados": `media_kg_m2` (linha 495 de `gerar_dashboard_pbix.py`)
+   faz `.sum()` de **todas** as linhas de todas as obras e meses (virou
+   **3.469,18**, sem significado físico) em vez de soma-no-mês + média-entre-
+   meses como o gráfico. Ver a memória `kgm2-soma-acumula-entre-meses`: a soma
+   acumula entre meses e é comparada com meta mensal
 2. **Atualizar o `.pbix`** com os dados até set/2026 (traz o North)
 3. **`score_ruido` ignorar `dB = 0`** — IPA 78,4 → ~78,2
 4. **Filtro de período no Plano de Ação** — `Dim_Plano_acao` só tem a coluna
