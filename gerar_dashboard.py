@@ -828,6 +828,9 @@ HTML = r"""<!DOCTYPE html>
   .cards-grid.cols-1-2 { grid-template-columns: 2fr 3fr; }
   /* Plano de ação (rosca compacta) + Reclamações por obra lado a lado */
   .cards-grid.cols-pa-rec { grid-template-columns: 1fr 1.4fr; }
+  /* Resíduos: demais obras (mais barras) + Senna Tower ao lado */
+  .cards-grid.cols-res { grid-template-columns: 1.6fr 1fr; }
+  @media (max-width: 1100px) { .cards-grid.cols-res { grid-template-columns: 1fr; } }
   @media (max-width: 1100px) { .cards-grid.cols-pa-rec { grid-template-columns: 1fr; } }
   .cards-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
   .cards-grid.cols-2 { grid-template-columns: 1fr 1fr; }
@@ -940,15 +943,6 @@ HTML = r"""<!DOCTYPE html>
 
   /* Tabela de Emergências Ambientais */
   /* Painel "Reclamações — assuntos e maiores incidências" */
-  /* Botão de alternância do gráfico de resíduos (demais obras ↔ Senna Tower) */
-  .res-toggle {
-    display: inline-flex; align-items: center; gap: 5px; cursor: pointer;
-    border: 1px solid var(--gz6); background: var(--white); color: var(--gz2);
-    border-radius: 6px; padding: 3px 9px; font-size: 11px; font-family: inherit;
-    transition: background .15s, color .15s, border-color .15s;
-  }
-  .res-toggle:hover { background: var(--gz7); color: var(--gz1); }
-  .res-toggle.ativo { background: #006B6B; border-color: #006B6B; color: #fff; }
   .rec-detalhe-wrap { max-height: 220px; overflow-y: auto; }
   .rec-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
   .rec-table thead th {
@@ -1087,20 +1081,26 @@ HTML = r"""<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- Resíduos gerados — demais obras (meta 36,6) · Senna Tower tem meta 50 e
-       fica num modo à parte, acessível pelo botão, para não misturar as réguas -->
-  <div class="card" style="margin-bottom:var(--gap)">
-    <div class="card-header">
-      <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> <span id="res-barras-titulo">Resíduos Gerados kg/m² por obra</span></div>
-      <span style="display:inline-flex; gap:8px; align-items:center">
-        <span class="card-badge" id="res-senna-acum" hidden></span>
+  <!-- Resíduos gerados: demais obras (meta 36,6) e Senna Tower (meta 50) lado a
+       lado — réguas diferentes, por isso em gráficos separados -->
+  <div class="cards-grid cols-res" style="margin-bottom:var(--gap)">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> <span id="res-barras-titulo">Resíduos Gerados kg/m² por obra</span></div>
         <span class="card-badge" id="res-barras-badge">—</span>
-        <button class="res-toggle" id="res-senna-btn" onclick="toggleSenna()">
-          <i class="ti ti-building-skyscraper"></i> <span id="res-senna-btn-label">Ver Senna Tower</span>
-        </button>
-      </span>
+      </div>
+      <canvas id="chart-res-barras" style="max-height:320px"></canvas>
     </div>
-    <canvas id="chart-res-barras" style="max-height:320px"></canvas>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-building-skyscraper" style="color:var(--fg4)"></i> Resíduos Gerados kg/m² — Senna Tower</div>
+        <span style="display:inline-flex; gap:8px; align-items:center">
+          <span class="card-badge" id="res-senna-acum" hidden></span>
+          <span class="card-badge" id="res-senna-badge">—</span>
+        </span>
+      </div>
+      <canvas id="chart-res-senna" style="max-height:320px"></canvas>
+    </div>
   </div>
 
   <!-- Monitoramento de ruído por obra × mês -->
@@ -1334,26 +1334,35 @@ HTML = r"""<!DOCTYPE html>
   <!-- 3 KPI cards -->
   <div class="kpi-row cols-3" id="kpis-residuos" style="margin-bottom:var(--gap)"></div>
 
-  <!-- Geracao Residuo (kg/m2) + Geracao Residuos (ton) -->
-  <div class="cards-grid cols-2" style="margin-bottom:var(--gap)">
+  <!-- Geração Resíduo: demais obras (meta 36,6) e Senna Tower (meta 50) lado a
+       lado — mesmo padrão do card "Resíduos Gerados kg/m² por obra" da aba
+       Consolidado (réguas diferentes, por isso em gráficos separados) -->
+  <div class="cards-grid cols-res" style="margin-bottom:var(--gap)">
     <div class="card">
       <div class="card-header">
         <div class="card-title"><i class="ti ti-package" style="color:var(--fg4)"></i> <span id="res-ger-titulo">Geração Resíduo</span></div>
-        <span style="display:inline-flex; gap:8px; align-items:center">
-          <span class="card-badge" id="res-ger-badge">—</span>
-          <button class="res-toggle" id="res-ger-senna-btn" onclick="toggleSennaGer()">
-            <i class="ti ti-building-skyscraper"></i> <span id="res-ger-senna-label">Ver Senna Tower</span>
-          </button>
-        </span>
+        <span class="card-badge" id="res-ger-badge">—</span>
       </div>
       <canvas id="chart-res-intensidade" style="max-height:320px"></canvas>
     </div>
     <div class="card">
       <div class="card-header">
-        <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--fg4)"></i> Geração Resíduos (ton)</div>
+        <div class="card-title"><i class="ti ti-building-skyscraper" style="color:var(--fg4)"></i> Geração Resíduo — Senna Tower</div>
+        <span style="display:inline-flex; gap:8px; align-items:center">
+          <span class="card-badge" id="res-ger-senna-acum" hidden></span>
+          <span class="card-badge" id="res-ger-senna-badge">—</span>
+        </span>
       </div>
-      <canvas id="chart-res-conama" style="max-height:280px"></canvas>
+      <canvas id="chart-res-intensidade-senna" style="max-height:320px"></canvas>
     </div>
+  </div>
+
+  <!-- Geração Resíduos (ton) -->
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--fg4)"></i> Geração Resíduos (ton)</div>
+    </div>
+    <canvas id="chart-res-conama" style="max-height:280px"></canvas>
   </div>
 
   <!-- Tipo x mes: 6 colunas (meses) por tipo, para os 8 tipos com maior volume -->
@@ -1625,6 +1634,7 @@ function renderConsolidado() {
 
   // Charts
   renderResBarras();
+  renderResSenna();
   renderPaStatus();  // sem filtro inicial (será atualizado via applyFilters se houver)
   renderRecPorObra();
   // IPA por obra agora está na aba Obra Individual — renderizado em renderObra()
@@ -1790,162 +1800,133 @@ function barLabels(fmt, opts) {
   };
 }
 
+const SENNA_RE = /senna/i;
+
 // ═══════════════════════════════════════════════════════════
-//  Resíduos Gerados kg/m²
+//  Resíduos Gerados kg/m² — dois cards lado a lado
 // ═══════════════════════════════════════════════════════════
-// Senna Tower tem meta própria (50 kg/m², contra 36,6 das demais) e por isso
-// não entra no gráfico consolidado — fica num modo à parte, pelo botão.
+// Senna Tower tem meta própria (50 kg/m², contra 36,6 das demais). Misturar as
+// duas réguas no mesmo eixo distorce a leitura, então ela fica num card ao lado
+// em vez de escondida atrás de um botão.
 //
-// Modos:
-//   consolidado          -> uma barra por obra (média dos últimos 6 meses), sem Senna
-//   Senna (botão)        -> uma barra por mês da Senna Tower + card do acumulado
-//   obra filtrada no topo-> uma barra por mês daquela obra
-//
-// AGREGAÇÃO (alterada em 15/09/2026 — antes era média das linhas):
-//   intensidade do obra-mês = SOMA das linhas daquele mês
+// AGREGAÇÃO (definida em 15/09/2026):
+//   intensidade do obra-mês      = SOMA das linhas daquele mês
 //   barra da obra no consolidado = MÉDIA dessas intensidades mensais
 //
 // Cada linha da fonte é um tipo de resíduo e já vem como "kg do tipo ÷ área do
-// mês", com a MESMA área em todas as linhas do mês — então somar devolve
-// kg total ÷ área, a intensidade real. A média das linhas, usada até 15/09,
-// dividia esse valor pelo número de tipos lançados: Blue Coast jan/26 mostrava
-// 16,74 em vez de 83,69 porque tinha 5 tipos, e a obra "melhorava" ao separar
-// melhor o resíduo.
-//
-// A barra do consolidado usa a MÉDIA das intensidades mensais (não a soma
-// delas): somar meses acumularia (6 meses dariam ~6x um mês) e deixaria de ser
-// comparável com a meta, que é mensal. Ver memórias "kgm2-agregacao-media-vs-soma"
-// e "kgm2-soma-acumula-entre-meses".
-const SENNA_RE = /senna/i;
-let resModoSenna = false;
-// Mesmo mecanismo do card da aba Consolidado, para o card "Geração Resíduo" da aba Resíduos
-let resModoSennaGer = false;
-function toggleSennaGer() {
-  resModoSennaGer = !resModoSennaGer;
-  const btn = document.getElementById('res-ger-senna-btn');
-  const lbl = document.getElementById('res-ger-senna-label');
-  if (btn) btn.classList.toggle('ativo', resModoSennaGer);
-  if (lbl) lbl.textContent = resModoSennaGer ? 'Ver demais obras' : 'Ver Senna Tower';
-  renderResiduos();
-}
+// mês", com a MESMA área em todas as linhas do mês — somar devolve kg total ÷
+// área, a intensidade real. A média das linhas, usada até 15/09, dividia esse
+// valor pelo número de tipos lançados: Blue Coast jan/26 mostrava 16,74 em vez
+// de 83,69 porque tinha 5 tipos, e a obra "melhorava" ao separar melhor o
+// resíduo. No consolidado usamos a MÉDIA das intensidades mensais (não a soma
+// delas): somar meses acumularia e deixaria de ser comparável com a meta, que é
+// mensal. Ver memórias "kgm2-agregacao-media-vs-soma" e
+// "kgm2-soma-acumula-entre-meses".
+const RES_COR_BARRA = '#006B6B';
+const RES_COR_META  = '#EF9F27';
+const resFmtKg = v => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const resMetaDe = o => (D.meta_residuos && D.meta_residuos.por_obra && D.meta_residuos.por_obra[o]) || 36.6;
+const resIntensidadeMes = arr => (arr && arr.length) ? arr.reduce((a, b) => a + b, 0) : null;
 
-function toggleSenna() {
-  resModoSenna = !resModoSenna;
-  const btn = document.getElementById('res-senna-btn');
-  const lbl = document.getElementById('res-senna-btn-label');
-  if (btn) btn.classList.toggle('ativo', resModoSenna);
-  if (lbl) lbl.textContent = resModoSenna ? 'Ver demais obras' : 'Ver Senna Tower';
-  renderResBarras();
-}
-
-function renderResBarras(obraF) {
-  const raw = D.residuos_raw || [];
-  const badge = document.getElementById('res-barras-badge');
-  const titulo = document.getElementById('res-barras-titulo');
-  const acum = document.getElementById('res-senna-acum');
-  const metaDe = o => (D.meta_residuos && D.meta_residuos.por_obra && D.meta_residuos.por_obra[o]) || 36.6;
-  // Intensidade do obra-mês = SOMA das linhas do mês. Cada linha é um tipo de
-  // resíduo e já vem como "kg do tipo ÷ área do mês", com a MESMA área em todas
-  // as linhas — somar devolve kg total ÷ área. Antes era média, que dividia esse
-  // valor pelo número de tipos lançados (ex.: Blue Coast jan/26 mostrava 16,74 em
-  // vez de 83,69, porque tinha 5 tipos).
-  const intensidadeMes = arr => arr.length ? arr.reduce((a, b) => a + b, 0) : null;
-  const limpar = msg => {
-    if (chartReg['chart-res-barras']) { chartReg['chart-res-barras'].destroy(); delete chartReg['chart-res-barras']; }
-    if (badge) badge.textContent = msg;
-  };
-  if (obraF === undefined) obraF = (document.getElementById('filter-obra-global') || {}).value || '';
-
-  // Linhas válidas por obra × mês (guarda os valores, porque a agregação é média)
+// Linhas válidas agrupadas por obra × mês (guarda os valores individuais)
+function resLinhasPorObraMes() {
   const linhas = {};
-  raw.forEach(r => {
+  (D.residuos_raw || []).forEach(r => {
     if (!(r.kg_m2 > 0)) return;
     const o = String(r.obra || '').trim();
     if (!o) return;
     if (!linhas[o]) linhas[o] = {};
     (linhas[o][r.mes_ano] = linhas[o][r.mes_ano] || []).push(r.kg_m2);
   });
+  return linhas;
+}
+function resMeses6() {
+  const ms = [...new Set((D.residuos_raw || []).filter(r => r.kg_m2 > 0).map(r => r.mes_ano))].sort();
+  return ms.slice(-6);
+}
 
-  const mesesCom = [...new Set(raw.filter(r => r.kg_m2 > 0).map(r => r.mes_ano))].sort();
-  const meses6 = mesesCom.slice(-6);
-  if (!meses6.length) { limpar('sem lançamento'); return; }
-
-  const COR_BARRA = '#006B6B';
-  const COR_META  = '#EF9F27';
-  const fmtKg = v => v.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-  // Qual obra mostrar mês a mês: a do filtro global, ou a Senna se o botão estiver ligado
-  const obraMes = obraF || (resModoSenna ? (Object.keys(linhas).find(o => SENNA_RE.test(o)) || '') : '');
-
-  // ─── Modo mês a mês (obra filtrada ou botão Senna) ───
-  if (obraMes) {
-    const serie = linhas[obraMes] || {};
-    const meses = meses6.filter(m => (serie[m] || []).length);
-    if (titulo) titulo.textContent = `Resíduos Gerados kg/m² — ${obraMes}`;
-
-    // Card do acumulado: média de TODAS as linhas da obra em todo o período
-    if (acum) {
-      const mensaisTodos = Object.keys(serie)
-        .map(m => intensidadeMes(serie[m]))
-        .filter(v => v != null);
-      const acumVal = mensaisTodos.length
-        ? mensaisTodos.reduce((a, b) => a + b, 0) / mensaisTodos.length : null;
-      if (acumVal != null) {
-        acum.textContent = `acumulado: ${fmtKg(acumVal)} kg/m²`;
-        acum.hidden = false;
-      } else {
-        acum.hidden = true;
-      }
-    }
-
-    if (!meses.length) { limpar(`sem lançamento · ${obraMes}`); return; }
-    if (badge) badge.textContent = `${meses.length} ${meses.length !== 1 ? 'meses' : 'mês'} com lançamento`;
-
-    makeChart('chart-res-barras', {
-      type: 'bar',
-      data: {
-        labels: meses.map(labelMesRes),
-        datasets: [
-          {
-            label: 'kg/m²',
-            data: meses.map(m => +intensidadeMes(serie[m]).toFixed(2)),
-            backgroundColor: COR_BARRA, borderRadius: 4, order: 2,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        layout: { padding: { top: 18 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${fmtKg(ctx.raw)} kg/m²`,
-              afterBody: items => {
-                if (!items.length) return '';
-                const n = (serie[meses[items[0].dataIndex]] || []).length;
-                return ['', `média de ${n} tipo${n !== 1 ? 's' : ''} de resíduo`];
-              }
+// Gráfico mês a mês de UMA obra.
+// `comMeta` liga a linha tracejada da meta: o card da Senna Tower usa, e o card
+// principal filtrado por empreendimento não (pedido da área — ali a meta polui
+// a leitura da evolução mensal).
+function resGraficoMensal(canvasId, obra, serie, meses, badgeEl, comMeta) {
+  const meta = resMetaDe(obra);
+  if (badgeEl) {
+    badgeEl.textContent = `${meses.length} ${meses.length !== 1 ? 'meses' : 'mês'}`
+      + (comMeta ? ` · meta ${String(meta).replace('.', ',')} kg/m²` : ' com lançamento');
+  }
+  makeChart(canvasId, {
+    type: 'bar',
+    data: {
+      labels: meses.map(labelMesRes),
+      datasets: [
+        {
+          label: 'kg/m²',
+          data: meses.map(m => +resIntensidadeMes(serie[m]).toFixed(2)),
+          backgroundColor: RES_COR_BARRA, borderRadius: 4, order: 2,
+        }
+      ].concat(comMeta ? [{
+        label: `Meta (${String(meta).replace('.', ',')})`,
+        data: meses.map(() => meta),
+        type: 'line',
+        borderColor: RES_COR_META, borderWidth: 2, borderDash: [6, 4],
+        pointRadius: 0, fill: false, tension: 0, order: 1,
+      }] : [])
+    },
+    options: {
+      responsive: true,
+      layout: { padding: { top: 18 } },
+      plugins: {
+        legend: { display: !!comMeta, position: 'top', labels: { boxWidth: 12, padding: 10 } },
+        tooltip: {
+          callbacks: {
+            label: ctx => ctx.dataset.type === 'line'
+              ? ` Meta: ${meta} kg/m²`
+              : ` ${resFmtKg(ctx.raw)} kg/m²`,
+            afterBody: items => {
+              if (!items.length) return '';
+              const n = (serie[meses[items[0].dataIndex]] || []).length;
+              return ['', `soma de ${n} tipo${n !== 1 ? 's' : ''} de resíduo`];
             }
           }
-        },
-        scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } } }
+        }
       },
-      plugins: [barLabels(v => fmtKg(v), { id: 'resmes' })]
-    });
+      scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } } }
+    },
+    plugins: [barLabels(v => resFmtKg(v), { id: canvasId })]
+  });
+}
+
+// ─── Card principal: demais obras (ou a obra filtrada, mês a mês) ───
+function renderResBarras(obraF) {
+  const badge = document.getElementById('res-barras-badge');
+  const titulo = document.getElementById('res-barras-titulo');
+  const limpar = msg => {
+    if (chartReg['chart-res-barras']) { chartReg['chart-res-barras'].destroy(); delete chartReg['chart-res-barras']; }
+    if (badge) badge.textContent = msg;
+  };
+  if (obraF === undefined) obraF = (document.getElementById('filter-obra-global') || {}).value || '';
+
+  const linhas = resLinhasPorObraMes();
+  const meses6 = resMeses6();
+  if (!meses6.length) { limpar('sem lançamento'); return; }
+
+  // Obra filtrada no topo → mês a mês daquela obra
+  if (obraF) {
+    const serie = linhas[obraF] || {};
+    const meses = meses6.filter(m => (serie[m] || []).length);
+    if (titulo) titulo.textContent = `Resíduos Gerados kg/m² — ${obraF}`;
+    if (!meses.length) { limpar(`sem lançamento · ${obraF}`); return; }
+    resGraficoMensal('chart-res-barras', obraF, serie, meses, badge, false);
     return;
   }
 
-  // ─── Modo consolidado: uma barra por obra, SEM a Senna Tower ───
+  // ─── Consolidado: uma barra por obra, SEM a Senna Tower ───
   if (titulo) titulo.textContent = 'Resíduos Gerados kg/m² por obra';
-  if (acum) acum.hidden = true;
 
-  // Barra da obra = média das INTENSIDADES MENSAIS do recorte.
-  // Somar as intensidades dos meses acumularia (6 meses dariam ~6x um mês) e
-  // deixaria de ser comparável com a meta, que é mensal.
   const mediaDe = o => {
     const mensais = meses6
-      .map(m => intensidadeMes((linhas[o] || {})[m] || []))
+      .map(m => resIntensidadeMes((linhas[o] || {})[m]))
       .filter(v => v != null);
     return mensais.length ? mensais.reduce((a, b) => a + b, 0) / mensais.length : null;
   };
@@ -1972,11 +1953,11 @@ function renderResBarras(obraF) {
         {
           label: 'kg/m²',
           data: obras.map(o => +mediaDe(o).toFixed(2)),
-          backgroundColor: COR_BARRA, borderRadius: 4, order: 2,
+          backgroundColor: RES_COR_BARRA, borderRadius: 4, order: 2,
         },
         {
-          label: 'Meta (36,6)', data: obras.map(o => metaDe(o)), type: 'line',
-          stepped: 'middle', borderColor: COR_META, borderWidth: 2, borderDash: [6, 4],
+          label: 'Meta (36,6)', data: obras.map(o => resMetaDe(o)), type: 'line',
+          stepped: 'middle', borderColor: RES_COR_META, borderWidth: 2, borderDash: [6, 4],
           pointRadius: 0, fill: false, order: 1,
         }
       ]
@@ -1988,15 +1969,14 @@ function renderResBarras(obraF) {
         legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 10 } },
         tooltip: {
           callbacks: {
-            label: ctx => {
-              if (ctx.dataset.type === 'line') return ` Meta da obra: ${metaDe(ctx.label)} kg/m²`;
-              return ` ${fmtKg(ctx.raw)} kg/m² (média)`;
-            },
+            label: ctx => ctx.dataset.type === 'line'
+              ? ` Meta da obra: ${resMetaDe(ctx.label)} kg/m²`
+              : ` ${resFmtKg(ctx.raw)} kg/m² (média)`,
             afterBody: items => {
               if (!items.length) return '';
               const o = items[0].label;
               const det = meses6.filter(m => (linhas[o] || {})[m])
-                .map(m => `${labelMesRes(m)}: ${intensidadeMes(linhas[o][m]).toFixed(1)}`);
+                .map(m => `${labelMesRes(m)}: ${resIntensidadeMes(linhas[o][m]).toFixed(1)}`);
               return det.length ? [''].concat(det) : '';
             }
           }
@@ -2007,8 +1987,48 @@ function renderResBarras(obraF) {
         y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } }
       }
     },
-    plugins: [barLabels(v => fmtKg(v), { id: 'resobra' })]
+    plugins: [barLabels(v => resFmtKg(v), { id: 'resobra' })]
   });
+}
+
+// ─── Card ao lado: Senna Tower, mês a mês, com a meta de 50 ───
+function renderResSenna(obraF) {
+  const badge = document.getElementById('res-senna-badge');
+  const acum = document.getElementById('res-senna-acum');
+  const canvas = document.getElementById('chart-res-senna');
+  if (!canvas) return;
+  if (obraF === undefined) obraF = (document.getElementById('filter-obra-global') || {}).value || '';
+
+  const limpar = msg => {
+    if (chartReg['chart-res-senna']) { chartReg['chart-res-senna'].destroy(); delete chartReg['chart-res-senna']; }
+    if (badge) badge.textContent = msg;
+    if (acum) acum.hidden = true;
+  };
+
+  const linhas = resLinhasPorObraMes();
+  const obra = Object.keys(linhas).find(o => SENNA_RE.test(o))
+            || (D.obras || []).find(o => SENNA_RE.test(o)) || '';
+  if (!obra) { limpar('obra não encontrada'); return; }
+
+  // Respeita o filtro global: com outra obra selecionada, a Senna sai de cena
+  if (obraF && !SENNA_RE.test(obraF)) { limpar(`fora do filtro · ${obraF}`); return; }
+
+  const serie = linhas[obra] || {};
+  const meses = resMeses6().filter(m => (serie[m] || []).length);
+  if (!meses.length) { limpar('sem lançamento no período'); return; }
+
+  // Acumulado: média das intensidades de TODOS os meses lançados (não só os 6)
+  if (acum) {
+    const todos = Object.keys(serie).map(m => resIntensidadeMes(serie[m])).filter(v => v != null);
+    if (todos.length) {
+      acum.textContent = `acumulado: ${resFmtKg(todos.reduce((a, b) => a + b, 0) / todos.length)} kg/m²`;
+      acum.hidden = false;
+    } else {
+      acum.hidden = true;
+    }
+  }
+
+  resGraficoMensal('chart-res-senna', obra, serie, meses, badge, true);
 }
 
 function renderRuidoBarras(obraF) {
@@ -3851,17 +3871,19 @@ function renderResiduos(obraF, anoF) {
   const mesesObra = mesesComDadoObra.slice(-tetoMeses);
   const porMes = !!(hasRaw && obraF && mesesObra.length);
 
-  // ─── Geração Resíduo — kg/m², com a Senna Tower à parte ───
-  // Mesma régua do card "Resíduos Gerados kg/m² por obra" da aba Consolidado: a Senna
-  // tem meta 50 (as demais 36,6) e intensidade muito acima, então fica fora da visão
-  // consolidada pra não achatar as outras barras — e sai pelo botão do card.
-  // Agregação segue a média usada no resto do dashboard, pra não contradizer o KPI.
-  const tituloGer = document.getElementById('res-ger-titulo');
-  const badgeGer  = document.getElementById('res-ger-badge');
-  const btnGer    = document.getElementById('res-ger-senna-btn');
-  const fmtKm     = v => numBR(v, 2);
+  // ─── Geração Resíduo — kg/m², com a Senna Tower num card à parte ───
+  // Mesmo padrão dos cards "Resíduos Gerados kg/m² por obra" + "... — Senna Tower"
+  // da aba Consolidado (ver renderResBarras/renderResSenna, mesmos helpers
+  // resGraficoMensal/resMetaDe/RES_COR_*): a Senna tem meta 50 (as demais 36,6) e
+  // intensidade muito acima, então sempre fica num card separado — nunca escondida
+  // atrás de um botão. Diferença desta aba: os dois cards continuam reagindo ao
+  // filtro de Período (feature já existente aqui; o Consolidado não tem esse filtro).
+  const tituloGer      = document.getElementById('res-ger-titulo');
+  const badgeGer       = document.getElementById('res-ger-badge');
+  const badgeGerSenna  = document.getElementById('res-ger-senna-badge');
+  const acumGerSenna   = document.getElementById('res-ger-senna-acum');
 
-  // kg/m² lançados por obra × mês dentro do recorte de período
+  // kg/m² lançados por obra × mês dentro do recorte de obra × período
   const linhasKm = {};
   filtRes.forEach(r => {
     if (!(r.kg_m2 > 0)) return;
@@ -3870,76 +3892,101 @@ function renderResiduos(obraF, anoF) {
     linhasKm[o] = linhasKm[o] || {};
     (linhasKm[o][r.mes_ano] = linhasKm[o][r.mes_ano] || []).push(r.kg_m2);
   });
-  const mediaLin = a => (a && a.length) ? a.reduce((x, y) => x + y, 0) / a.length : null;
 
-  // Obra em modo mês a mês: a do filtro global tem precedência sobre o botão da Senna
-  const obraSennaGer = Object.keys(linhasKm).find(o => SENNA_RE.test(o))
-                    || (D.obras || []).find(o => SENNA_RE.test(o)) || '';
-  const obraMesGer = obraF || (resModoSennaGer ? obraSennaGer : '');
-  if (btnGer) btnGer.classList.toggle('ativo', resModoSennaGer && !obraF);
+  const limparGerCard = (canvasId, badgeEl, msg, acumEl) => {
+    if (chartReg[canvasId]) { chartReg[canvasId].destroy(); delete chartReg[canvasId]; }
+    if (badgeEl) badgeEl.textContent = msg;
+    if (acumEl) acumEl.hidden = true;
+  };
 
-  let catsKm = [], kmVal = {}, metaKm = {}, porMesGer = false;
-  if (hasRaw && obraMesGer) {
-    porMesGer = true;
-    const serieO = linhasKm[obraMesGer] || {};
-    catsKm = Object.keys(serieO).sort().slice(-tetoMeses);
-    const metaO = metaObra(obraMesGer);
-    catsKm.forEach(m => { kmVal[m] = mediaLin(serieO[m]); metaKm[m] = metaO; });
-    if (tituloGer) tituloGer.textContent = `Geração Resíduo — ${obraMesGer}`;
-    if (badgeGer) badgeGer.textContent = catsKm.length
-      ? `${catsKm.length} ${catsKm.length !== 1 ? 'meses' : 'mês'} · meta ${numBR(metaO, metaO % 1 ? 1 : 0)} kg/m²`
-      : `sem lançamento · ${obraMesGer}`;
+  // ─── Card principal: obra filtrada (mês a mês) ou consolidado (barra por obra) ───
+  if (hasRaw && obraF) {
+    const serieO = linhasKm[obraF] || {};
+    const meses = mesesObra.filter(m => (serieO[m] || []).length);
+    if (tituloGer) tituloGer.textContent = `Geração Resíduo — ${obraF}`;
+    if (!meses.length) limparGerCard('chart-res-intensidade', badgeGer, `sem lançamento · ${obraF}`);
+    else resGraficoMensal('chart-res-intensidade', obraF, serieO, meses, badgeGer, false);
   } else {
-    // Consolidado: uma barra por obra, SEM a Senna Tower
-    const serie = serieObra
-      .filter(d => d.kg_m2 != null && d.kg_m2 > 0 && !SENNA_RE.test(d.obra))
-      .sort((a, b) => (b.kg_m2 || 0) - (a.kg_m2 || 0));
-    catsKm = serie.map(d => d.obra);
-    serie.forEach(d => { kmVal[d.obra] = d.kg_m2; metaKm[d.obra] = d.meta || 36.6; });
     if (tituloGer) tituloGer.textContent = 'Geração Resíduo';
-    if (badgeGer) {
-      const ms = [...new Set(catsKm.flatMap(o => Object.keys(linhasKm[o] || {})))].sort();
-      const faixa = ms.length > 1 ? `${labelMesRes(ms[0])} – ${labelMesRes(ms[ms.length-1])} · ` : (ms.length ? `${labelMesRes(ms[0])} · ` : '');
-      badgeGer.textContent = `${faixa}meta 36,6 kg/m²`;
+    const mediaDe = o => {
+      const mensais = mesesObra.map(m => resIntensidadeMes((linhasKm[o] || {})[m])).filter(v => v != null);
+      return mensais.length ? mensais.reduce((a, b) => a + b, 0) / mensais.length : null;
+    };
+    const serie = Object.keys(linhasKm)
+      .filter(o => !SENNA_RE.test(o))
+      .map(o => ({ obra: o, kg_m2: mediaDe(o) }))
+      .filter(d => d.kg_m2 != null)
+      .sort((a, b) => b.kg_m2 - a.kg_m2);
+    if (!serie.length) {
+      limparGerCard('chart-res-intensidade', badgeGer, 'sem lançamento no recorte');
+    } else {
+      makeChart('chart-res-intensidade', {
+        type: 'bar',
+        data: {
+          labels: serie.map(d => d.obra),
+          datasets: [
+            { label: 'kg/m²', data: serie.map(d => +d.kg_m2.toFixed(2)), backgroundColor: RES_COR_BARRA, borderRadius: 4, order: 2 },
+            { label: 'Meta (36,6)', data: serie.map(d => resMetaDe(d.obra)), type: 'line',
+              stepped: 'middle', borderColor: RES_COR_META, borderWidth: 2, borderDash: [6, 4],
+              pointRadius: 0, fill: false, order: 1 }
+          ]
+        },
+        options: {
+          responsive: true,
+          layout: { padding: { top: 18 } },
+          plugins: {
+            legend: { display: true, position: 'top', labels: { boxWidth: 12, padding: 10 } },
+            tooltip: {
+              callbacks: {
+                label: ctx => ctx.dataset.type === 'line'
+                  ? ` Meta da obra: ${resMetaDe(ctx.label)} kg/m²`
+                  : ` ${resFmtKg(ctx.raw)} kg/m² (média)`,
+                afterBody: items => {
+                  if (!items.length) return '';
+                  const o = items[0].label;
+                  const det = mesesObra.filter(m => (linhasKm[o] || {})[m])
+                    .map(m => `${labelMesRes(m)}: ${resIntensidadeMes(linhasKm[o][m]).toFixed(1)}`);
+                  return det.length ? [''].concat(det) : '';
+                }
+              }
+            }
+          },
+          scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } } }
+        },
+        plugins: [barLabels(v => resFmtKg(v), { id: 'resger' })]
+      });
+      if (badgeGer) {
+        const faixa = mesesObra.length > 1 ? `${labelMesRes(mesesObra[0])} – ${labelMesRes(mesesObra[mesesObra.length - 1])} · ` : (mesesObra.length ? `${labelMesRes(mesesObra[0])} · ` : '');
+        badgeGer.textContent = `${faixa}meta 36,6 kg/m²`;
+      }
     }
   }
 
-  if (catsKm.length) {
-    makeChart('chart-res-intensidade', {
-      type: 'bar',
-      data: {
-        labels: catsKm.map(c => porMesGer ? labelMesRes(c) : c),
-        datasets: [
-          { label: 'kg/m²', data: catsKm.map(c => +kmVal[c].toFixed(2)), backgroundColor: '#005E70', borderRadius: 4, order: 2 },
-          { label: porMesGer ? 'Meta' : 'Meta (36,6)', data: catsKm.map(c => metaKm[c] || 36.6), type: 'line',
-            stepped: porMesGer ? false : 'middle', borderColor: '#EF9F27', borderDash: [6,4],
-            pointRadius: 0, borderWidth: 2, fill: false, order: 1 }
-        ]
-      },
-      options: {
-        responsive: true,
-        layout: { padding: { top: 18 } },
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 12, padding: 10 } },
-          tooltip: {
-            callbacks: {
-              label: ctx => {
-                const meta = metaKm[catsKm[ctx.dataIndex]] || 36.6;
-                if (ctx.dataset.type === 'line') return ` Meta: ${numBR(meta, meta % 1 ? 1 : 0)} kg/m²`;
-                const v = ctx.raw;
-                const sit = v >= meta ? `🔴 acima da meta (${numBR(v / meta, 1)}x)` : '🟢 dentro da meta';
-                return [` ${fmtKm(v)} kg/m²`, `   ${sit}`];
-              }
-            }
-          }
-        },
-        scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } } }
-      },
-      plugins: [barLabels(v => fmtKm(v), { id: 'resger' })]
-    });
+  // ─── Card ao lado: Senna Tower, mês a mês, meta 50 — reage ao filtro de obra
+  // (mesma régua: com outra obra filtrada, a Senna sai de cena) e de período ───
+  if (obraF && !SENNA_RE.test(obraF)) {
+    limparGerCard('chart-res-intensidade-senna', badgeGerSenna, `fora do filtro · ${obraF}`, acumGerSenna);
   } else {
-    semDados('chart-res-intensidade');
-    if (badgeGer) badgeGer.textContent = 'sem lançamento no recorte';
+    const obraSenna = Object.keys(linhasKm).find(o => SENNA_RE.test(o))
+                   || (D.obras || []).find(o => SENNA_RE.test(o)) || '';
+    if (!obraSenna) {
+      limparGerCard('chart-res-intensidade-senna', badgeGerSenna, 'obra não encontrada', acumGerSenna);
+    } else {
+      const serieSenna = linhasKm[obraSenna] || {};
+      const mesesSenna = mesesObra.filter(m => (serieSenna[m] || []).length);
+      if (!mesesSenna.length) {
+        limparGerCard('chart-res-intensidade-senna', badgeGerSenna, 'sem lançamento no período', acumGerSenna);
+      } else {
+        if (acumGerSenna) {
+          const todos = Object.keys(serieSenna).map(m => resIntensidadeMes(serieSenna[m])).filter(v => v != null);
+          if (todos.length) {
+            acumGerSenna.textContent = `acumulado: ${resFmtKg(todos.reduce((a, b) => a + b, 0) / todos.length)} kg/m²`;
+            acumGerSenna.hidden = false;
+          } else acumGerSenna.hidden = true;
+        }
+        resGraficoMensal('chart-res-intensidade-senna', obraSenna, serieSenna, mesesSenna, badgeGerSenna, true);
+      }
+    }
   }
 
   // ─── Geração Resíduos (ton) — uma barra por classe CONAMA ───
@@ -4410,6 +4457,7 @@ function applyFilters() {
 
   // Gráficos filtrados
   renderResBarras(obraF);
+  renderResSenna(obraF);
   // renderIpaObras movido para a aba Obra Individual (renderObra)
   renderRecPorObra(obraF);
   renderMonitoramentoRuido(obraF);

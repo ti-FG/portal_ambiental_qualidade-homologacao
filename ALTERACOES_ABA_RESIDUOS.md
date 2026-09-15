@@ -47,25 +47,50 @@ Esse é o interpretador que tem `pbixray` instalado (0.15.5 em HML) e é o mesmo
 
 ## 2. Gráfico "Geração Resíduo" (kg/m²)
 
-**Antes:** `Intensidade kg/m² por obra` — uma barra por obra, todas as obras juntas, badge estático.
+**Antes (versão com botão):** uma barra por obra, título dinâmico `res-ger-titulo`, botão
+**"Ver Senna Tower"** (`res-ger-senna-btn` → `toggleSennaGer()`) alternava entre o consolidado
+(sem Senna) e a Senna mês a mês, escondidos no mesmo card/canvas (`chart-res-intensidade`).
 
-**Depois:**
+**Depois (15/09/2026 — reproduz o par de cards da aba Consolidado):** o botão foi removido —
+agora são **dois cards lado a lado**, mesmo padrão dos cards `Resíduos Gerados kg/m² por obra`
++ `Resíduos Gerados kg/m² — Senna Tower` da aba Consolidado (`renderResBarras`/`renderResSenna`,
+`gerar_dashboard.py` linha ~1834), reaproveitando os mesmos helpers compartilhados
+(`resGraficoMensal`, `resMetaDe`, `resIntensidadeMes`, `RES_COR_BARRA`/`RES_COR_META`,
+`resFmtKg`) em vez de duplicar a lógica:
 
-- Título renomeado para **Geração Resíduo** (span dinâmico `res-ger-titulo`).
-- **Senna Tower separada das demais obras**, replicando a mesma régua do card
-  `Resíduos Gerados kg/m² por obra` da aba Consolidado: a Senna tem meta 50 (as demais 36,6)
-  e intensidade muito acima, então **fica fora da visão consolidada** para não achatar as
-  outras barras.
-  - Visão consolidada: **8 obras**, linha de meta 36,6 em todas.
-  - Botão **"Ver Senna Tower"** no cabeçalho do card (`res-ger-senna-btn` →
-    `toggleSennaGer()`, linha ~1814) mostra a Senna mês a mês com meta 50.
-  - Reaproveita `SENNA_RE` (linha ~1810) e o CSS `.res-toggle` já existentes.
-  - O filtro global de obra tem **precedência** sobre o botão.
-- Badge dinâmico (`res-ger-badge`): `Jan/26 – Abr/26 · meta 36,6 kg/m²` no consolidado;
-  `4 meses · meta 50 kg/m²` no modo Senna.
-- **Com uma obra filtrada, o eixo passa a ser de meses** (antes mostrava 1 coluna só).
-- **Rótulo de dados** em cada barra.
-- Canvas com `max-height:320px`.
+- **Card principal** (`chart-res-intensidade`, título `res-ger-titulo`, badge `res-ger-badge`):
+  consolidado por obra (SEM a Senna, meta 36,6) quando nenhuma obra está filtrada; mês a mês
+  da obra filtrada (sem linha de meta) quando o filtro global de obra está ativo — igual ao
+  Consolidado.
+- **Card novo ao lado** (`chart-res-intensidade-senna`, badge `res-ger-senna-badge`, badge de
+  acumulado `res-ger-senna-acum`): sempre Senna Tower, mês a mês, **com** linha de meta (50).
+  Some `layout.cols-res` (`1.6fr : 1fr`, CSS compartilhado com o Consolidado).
+  - Com **outra obra filtrada** (não Senna) o card vira placeholder `fora do filtro · <obra>`
+    — mesma régua do Consolidado, a Senna só aparece com "todas as obras" ou com ela mesma
+    filtrada.
+- **Agregação corrigida junto (sum-então-média):** o card principal e o da Senna agora somam
+  as linhas **dentro do mês** (`resIntensidadeMes`) e tiram a **média entre os meses** do
+  recorte — antes esse gráfico específico usava média das linhas (`mediaLin`), que
+  subestimava a intensidade quando a obra tinha mais de um tipo de resíduo lançado no mês (ver
+  [[kgm2-agregacao-media-vs-soma]]). Os outros usos de kg/m² nesta aba (KPI "Geração Resíduo",
+  tabela "Resíduos por Obra") **não foram alterados** — continuam com a agregação anterior;
+  não foi pedido mexer neles agora.
+- **Diferença proposital vs. Consolidado:** os dois cards desta aba continuam reagindo ao
+  filtro de **Período** (`tetoMeses` = 6 ou 12 conforme a seção 5 abaixo) — o Consolidado não
+  tem filtro de período, então seus dois cards sempre mostram os últimos 6 meses com
+  lançamento, sem essa opção.
+- **Removido:** a variável `resModoSennaGer` e a função `toggleSennaGer()` (ficaram órfãs sem
+  o botão).
+- Indicador 🔴/🟢 "acima da meta" no tooltip (que só existia nesta aba) foi **removido** ao
+  alinhar o tooltip com o do Consolidado (label + detalhamento mês a mês no `afterBody`).
+- **Rótulo de dados** em cada barra (mantido, via `barLabels`).
+- Canvas com `max-height:320px` nos dois cards.
+
+Validado com sandbox Node (`vm`) sobre o `dashboard_fg.html` real do pbix — consolidado sem
+Senna, card da Senna com os mesmos meses do consolidado, placeholder "fora do filtro" com
+outra obra, teto de 12 meses em "últ. 12 meses" e valores batendo com `residuos_raw`
+recalculado à parte (soma no mês, média entre meses) — mais smoke test de `renderConsolidado()`
++ `applyFilters()` completos, sem exceções.
 
 ---
 
@@ -243,8 +268,8 @@ Todos com `layout.padding.top = 18` para o rótulo caber. O `barLabels` já pula
 | # | Bloco |
 |---|---|
 | 1 | Linha de 3 KPIs — Volume total · Geração Resíduo · Classes CONAMA |
-| 2 | **Geração Resíduo** (kg/m², Senna à parte, botão de toggle) |
-| 3 | **Geração Resíduos (ton)** (barras por classe CONAMA) |
+| 2 | **Geração Resíduo** (demais obras) + **Geração Resíduo — Senna Tower** lado a lado (`cols-res`, sem botão — mesmo padrão do Consolidado) |
+| 3 | **Geração Resíduos (ton)** (barras por classe CONAMA, card cheio) |
 | 4 | **Volume por tipo de resíduo (top 8)** (6 meses × 8 tipos) |
 | 5 | **Série Mensal de Resíduos: Consolidado** |
 | 6 | % Resíduos perigosos com destinação adequada |
@@ -398,13 +423,20 @@ verificação com acento.
 apagando as alterações. **Referência de tamanho: ~203 KB = estado com tudo; ~166 KB = estado
 antigo de 11/09.** Os nomes dos backups não deixam isso claro — vale renomeá-los.
 
-Marcadores para conferir se o arquivo restaurado é o certo (todos têm de existir):
+Marcadores para conferir se o arquivo restaurado é o certo (todos têm de existir; **atualizado
+em 15/09/2026** — `toggleSennaGer`/`res-ger-senna-btn` foram removidos nesta mesma data, ver
+seção 2, não usar mais como marcador):
 
 ```
-function barLabels · function numBR · toggleSennaGer · res-ger-senna-btn · tetoMeses
+function barLabels · function numBR · resGraficoMensal · chart-res-intensidade-senna · tetoMeses
 classesTon · kgTipoMes · labelMesRes · SENNA_RE · subCab · metaFmt
 "Série Mensal de Resíduos: Consolidado" · "Resíduos por Obra" · res-barras-titulo
 ```
+
+Referência de tamanho de `gerar_dashboard.py` **atualizada em 15/09/2026** (depois do split
+Senna Tower desta seção): **~207 KB**. Os ~203 KB citados acima são do estado anterior a essa
+mudança — o número cresce a cada rodada de trabalho, então usar como referência aproximada,
+não exata.
 
 ---
 
