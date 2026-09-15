@@ -19,7 +19,7 @@ Controle Ambiental 2025_oficial_db.xlsx
         ▼
   etl_excel_para_db.py  ──  tabelas.py (o quê)  +  modelo_semantico.py (como)
         │
-        ├──► PostgreSQL        (o destino; SQL Server também sai no DDL)
+        ├──► PostgreSQL        (o destino)
         ├──► .parquet / .csv   (opcional)
         └──► ddl/*.sql         (opcional)
 ```
@@ -37,7 +37,7 @@ da sua tabela, e o campo `m` de cada `Tabela` resume esses passos.
 | `tabelas.py` | As 19 tabelas: origem, colunas, tipos, chave e transformações. |
 | `modelo_semantico.py` | Operações genéricas equivalentes às do Power Query (substituição de texto, classificação de obra, coerção de tipos). |
 | `validar_vs_pbix.py` | Compara o resultado do ETL com o `.pbix`, tabela a tabela. |
-| `ddl/modelo_postgresql.sql` | DDL das tabelas (o destino). Também há `modelo_mssql.sql`. |
+| `ddl/modelo_postgresql.sql` | DDL das tabelas. |
 | `ddl/modelo_*_fk.sql` | As 26 FOREIGN KEYs do modelo (as que ainda não podem ser criadas saem comentadas). |
 | `origem.py` | De onde vem a planilha, cópia local e detecção de mudança. |
 | `Atualizar_Banco.bat` | Entrada da tarefa agendada. |
@@ -60,8 +60,10 @@ py -3.12 etl_excel_para_db.py --somente-ddl --ddl ddl\modelo_postgresql.sql
 # 3) carga em PostgreSQL, em schema proprio
 py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usuario:senha@servidor/base" --schema ambiental
 
-# 4) SQL Server, se um dia for preciso
-py -3.12 etl_excel_para_db.py --db-url "mssql+pyodbc://usuario:senha@servidor/BaseAmbiental?driver=ODBC+Driver+17+for+SQL+Server"
+# 4) carga agendada: so recarrega se a planilha mudou, com log
+py -3.12 etl_excel_para_db.py --excel "\\servidor\share\...\Controle Ambiental 2025_oficial_db.xlsx" ^
+    --db-url "postgresql+psycopg2://usuario@servidor/base" --schema ambiental ^
+    --se-mudou --log logs\etl_banco.log
 
 # 6) exportar tambem em parquet/csv
 py -3.12 etl_excel_para_db.py --parquet saida\parquet --csv saida\csv
@@ -402,5 +404,6 @@ No servidor de homologação (10.1.1.155) o Python usado
 `sqlalchemy 2.0.49` e `psycopg2 2.9.9`. **Em produção (10.1.1.151) isso ainda
 precisa ser conferido** — os dois entraram no `requirements.txt` só em 15/09/2026.
 
-Para SQL Server, em vez do `psycopg2`: `pyodbc` + o *ODBC Driver 17/18 for SQL
-Server* (o driver **não** está instalado em 10.1.1.155).
+O ETL carrega **só em PostgreSQL** — SQLite e SQL Server foram removidos em
+15/09/2026. Para voltar a gerar DDL de outro dialeto seria preciso reintroduzir
+o parâmetro em `gerar_ddl`/`gerar_ddl_fk`.

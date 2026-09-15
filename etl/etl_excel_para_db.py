@@ -1,25 +1,22 @@
 # -*- coding: utf-8 -*-
-"""
-ETL: Controle Ambiental (Excel) -> modelo semantico -> banco de dados.
+r"""
+ETL: Controle Ambiental (Excel) -> modelo semantico -> PostgreSQL.
 
 Le as tabelas nomeadas (ListObjects) da planilha
 `Controle Ambiental 2025_oficial_db.xlsx`, aplica as mesmas transformacoes que
-o Power Query do .pbix aplica, e grava as 19 tabelas do modelo semantico em um
-banco relacional (qualquer um suportado pelo SQLAlchemy).
+o Power Query do .pbix aplica, e grava as 19 tabelas do modelo semantico no
+banco.
 
 Uso tipico
 ----------
-    # carga local em SQLite (padrao), so pra conferir
-    py -3.12 etl_excel_para_db.py
-
-    # carga em SQL Server
-    py -3.12 etl_excel_para_db.py --db-url "mssql+pyodbc://usr:senha@servidor/BaseAmbiental?driver=ODBC+Driver+17+for+SQL+Server"
-
-    # carga em PostgreSQL, em um schema proprio
-    py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usr:senha@servidor/base" --schema ambiental
+    # conferir a planilha, sem gravar nada
+    py -3.12 etl_excel_para_db.py --somente-validar
 
     # so gerar o DDL, sem tocar em banco nenhum
-    py -3.12 etl_excel_para_db.py --somente-ddl --dialeto mssql
+    py -3.12 etl_excel_para_db.py --somente-ddl --ddl ddl\modelo_postgresql.sql
+
+    # carga, em um schema proprio
+    py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usr:senha@servidor/base" --schema ambiental
 
 A carga e SEMPRE full refresh: apaga e regrava todas as linhas dentro de uma
 unica transacao. Se qualquer tabela falhar, nada e commitado.
@@ -442,19 +439,12 @@ def carregar(dados, db_url, schema=None, lote=1000, arquivo_origem='',
     print('Carga concluida (full refresh, uma transacao).')
 
 
-def gerar_ddl(dados, dialeto, schema=None):
+def gerar_ddl(dados, schema=None):
+    from sqlalchemy.dialects import postgresql
     from sqlalchemy.schema import CreateIndex, CreateTable
-    dialetos = {
-        'postgresql': 'postgresql.psycopg2.dialect',
-        'mssql': 'mssql.pyodbc.dialect',
-    }
-    if dialeto not in dialetos:
-        raise SystemExit('dialeto deve ser um de: %s' % ', '.join(dialetos))
-    mod = __import__('sqlalchemy.dialects.' + dialetos[dialeto].rsplit('.', 1)[0],
-                     fromlist=['dialect'])
-    d = mod.dialect()
+    d = postgresql.dialect()
     md = montar_metadata(dados, schema)
-    partes = ['-- DDL do modelo semantico Ambiental/Qualidade (%s)' % dialeto,
+    partes = ['-- DDL do modelo semantico Ambiental/Qualidade (postgresql)',
               '-- Gerado por etl/etl_excel_para_db.py em %s'
               % _dt.date.today().isoformat(), '']
     for tab in md.sorted_tables:
@@ -465,7 +455,7 @@ def gerar_ddl(dados, dialeto, schema=None):
     return '\n'.join(partes)
 
 
-def gerar_ddl_fk(dados, dialeto, schema=None):
+def gerar_ddl_fk(dados, schema=None):
     """Script das 26 FOREIGN KEYs do modelo, separado do DDL das tabelas.
 
     Fica separado de proposito: hoje varias delas NAO podem ser aplicadas
@@ -474,9 +464,9 @@ def gerar_ddl_fk(dados, dialeto, schema=None):
     comentadas, com a contagem de orfas ao lado.
     """
     pre = (schema + '.') if schema else ''
-    aspas = '"' if dialeto != 'mssql' else ''
+    aspas = '"'
     linhas = [
-        '-- FOREIGN KEYs do modelo semantico Ambiental/Qualidade (%s)' % dialeto,
+        '-- FOREIGN KEYs do modelo semantico Ambiental/Qualidade (postgresql)',
         '-- Gerado por etl/etl_excel_para_db.py em %s' % _dt.date.today().isoformat(),
         '--',
         '-- As FKs COMENTADAS so podem ser criadas depois de limpar as linhas',
@@ -583,9 +573,6 @@ def main(argv=None):
     p.add_argument('--parquet', help='diretorio para exportar .parquet tambem')
     p.add_argument('--csv', help='diretorio para exportar .csv tambem')
     p.add_argument('--ddl', help='arquivo onde gravar o DDL gerado')
-    p.add_argument('--dialeto', default='postgresql',
-                   choices=['postgresql', 'mssql'],
-                   help='dialeto do DDL (padrao: postgresql, o destino do modelo)')
     p.add_argument('--somente-validar', action='store_true',
                    help='le e valida, mas nao grava em lugar nenhum')
     p.add_argument('--somente-ddl', action='store_true',
@@ -658,8 +645,8 @@ def main(argv=None):
                      r['orfas'], r['linhas'], ', '.join(r['exemplos'][:3])))
 
     if a.ddl or a.somente_ddl:
-        ddl = gerar_ddl(dados, a.dialeto, a.schema)
-        fks = gerar_ddl_fk(dados, a.dialeto, a.schema)
+        ddl = gerar_ddl(dados, a.schema)
+        fks = gerar_ddl_fk(dados, a.schema)
         if a.ddl:
             os.makedirs(os.path.dirname(os.path.abspath(a.ddl)), exist_ok=True)
             with open(a.ddl, 'w', encoding='utf-8') as fh:
@@ -667,8 +654,8 @@ def main(argv=None):
             alvo_fk = a.ddl.replace('.sql', '_fk.sql')
             with open(alvo_fk, 'w', encoding='utf-8') as fh:
                 fh.write(fks)
-            print('\nDDL (%s) gravado em %s' % (a.dialeto, a.ddl))
-            print('FKs (%s) gravadas em %s' % (a.dialeto, alvo_fk))
+            print('\nDDL gravado em %s' % a.ddl)
+            print('FKs gravadas em %s' % alvo_fk)
         else:
             print(ddl)
             print(fks)

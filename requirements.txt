@@ -30,8 +30,7 @@ pandas==3.0.5
 numpy==2.5.2
 openpyxl==3.1.5
 
-# ETL Excel -> banco (etl/). O destino do modelo semantico e PostgreSQL.
+# ETL Excel -> banco (etl/). PostgreSQL e o unico destino suportado.
 # Sem estes dois o etl_excel_para_db.py nao carrega o banco — so valida.
-# (Para carregar em SQL Server, em vez do psycopg2: pyodbc + ODBC Driver 17/18.)
 sqlalchemy==2.0.49
 psycopg2-binary==2.9.9

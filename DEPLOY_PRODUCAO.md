@@ -148,10 +148,10 @@ A migração do `.pbix` para banco relacional **já está construída e validada
 `etl/`. Ela não faz parte deste deploy do dashboard — o dashboard continua lendo
 o `.pbix` —, mas é o que o Eduardo precisa para preparar o banco.
 
-**O destino é PostgreSQL**, e só. O SQLite foi removido em 15/09/2026: não há
-mais carga local de rascunho, `--db-url` é obrigatório para carregar e o DDL sai
-em PostgreSQL por padrão. (O gerador de DDL ainda cobre SQL Server, caso um dia
-seja preciso, mas nenhum caminho leva a banco local.)
+**O destino é PostgreSQL**, e só. SQLite e SQL Server foram removidos em
+15/09/2026: não há mais carga local de rascunho nem outros dialetos de DDL, e
+`--db-url` é obrigatório para carregar — sem ele o programa erra em vez de
+escolher um destino por conta própria.
 
 O que existe hoje:
 
@@ -162,7 +162,6 @@ O que existe hoje:
 | Transformações equivalentes às do Power Query | `etl/modelo_semantico.py` |
 | **DDL do PostgreSQL** — 22 `CREATE TABLE` (19 do modelo + 3 de controle) | `etl/ddl/modelo_postgresql.sql` |
 | **As 26 FOREIGN KEYs** — 13 ativas, 13 comentadas por órfãos | `etl/ddl/modelo_postgresql_fk.sql` |
-| O mesmo DDL para SQL Server, se um dia for preciso | `etl/ddl/modelo_mssql*.sql` |
 | Comparação ETL × `.pbix`, tabela a tabela | `etl/validar_vs_pbix.py` |
 
 A receita não foi inventada: o código Power Query (M) de cada tabela foi extraído
