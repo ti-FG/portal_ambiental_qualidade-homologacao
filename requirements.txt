@@ -1,0 +1,31 @@
+# Dependências do Dash Ambiental Qualidade — versões de HOMOLOGAÇÃO (10.1.1.155)
+#
+# POR QUE AS VERSÕES SÃO FIXAS (==) E NÃO MÍNIMAS (>=)
+# ----------------------------------------------------
+# A versão do pbixray muda o RESULTADO dos indicadores, não só o desempenho.
+# Com o MESMO .pbix (conferido por MD5), a 0.9.0 e a 0.15.5 devolvem valores
+# diferentes para células vazias/zeradas da coluna dB de Fat_Ruido:
+#
+#   - pbixray 0.9.0  (produção 10.1.1.151): devolve um resíduo positivo
+#     minúsculo no lugar de vazio/zero. Esse resíduo passa no filtro `db > 0`
+#     e vira uma "medição" fantasma. Efeito observado em 14/09/2026:
+#       * o gráfico de ruído exibia abril/2026 (mês SEM medição) e, por causa
+#         disso, perdia novembro/2025, que tem medição real;
+#       * o IPA global ficava 79,1 em vez de 78,4, porque medições inexistentes
+#         entravam como "conformes" no score de ruído (ex.: North, que tem uma
+#         única linha em branco, aparecia com 100% de conformidade de ruído).
+#
+#   - pbixray 0.15.5 (homologação 10.1.1.155): lê vazio como vazio e zero como
+#     zero. É a leitura correta.
+#
+# Conclusão: promover código para produção SEM igualar estas versões não
+# reproduz os números de homologação. Instalar com:
+#
+#     py -3.12 -m pip install -r requirements.txt
+#
+# Testado em Python 3.12.10.
+
+pbixray==0.15.5
+pandas==3.0.5
+numpy==2.5.2
+openpyxl==3.1.5
