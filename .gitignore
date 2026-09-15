@@ -3,9 +3,6 @@ dashboard_fg.html
 dashboard_fg_PREVIEW.html
 dashboard_fg_PBIX_PREVIEW.html
 
-# Carga local em SQLite — gerada pelo ETL, serve só para conferência
-etl/banco/*.db
-
 # Backups locais e material histórico (não fazem parte do deploy)
 _backup_teste_refresh/
 _backup_pre_deploy_*

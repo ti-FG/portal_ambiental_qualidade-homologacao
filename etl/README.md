@@ -19,7 +19,7 @@ Controle Ambiental 2025_oficial_db.xlsx
         ▼
   etl_excel_para_db.py  ──  tabelas.py (o quê)  +  modelo_semantico.py (como)
         │
-        ├──► banco relacional  (SQLite / SQL Server / PostgreSQL)
+        ├──► PostgreSQL        (o destino; SQL Server também sai no DDL)
         ├──► .parquet / .csv   (opcional)
         └──► ddl/*.sql         (opcional)
 ```
@@ -37,34 +37,30 @@ da sua tabela, e o campo `m` de cada `Tabela` resume esses passos.
 | `tabelas.py` | As 19 tabelas: origem, colunas, tipos, chave e transformações. |
 | `modelo_semantico.py` | Operações genéricas equivalentes às do Power Query (substituição de texto, classificação de obra, coerção de tipos). |
 | `validar_vs_pbix.py` | Compara o resultado do ETL com o `.pbix`, tabela a tabela. |
-| `ddl/modelo_*.sql` | DDL das tabelas, gerado para SQLite, PostgreSQL e SQL Server. |
+| `ddl/modelo_postgresql.sql` | DDL das tabelas (o destino). Também há `modelo_mssql.sql`. |
 | `ddl/modelo_*_fk.sql` | As 26 FOREIGN KEYs do modelo (as que ainda não podem ser criadas saem comentadas). |
 | `origem.py` | De onde vem a planilha, cópia local e detecção de mudança. |
 | `Atualizar_Banco.bat` | Entrada da tarefa agendada. |
-| `banco/ambiental.db` | Carga local em SQLite (só para conferência). |
 
 ---
 
 ## Rodando
 
-> **O destino do modelo é PostgreSQL.** SQLite e SQL Server continuam
-> suportados, mas só como rascunho/alternativa — o DDL sai em PostgreSQL por
-> padrão, e uma carga sem `--db-url` avisa que foi para o SQLite de conferência.
+> **O destino do modelo é PostgreSQL.** O SQLite foi removido em 15/09/2026 —
+> não há mais carga local de rascunho. `--db-url` é obrigatório para carregar, e
+> sem ele o programa erra em vez de gravar em algum lugar por conta própria.
 
 ```powershell
-# 1) conferir sem gravar nada
+# 1) conferir sem gravar nada (nao precisa de banco)
 py -3.12 etl_excel_para_db.py --somente-validar
 
-# 2) carga em PostgreSQL, em schema proprio  <-- o caminho de verdade
-py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usuario:senha@servidor/base" --schema ambiental
-
-# 3) so o DDL do PostgreSQL, sem tocar em banco
+# 2) so o DDL do PostgreSQL, sem tocar em banco
 py -3.12 etl_excel_para_db.py --somente-ddl --ddl ddl\modelo_postgresql.sql
 
-# 4) carga local em SQLite, so para conferencia (padrao: etl\banco\ambiental.db)
-py -3.12 etl_excel_para_db.py
+# 3) carga em PostgreSQL, em schema proprio
+py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usuario:senha@servidor/base" --schema ambiental
 
-# 5) carga em SQL Server
+# 4) SQL Server, se um dia for preciso
 py -3.12 etl_excel_para_db.py --db-url "mssql+pyodbc://usuario:senha@servidor/BaseAmbiental?driver=ODBC+Driver+17+for+SQL+Server"
 
 # 6) exportar tambem em parquet/csv

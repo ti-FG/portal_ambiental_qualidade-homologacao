@@ -62,8 +62,6 @@ EXCEL_CANDIDATOS = [
     r'U:\Qualidade\AMBIENTAL\GESTÃO AMBIENTAL\INDICADORES AMBIENTAIS\POWER BI'
     r'\Controle Ambiental 2025_oficial_db.xlsx',
 ]
-DB_URL_PADRAO = 'sqlite:///' + os.path.join(DIR_SCRIPT, 'banco', 'ambiental.db')
-
 TABELA_DICIONARIO = '_dicionario_modelo'
 TABELA_LOG = '_carga_log'
 TABELA_RELACIONAMENTOS = '_relacionamentos_modelo'
@@ -447,7 +445,7 @@ def carregar(dados, db_url, schema=None, lote=1000, arquivo_origem='',
 def gerar_ddl(dados, dialeto, schema=None):
     from sqlalchemy.schema import CreateIndex, CreateTable
     dialetos = {
-        'sqlite': 'sqlite.dialect', 'postgresql': 'postgresql.psycopg2.dialect',
+        'postgresql': 'postgresql.psycopg2.dialect',
         'mssql': 'mssql.pyodbc.dialect',
     }
     if dialeto not in dialetos:
@@ -576,16 +574,17 @@ def main(argv=None):
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--excel', help='caminho do .xlsx de origem')
-    p.add_argument('--db-url', default=DB_URL_PADRAO,
-                   help='URL SQLAlchemy do destino. O destino do modelo e '
-                        'PostgreSQL; sem este argumento a carga vai para um '
-                        'SQLite de rascunho em etl/banco/, so para conferencia')
+    p.add_argument('--db-url',
+                   help='URL SQLAlchemy do destino PostgreSQL, ex.: '
+                        '"postgresql+psycopg2://usuario@servidor/base". '
+                        'Obrigatorio para carregar; --somente-validar e '
+                        '--somente-ddl nao precisam')
     p.add_argument('--schema', default=None, help='schema do banco (ex: ambiental)')
     p.add_argument('--parquet', help='diretorio para exportar .parquet tambem')
     p.add_argument('--csv', help='diretorio para exportar .csv tambem')
     p.add_argument('--ddl', help='arquivo onde gravar o DDL gerado')
     p.add_argument('--dialeto', default='postgresql',
-                   choices=['sqlite', 'postgresql', 'mssql'],
+                   choices=['postgresql', 'mssql'],
                    help='dialeto do DDL (padrao: postgresql, o destino do modelo)')
     p.add_argument('--somente-validar', action='store_true',
                    help='le e valida, mas nao grava em lugar nenhum')
@@ -682,16 +681,15 @@ def main(argv=None):
         print('\n--somente-validar: nada foi gravado no banco.')
         return 0
 
-    if a.db_url.startswith('sqlite:///'):
-        # O destino do modelo e PostgreSQL; o SQLite so serve de rascunho. Sem
-        # este aviso, quem roda sem --db-url carrega um arquivo local achando
-        # que preparou o banco.
-        print('\nATENCAO: carregando em SQLite (%s), nao no banco de destino.'
-              % a.db_url[len('sqlite:///'):])
-        print('         Para carregar em PostgreSQL, passe --db-url, ex.:')
-        print('         --db-url "postgresql+psycopg2://usuario@servidor/base" '
-              '--schema ambiental')
-        os.makedirs(os.path.dirname(a.db_url[len('sqlite:///'):]), exist_ok=True)
+    # Sem destino explicito nao ha carga. O padrao antigo era um SQLite local,
+    # que gravava em silencio e deixava quem preparava o banco achando que
+    # tinha carregado o PostgreSQL.
+    if not a.db_url:
+        print('\nERRO: --db-url e obrigatorio para carregar o banco.')
+        print('      ex.: --db-url "postgresql+psycopg2://usuario@servidor/base"'
+              ' --schema ambiental')
+        print('      Para so conferir a planilha, use --somente-validar.')
+        return 2
 
     # --se-mudou so pula DEPOIS de ler e validar a planilha: assim a tarefa
     # agendada continua avisando de problema na origem mesmo em dia parado.
