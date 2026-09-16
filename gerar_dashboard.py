@@ -924,27 +924,27 @@ HTML = r"""<!DOCTYPE html>
   .obra-selector select { border: 1.5px solid var(--fg4); border-radius: 8px; padding: 6px 12px; font-size: 14px; font-weight: 500; color: var(--gz1); background: var(--fg7); cursor: pointer; }
 
   /* Dicionário de dados e termos */
-  .dic-intro { font-size: 12px; color: var(--gz3); line-height: 1.5; margin-bottom: 12px; max-width: 900px; }
-  .dic-search { width: 100%; max-width: 420px; border: 1px solid var(--gz6); border-radius: 8px; padding: 7px 12px; font-size: 12px; color: var(--gz1); background: var(--bg); font-family: inherit; }
+  .dic-intro { font-size: 13.2px; color: var(--gz3); line-height: 1.5; margin-bottom: 12px; max-width: 900px; }
+  .dic-search { width: 100%; max-width: 420px; border: 1px solid var(--gz6); border-radius: 8px; padding: 7px 12px; font-size: 13.2px; color: var(--gz1); background: var(--bg); font-family: inherit; }
   .dic-search:focus { outline: 2px solid var(--fg4); }
   .dic-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
-  .dic-chip { border: 1px solid var(--gz6); background: var(--white); color: var(--gz2); border-radius: 14px; padding: 4px 11px; font-size: 11px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .dic-chip { border: 1px solid var(--gz6); background: var(--white); color: var(--gz2); border-radius: 14px; padding: 4px 11px; font-size: 12.1px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
   .dic-chip:hover { background: var(--fg7); border-color: var(--fg4); color: var(--fg1); }
-  .dic-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .dic-table { width: 100%; border-collapse: collapse; font-size: 12.65px; }
   .dic-table th { background: var(--gz7); padding: 7px 10px; text-align: left; font-weight: 500; color: var(--gz2); border-bottom: 2px solid var(--gz6); white-space: nowrap; }
   .dic-table td { padding: 8px 10px; border-bottom: 1px solid var(--gz7); vertical-align: top; line-height: 1.45; }
   .dic-table tr:last-child td { border-bottom: none; }
   .dic-table tr:hover td { background: var(--gz7); }
   .dic-table td.dic-nome { font-weight: 500; color: var(--gz1); white-space: nowrap; }
   .dic-table td.dic-onde { color: var(--gz3); white-space: nowrap; }
-  .dic-code { font-family: Consolas, 'Courier New', monospace; font-size: 11px; background: var(--gz7); color: var(--gz1); padding: 1px 5px; border-radius: 4px; }
-  .dic-nota { display: block; margin-top: 4px; font-size: 10.5px; color: var(--gz4); }
+  .dic-code { font-family: Consolas, 'Courier New', monospace; font-size: 12.1px; background: var(--gz7); color: var(--gz1); padding: 1px 5px; border-radius: 4px; }
+  .dic-nota { display: block; margin-top: 4px; font-size: 11.55px; color: var(--gz4); }
   .dic-alerta { color: var(--am3); }
   .dic-peso-wrap { display: flex; align-items: center; gap: 8px; }
   .dic-peso-bar { flex: 1; max-width: 160px; height: 7px; background: var(--gz7); border-radius: 4px; overflow: hidden; }
   .dic-peso-fill { height: 100%; background: var(--fg4); border-radius: 4px; }
-  .dic-peso-num { font-weight: 500; font-size: 11px; color: var(--gz2); width: 34px; text-align: right; }
-  .dic-vazio { padding: 14px; font-size: 12px; color: var(--gz4); text-align: center; }
+  .dic-peso-num { font-weight: 500; font-size: 12.1px; color: var(--gz2); width: 34px; text-align: right; }
+  .dic-vazio { padding: 14px; font-size: 13.2px; color: var(--gz4); text-align: center; }
   .dic-hidden { display: none !important; }
 
   /* Footer */
@@ -1207,6 +1207,10 @@ HTML = r"""<!DOCTYPE html>
     <span class="imp-section-title"><i class="ti ti-bolt"></i> Consumo de energia</span>
     <span class="imp-filters">
       <i class="ti ti-filter" style="color:var(--gz4); font-size:12px"></i>
+      <label>Setor:</label>
+      <select id="filter-energia-setor" onchange="renderConsumoEnergiaAll()">
+        <option value="">Todos os setores</option>
+      </select>
       <label>Período:</label>
       <select id="filter-energia-periodo" onchange="renderConsumoEnergiaAll()">
         <option value="6m">Últimos 6 meses</option>
@@ -1238,6 +1242,10 @@ HTML = r"""<!DOCTYPE html>
     <span class="imp-section-title"><i class="ti ti-droplet"></i> Consumo de água</span>
     <span class="imp-filters">
       <i class="ti ti-filter" style="color:var(--gz4); font-size:12px"></i>
+      <label>Setor:</label>
+      <select id="filter-agua-setor" onchange="renderConsumoAguaAll()">
+        <option value="">Todos os setores</option>
+      </select>
       <label>Período:</label>
       <select id="filter-agua-periodo" onchange="renderConsumoAguaAll()">
         <option value="6m">Últimos 6 meses</option>
@@ -1344,6 +1352,15 @@ HTML = r"""<!DOCTYPE html>
       </div>
       <canvas id="chart-obra-pa" style="max-height:170px"></canvas>
     </div>
+  </div>
+
+  <!-- Volume por tipo de resíduo — mesmo gráfico da aba Resíduos, no recorte da obra -->
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> Volume por tipo de resíduo</div>
+      <span class="card-badge" id="obra-res-tipo-badge">—</span>
+    </div>
+    <canvas id="chart-obra-res-tipo" style="max-height:340px"></canvas>
   </div>
 
   <!-- Emergências Ambientais — analítica da obra -->
@@ -1961,6 +1978,33 @@ const COLORS = {
   verm:  ['#CE8686','#E0A8A8','#A86D6D','#791F1F','#FCEBEB'],
   cinza: ['#888780','#B4B2A9','#D3D1C7','#5F5E5A','#F1EFE8'],
 };
+// ═══════════════════════════════════════════════════════════
+//  Filtro de Período — helper único
+// ═══════════════════════════════════════════════════════════
+// Cada fonte de dados tem seu próprio universo de meses (ruído tem meses que
+// resíduos não tem, e vice-versa). Por isso o recorte é sempre calculado sobre
+// o universo da própria fonte, e não sobre um calendário fixo: "últimos 6
+// meses" significa os 6 últimos meses COM DADO naquela fonte.
+function mesesDoPeriodo(anoF, universo) {
+  const ms = [...new Set(universo)].filter(Boolean).sort();
+  if (!anoF || anoF === 'all') return new Set(ms);
+  if (anoF === '6m')  return new Set(ms.slice(-6));
+  if (anoF === '12m') return new Set(ms.slice(-12));
+  return new Set(ms.filter(m => String(m).startsWith(anoF)));   // '2025' / '2026'
+}
+// Valor corrente do filtro global de Período.
+function periodoGlobal() {
+  return (document.getElementById('filter-periodo') || {}).value || 'all';
+}
+// Um filtro de card (água, energia, impressões, auditorias) tem precedência
+// sobre o global quando o usuário escolheu algo nele; em 'all' ele obedece ao
+// filtro global do topo.
+function periodoEfetivo(idSelectCard, padraoCard) {
+  const v = (document.getElementById(idSelectCard) || {}).value;
+  if (v && v !== (padraoCard || 'all')) return v;
+  const g = periodoGlobal();
+  return g !== 'all' ? g : (v || 'all');
+}
 function pct(v) { return v != null ? v.toFixed(1) + '%' : '—'; }
 function num(v, dec=0) { return v != null ? Number(v).toFixed(dec) : '—'; }
 // Número no padrão pt-BR: milhar "." e decimal "," (ex.: 1.234,56)
@@ -2331,10 +2375,16 @@ const resMetaDe = o => (D.meta_residuos && D.meta_residuos.por_obra && D.meta_re
 const resIntensidadeMes = arr => (arr && arr.length) ? arr.reduce((a, b) => a + b, 0) : null;
 
 // Linhas válidas agrupadas por obra × mês (guarda os valores individuais)
-function resLinhasPorObraMes() {
+function resLinhasPorObraMes(anoF) {
   const linhas = {};
+  // Recorte de período sobre o universo de meses COM lançamento de kg/m²
+  const mesesSet = mesesDoPeriodo(
+    anoF !== undefined ? anoF : periodoGlobal(),
+    (D.residuos_raw || []).filter(r => r.kg_m2 > 0).map(r => r.mes_ano)
+  );
   (D.residuos_raw || []).forEach(r => {
     if (!(r.kg_m2 > 0)) return;
+    if (!mesesSet.has(r.mes_ano)) return;
     const o = String(r.obra || '').trim();
     if (!o) return;
     if (!linhas[o]) linhas[o] = {};
@@ -2342,8 +2392,11 @@ function resLinhasPorObraMes() {
   });
   return linhas;
 }
-function resMeses6() {
-  const ms = [...new Set((D.residuos_raw || []).filter(r => r.kg_m2 > 0).map(r => r.mes_ano))].sort();
+function resMeses6(anoF) {
+  const todos = (D.residuos_raw || []).filter(r => r.kg_m2 > 0).map(r => r.mes_ano);
+  // Aplica o período primeiro e só depois pega os 6 últimos: com "2025"
+  // selecionado, mostra os 6 últimos meses DE 2025, não os 6 últimos globais.
+  const ms = [...mesesDoPeriodo(anoF !== undefined ? anoF : periodoGlobal(), todos)].sort();
   return ms.slice(-6);
 }
 
@@ -2400,7 +2453,8 @@ function resGraficoMensal(canvasId, obra, serie, meses, badgeEl, comMeta) {
 }
 
 // ─── Card principal: demais obras (ou a obra filtrada, mês a mês) ───
-function renderResBarras(obraF) {
+function renderResBarras(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
   const badge = document.getElementById('res-barras-badge');
   const titulo = document.getElementById('res-barras-titulo');
   const limpar = msg => {
@@ -2409,9 +2463,9 @@ function renderResBarras(obraF) {
   };
   if (obraF === undefined) obraF = (document.getElementById('filter-obra-global') || {}).value || '';
 
-  const linhas = resLinhasPorObraMes();
-  const meses6 = resMeses6();
-  if (!meses6.length) { limpar('sem lançamento'); return; }
+  const linhas = resLinhasPorObraMes(anoF);
+  const meses6 = resMeses6(anoF);
+  if (!meses6.length) { limpar('sem lançamento no período'); return; }
 
   // Obra filtrada no topo → mês a mês daquela obra
   if (obraF) {
@@ -2494,7 +2548,8 @@ function renderResBarras(obraF) {
 }
 
 // ─── Card ao lado: Senna Tower, mês a mês, com a meta de 50 ───
-function renderResSenna(obraF) {
+function renderResSenna(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
   const badge = document.getElementById('res-senna-badge');
   const acum = document.getElementById('res-senna-acum');
   const canvas = document.getElementById('chart-res-senna');
@@ -2507,7 +2562,7 @@ function renderResSenna(obraF) {
     if (acum) acum.hidden = true;
   };
 
-  const linhas = resLinhasPorObraMes();
+  const linhas = resLinhasPorObraMes(anoF);
   const obra = Object.keys(linhas).find(o => SENNA_RE.test(o))
             || (D.obras || []).find(o => SENNA_RE.test(o)) || '';
   if (!obra) { limpar('obra não encontrada'); return; }
@@ -2516,7 +2571,7 @@ function renderResSenna(obraF) {
   if (obraF && !SENNA_RE.test(obraF)) { limpar(`fora do filtro · ${obraF}`); return; }
 
   const serie = linhas[obra] || {};
-  const meses = resMeses6().filter(m => (serie[m] || []).length);
+  const meses = resMeses6(anoF).filter(m => (serie[m] || []).length);
   if (!meses.length) { limpar('sem lançamento no período'); return; }
 
   // Acumulado: média das intensidades de TODOS os meses lançados (não só os 6)
@@ -2622,10 +2677,15 @@ function renderRuidoBarras(obraF) {
 // ═══════════════════════════════════════════════════════════
 //  Emergências Ambientais — tabela detalhada
 // ═══════════════════════════════════════════════════════════
-function renderEmergencias(obraF) {
+function renderEmergencias(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
   const all = D.emergencias_lista || [];
   let data = all;
   if (obraF) data = data.filter(r => r.obra === obraF);
+  if (anoF && anoF !== 'all') {
+    const mesesSet = mesesDoPeriodo(anoF, all.map(r => r.mes_ano));
+    data = data.filter(r => mesesSet.has(r.mes_ano));
+  }
 
   const tblEl = document.getElementById('emerg-table-content');
   const badge = document.getElementById('emerg-table-badge');
@@ -2681,9 +2741,13 @@ function renderEmergencias(obraF) {
 // ═══════════════════════════════════════════════════════════
 //  Monitoramento de ruído — dB por obra × mês (grouped bar)
 // ═══════════════════════════════════════════════════════════
-function renderMonitoramentoRuido(obraF) {
+function renderMonitoramentoRuido(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
   let all = (D.ruido_obra_mes || []).filter(r => !RUIDO_OBRAS_OCULTAS.includes(r.obra));
   if (obraF) all = all.filter(r => r.obra === obraF);
+  // Período aplicado ANTES do corte dos 6 meses do eixo
+  const mesesPer = mesesDoPeriodo(anoF, (D.ruido_obra_mes || []).map(r => r.mes_ano));
+  all = all.filter(r => mesesPer.has(r.mes_ano));
 
   const badge = document.getElementById('monitor-ruido-badge');
   if (!all.length) {
@@ -2881,9 +2945,13 @@ const paDonutLabels = {
   }
 };
 
-function renderPaStatus(obraF) {
-  // Quando obra está filtrada, usa breakdown por obra (D.pa_por_obra)
-  // Quando não, usa o agregado global (D.pa_status)
+function renderPaStatus(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
+  // ATENÇÃO — este é o ÚNICO gráfico que não reage ao filtro de Período.
+  // Dim_Plano_acao não tem data de registro da ação, só o campo Prazo (que é
+  // data futura de conclusão, não do fato). Filtrar por prazo responderia
+  // "ações que vencem no período", que é outra pergunta. Em vez de filtrar
+  // errado em silêncio, o card avisa no badge que está fora do recorte.
   const st = obraF ? (D.pa_por_obra[obraF] || {}) : (D.pa_status || {});
   const entries = Object.entries(st)
     .filter(([k, v]) => !PA_STATUS_INVALIDO(k) && v > 0)
@@ -2897,8 +2965,10 @@ function renderPaStatus(obraF) {
   }
 
   const totalPa = entries.reduce((a, [, v]) => a + v, 0);
+  // Avisa quando há período selecionado, porque este card o ignora (ver acima)
+  const avisoPeriodo = (anoF && anoF !== 'all') ? ' · histórico completo (sem data na fonte)' : '';
   if (badge) badge.textContent = totalPa + (totalPa !== 1 ? ' ações' : ' ação')
-    + (obraF ? ' · ' + obraF : '') + ' · passe o mouse para abrir por obra';
+    + (obraF ? ' · ' + obraF : '') + avisoPeriodo + ' · passe o mouse para abrir por obra';
 
   // Ações do recorte, para abrir cada fatia por obra dentro do tooltip
   let acoes = (D.plano_acao_lista || []).filter(r => r.status && !PA_STATUS_INVALIDO(r.status));
@@ -2989,14 +3059,20 @@ function assuntoDe(txt) {
 // Conta a partir de D.reclamacoes_lista (linhas reais) em vez de D.rec_por_obra,
 // para que o gráfico e o painel de detalhes ao lado usem exatamente a mesma base.
 // Obras em REC_OBRAS_OCULTAS não entram (pedido da área).
-function recFiltradas(obraF) {
+function recFiltradas(obraF, anoF) {
   let lista = (D.reclamacoes_lista || []).filter(r => !REC_OBRAS_OCULTAS.includes(r.obra));
   if (obraF) lista = lista.filter(r => r.obra === obraF);
+  const per = anoF !== undefined ? anoF : periodoGlobal();
+  if (per && per !== 'all') {
+    const mesesSet = mesesDoPeriodo(per, (D.reclamacoes_lista || []).map(r => r.mes_ano));
+    lista = lista.filter(r => mesesSet.has(r.mes_ano));
+  }
   return lista;
 }
 
-function renderRecPorObra(obraF) {
-  const lista = recFiltradas(obraF);
+function renderRecPorObra(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
+  const lista = recFiltradas(obraF, anoF);
 
   // Conta por obra; obra vazia vira "(sem obra informada)" pra não sumir do total
   const SEM_OBRA = '(sem obra informada)';
@@ -3011,7 +3087,7 @@ function renderRecPorObra(obraF) {
   if (!entries.length) {
     if (chartReg['chart-rec-obra']) { chartReg['chart-rec-obra'].destroy(); delete chartReg['chart-rec-obra']; }
     if (badge) badge.textContent = '0 reclamações';
-    renderRecDetalhe(obraF);
+    renderRecDetalhe(obraF, anoF);
     return;
   }
 
@@ -3067,18 +3143,19 @@ function renderRecPorObra(obraF) {
     plugins: [barLabels(v => String(v), { id: 'recobra' })]
   });
 
-  renderRecDetalhe(obraF);
+  renderRecDetalhe(obraF, anoF);
 }
 
 // Detalhe das reclamações, em dois painéis lado a lado:
 //   #rec-rank    -> maiores incidências por assunto
 //   #rec-detalhe -> assunto e ação por obra
-function renderRecDetalhe(obraF) {
+function renderRecDetalhe(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
   const elTab  = document.getElementById('rec-detalhe');
   const bRank  = document.getElementById('rec-rank-badge');
   const bTab   = document.getElementById('rec-detalhe-badge');
   if (!elTab && !document.getElementById('chart-rec-rank')) return;
-  const lista = recFiltradas(obraF);
+  const lista = recFiltradas(obraF, anoF);
 
   if (!lista.length) {
     const vazio = '<div class="empty-msg">Sem reclamações no recorte</div>';
@@ -3334,8 +3411,17 @@ function renderRuidoObra(obraF, anoF) {
 // ═══════════════════════════════════════════════════════════
 //  SGA — pessoas treinadas por ano (gráfico de barras)
 // ═══════════════════════════════════════════════════════════
-function renderSGAAnual() {
-  const data = D.sga_por_ano || [];
+function renderSGAAnual(anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
+  let data = D.sga_por_ano || [];
+  // Dim_Acoes_SGA é agregada por ANO — não há mês. Então este gráfico só
+  // consegue reagir às opções de ano do filtro ('2025', '2026'); com
+  // "últimos 6/12 meses" mantém a série completa, porque recortar um ano
+  // inteiro por causa de meses seria inventar precisão que o dado não tem.
+  if (anoF && anoF !== 'all' && anoF !== '6m' && anoF !== '12m') {
+    const doAno = data.filter(d => String(d.ano) === String(anoF));
+    if (doAno.length) data = doAno;
+  }
   if (!data.length) {
     if (chartReg['chart-sga-anual']) { chartReg['chart-sga-anual'].destroy(); delete chartReg['chart-sga-anual']; }
     return;
@@ -3601,9 +3687,10 @@ function _drawEnergiaChart(canvasId, badgeId, dados, valueKey, formatter, unit, 
 
 // Agrega o dataset raw por mês, respeitando filtro de obra
 // kWh: soma; kwh_m2: lê DIRETO da coluna Luz m² (média entre obras se "Todas")
-function _computeEnergiaSeries(obraF) {
+function _computeEnergiaSeries(obraF, setorF) {
   let rows = D.consumo_energia_raw || [];
   if (obraF) rows = rows.filter(r => r.obra === obraF);
+  if (setorF) rows = rows.filter(r => r.setor === setorF);
   if (!rows.length) return [];
 
   const map = {};
@@ -3647,16 +3734,23 @@ function _computeEnergiaSeries(obraF) {
 function _filtraPeriodo(arr, periodoF) {
   if (periodoF === '6m') return arr.slice(-6);
   if (periodoF === '12m') return arr.slice(-12);
+  // '2025' / '2026': recorta pelo ano do próprio mês, não por posição.
+  // Sem isto, escolher um ano no filtro devolvia a série inteira.
+  if (periodoF && periodoF !== 'all') {
+    return arr.filter(d => String(d.mes_ano || '').startsWith(periodoF));
+  }
   return arr;
 }
 
 function renderConsumoEnergia() {
   const obraF    = (document.getElementById('filter-obra-global')||{}).value || '';
-  const periodoF = (document.getElementById('filter-energia-periodo')||{}).value || '12m';
-  // Se houver obra filtrada, recalcula a partir do raw; senão usa o agregado pré-computado
+  const setorF   = (document.getElementById('filter-energia-setor')||{}).value || '';
+  const periodoF = periodoEfetivo('filter-energia-periodo', '12m');
+  // Com obra OU setor filtrado, recalcula a partir do raw; sem nenhum dos dois,
+  // usa o agregado pré-computado (mesmo resultado, sem recomputar 610 linhas)
   let dados;
-  if (obraF) {
-    dados = _filtraPeriodo(_computeEnergiaSeries(obraF), periodoF);
+  if (obraF || setorF) {
+    dados = _filtraPeriodo(_computeEnergiaSeries(obraF, setorF), periodoF);
   } else {
     dados = _filtraPeriodo((D.consumo_energia || []).slice(), periodoF);
   }
@@ -3668,9 +3762,10 @@ function renderConsumoEnergia() {
 //  Consumo de Água — barras + meta média móvel 6m
 //  (m³ absoluto + intensidade m³/m² lado a lado)
 // ═══════════════════════════════════════════════════════════
-function _computeAguaSeries(obraF) {
+function _computeAguaSeries(obraF, setorF) {
   let rows = D.consumo_agua_raw || [];
   if (obraF) rows = rows.filter(r => r.obra === obraF);
+  if (setorF) rows = rows.filter(r => r.setor === setorF);
   if (!rows.length) return [];
 
   const map = {};
@@ -3718,10 +3813,11 @@ function renderConsumoAguaAll() {
 
 function renderConsumoAgua() {
   const obraF    = (document.getElementById('filter-obra-global')||{}).value || '';
-  const periodoF = (document.getElementById('filter-agua-periodo')||{}).value || '12m';
+  const setorF   = (document.getElementById('filter-agua-setor')||{}).value || '';
+  const periodoF = periodoEfetivo('filter-agua-periodo', '12m');
   let dados;
-  if (obraF) {
-    dados = _filtraPeriodo(_computeAguaSeries(obraF), periodoF);
+  if (obraF || setorF) {
+    dados = _filtraPeriodo(_computeAguaSeries(obraF, setorF), periodoF);
   } else {
     dados = _filtraPeriodo((D.consumo_agua || []).slice(), periodoF);
   }
@@ -3731,10 +3827,11 @@ function renderConsumoAgua() {
 
 function renderConsumoAguaM2() {
   const obraF    = (document.getElementById('filter-obra-global')||{}).value || '';
-  const periodoF = (document.getElementById('filter-agua-periodo')||{}).value || '12m';
+  const setorF   = (document.getElementById('filter-agua-setor')||{}).value || '';
+  const periodoF = periodoEfetivo('filter-agua-periodo', '12m');
   let dados;
-  if (obraF) {
-    dados = _filtraPeriodo(_computeAguaSeries(obraF), periodoF)
+  if (obraF || setorF) {
+    dados = _filtraPeriodo(_computeAguaSeries(obraF, setorF), periodoF)
       .filter(d => d.m3_m2 != null)
       .map(d => ({ ...d, m3_m2: +d.m3_m2.toFixed(2), meta_6m: d.meta_6m_m2 }));
   } else {
@@ -3746,11 +3843,12 @@ function renderConsumoAguaM2() {
 
 function renderConsumoEnergiaM2() {
   const obraF    = (document.getElementById('filter-obra-global')||{}).value || '';
-  const periodoF = (document.getElementById('filter-energia-periodo')||{}).value || '12m';
+  const setorF   = (document.getElementById('filter-energia-setor')||{}).value || '';
+  const periodoF = periodoEfetivo('filter-energia-periodo', '12m');
   let dados;
-  if (obraF) {
+  if (obraF || setorF) {
     // Para intensidade filtrada, usa o campo recalculado kwh_m2 + meta_6m_m2
-    dados = _filtraPeriodo(_computeEnergiaSeries(obraF), periodoF)
+    dados = _filtraPeriodo(_computeEnergiaSeries(obraF, setorF), periodoF)
       .filter(d => d.kwh_m2 != null)
       .map(d => ({ ...d, kwh_m2: +d.kwh_m2.toFixed(2), meta_6m: d.meta_6m_m2 }));
   } else {
@@ -3792,7 +3890,8 @@ function clearImpFilters() {
 
 function renderImpressoes() {
   const setorF   = (document.getElementById('filter-imp-setor')||{}).value || '';
-  const periodoF = (document.getElementById('filter-imp-periodo')||{}).value || 'all';
+  // Filtro do card tem precedência; em 'all' segue o filtro global de Período
+  const periodoF = periodoEfetivo('filter-imp-periodo', 'all');
 
   const histGlobal = D.imp_historico || [];
   const setorMes   = D.imp_setor_mes || [];
@@ -4138,6 +4237,15 @@ function renderObra(obraF, anoF) {
       : ((D.res_classe_por_obra && D.res_classe_por_obra[obra] && Object.keys(D.res_classe_por_obra[obra]).length)
           ? D.res_classe_por_obra[obra] : (D.res_classe || {}));
   }
+  // Volume por tipo de resíduo — mesma função da aba Resíduos, com o recorte da obra.
+  // Monta o filtRes com o mesmo critério usado lá (obra × período).
+  let filtResObra = rawRes.filter(r => !mesesSet || mesesSet.has(r.mes_ano));
+  if (!isAll) filtResObra = filtResObra.filter(r => r.obra === obra);
+  const tipoSrcObra = isAll
+    ? (D.res_tipo || {})
+    : ((D.res_tipo_por_obra && D.res_tipo_por_obra[obra]) || {});
+  renderResTipo('chart-obra-res-tipo', 'obra-res-tipo-badge', filtResObra, tipoSrcObra, rawRes.length > 0);
+
   const rcEntries = Object.entries(resClasse).filter(([k]) => k && k !== 'nan');
   if (rcEntries.length) {
     makeChart('chart-obra-res-donut', {
@@ -4243,6 +4351,173 @@ function renderObraEmergencias(obra) {
 // ═══════════════════════════════════════════════════════════
 //  PAGE 3 — Resíduos
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  Gráfico "Volume por tipo de resíduo" — compartilhado
+// ═══════════════════════════════════════════════════════════
+// Extraído de renderResiduos() para ser reaproveitado na aba Obra Individual.
+// Recebe o recorte já filtrado (obra × período) em vez de refazer o filtro,
+// para as duas abas mostrarem exatamente o mesmo critério.
+//   canvasId / badgeId — onde desenhar
+//   filtRes            — linhas de residuos_raw já recortadas
+//   tipoSrc            — agregado por tipo (fallback do caminho legado via Excel)
+//   hasRaw             — se existe dataset granular
+function renderResTipo(canvasId, badgeId, filtRes, tipoSrc, hasRaw) {
+  // Placeholder "Sem dados" — versão local do helper homônimo de
+  // renderResiduos(), que não é visível daqui depois da extração.
+  const semDados = id => makeChart(id, {
+    type: 'bar',
+    data: { labels: [''], datasets: [{ data: [0], backgroundColor: '#D3D1C7' }] },
+    options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados' } }, scales: { y: { beginAtZero: true } } }
+  });
+// Tipo barras H (usa fonte filtrada) — cores conforme paleta por tipo
+// Mapeamento: normalize p/ uppercase + sem acento + sem espaço extra
+const CORES_TIPO = {
+  // Azul petróleo
+  'ENTULHO':                                              '#0E4A6B',
+  // Escala da cor azul (mais escuro → mais claro)
+  'GESSO':                                                '#185FA5',
+  'PAPEL, PAPELAO':                                       '#378ADD',
+  'PLASTICO':                                             '#85B7EB',
+  'ISOPOR':                                               '#B5D4F4',
+  // Escala de cor laranja
+  'LA DE PET':                                            '#EF9F27',
+  'TELA DE PROTECAO':                                     '#FAC775',
+  // Marrom
+  'MADEIRA':                                              '#6B4423',
+  // Escalas de cinza
+  'METAL, SUCATA':                                        '#D3D1C7',  // cinza claro
+  'EFLUENTE CONTAMINADO (LIQUIDO)':                       '#888780',  // cinza médio
+  'RESIDUO CONTAMINADO (SOLIDO)':                         '#5F5E5A',  // cinza escuro
+  // Preto
+  'NAO RECICLADO (FITAS ADESIVAS, LIXAS ENTRE OUTROS)':   '#2C2C2A',
+};
+const norm = s => String(s || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
+const corPorTipo = tipo => CORES_TIPO[norm(tipo)] || '#888780';  // fallback cinza médio
+
+// ─── Tipo × mês: 6 colunas (uma por mês) para cada um dos 8 tipos de maior volume ───
+// Cada mês é um dataset → o Chart.js agrupa as 6 barras sob o rótulo do tipo.
+// Escala sequencial azul, do mês mais antigo (claro) ao mais recente (escuro).
+const CORES_MES_TIPO = ['#D6E7F8', '#B5D4F4', '#85B7EB', '#378ADD', '#185FA5', '#0E4A6B'];
+const labelMesTipo = labelMesRes;
+const badgeTipo = document.getElementById(badgeId);
+
+// Últimos 6 meses COM dado dentro do recorte (obra × período)
+const mesesComKg = [...new Set(filtRes.filter(r => (r.kg || 0) > 0).map(r => r.mes_ano))].sort();
+const meses6 = mesesComKg.slice(-6);
+
+if (hasRaw && meses6.length) {
+  const noRecorte = filtRes.filter(r => meses6.includes(r.mes_ano) && (r.kg || 0) > 0);
+
+  // Top 8 tipos por kg total nesses meses
+  const totalPorTipo = {};
+  noRecorte.forEach(r => {
+    const t = String(r.tipo || '').trim();
+    if (t && t.toLowerCase() !== 'nan') totalPorTipo[t] = (totalPorTipo[t] || 0) + r.kg;
+  });
+  const top8 = Object.entries(totalPorTipo).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t);
+
+  // Matriz tipo × mês
+  const kgTipoMes = {};
+  noRecorte.forEach(r => {
+    const t = String(r.tipo || '').trim();
+    if (!top8.includes(t)) return;
+    if (!kgTipoMes[t]) kgTipoMes[t] = {};
+    kgTipoMes[t][r.mes_ano] = (kgTipoMes[t][r.mes_ano] || 0) + r.kg;
+  });
+
+  // Cores alinhadas à direita da escala: com menos de 6 meses, o mais recente segue o mais escuro
+  const cores = CORES_MES_TIPO.slice(CORES_MES_TIPO.length - meses6.length);
+
+  if (badgeTipo) badgeTipo.textContent = meses6.length > 1
+    ? `${labelMesTipo(meses6[0])} – ${labelMesTipo(meses6[meses6.length-1])}`
+    : labelMesTipo(meses6[0]);
+
+  makeChart(canvasId, {
+    type: 'bar',
+    data: {
+      labels: top8,
+      datasets: meses6.map((m, i) => ({
+        label: labelMesTipo(m),
+        data: top8.map(t => Math.round((kgTipoMes[t] || {})[m] || 0)),
+        backgroundColor: cores[i],
+        borderRadius: 3,
+      }))
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { position: 'top', labels: { boxWidth: 12, padding: 10 } },
+        tooltip: {
+          callbacks: {
+            title: items => items.length ? items[0].label : '',
+            label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')} kg`,
+          }
+        }
+      },
+      layout: { padding: { top: 18 } },
+      scales: {
+        x: {
+          ticks: {
+            autoSkip: false,
+            maxRotation: 30,
+            // Nomes de tipo são longos ("Não reciclado (fitas adesivas...)") — encurta no eixo;
+            // o nome completo aparece no título do tooltip
+            callback: function (v) {
+              const t = String(this.getLabelForValue(v));
+              return t.length > 20 ? t.slice(0, 19) + '…' : t;
+            }
+          }
+        },
+        y: { beginAtZero: true, title: { display: true, text: 'kg' } }
+      }
+    },
+    // Muitas barras estreitas (até 8 tipos × 6 meses): kg abreviado pra caber
+    plugins: [barLabels(v => v >= 10000 ? numBR(v / 1000, 0) + 'k'
+                           : v >= 1000  ? numBR(v / 1000, 1) + 'k'
+                           : numBR(v, 0),
+                        { id: 'restipo', font: '600 9px "Segoe UI", Inter, system-ui, sans-serif' })]
+  });
+} else if (hasRaw) {
+  // Tem dado granular, mas o recorte (obra × período) está vazio — não cair no
+  // agregado histórico, que ignoraria o filtro de período
+  if (badgeTipo) badgeTipo.textContent = '—';
+  semDados(canvasId);
+} else {
+  // Sem dado granular (caminho legado via Excel): mantém as barras H de total por tipo
+  if (badgeTipo) badgeTipo.textContent = 'total do período';
+  const tipoE = Object.entries(tipoSrc).filter(([k]) => k && k !== 'nan');
+  if (tipoE.length) {
+    makeChart(canvasId, {
+      type: 'bar',
+      data: {
+        labels: tipoE.map(([k]) => k),
+        datasets: [{
+          label: 'kg',
+          data: tipoE.map(([,v]) => v),
+          backgroundColor: tipoE.map(([k]) => corPorTipo(k)),
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.raw.toLocaleString('pt-BR')} kg`,
+            }
+          }
+        },
+        scales: { x: { beginAtZero: true, title: { display: true, text: 'kg' } } }
+      }
+    });
+  } else {
+    semDados(canvasId);
+  }
+}
+}
+
 function renderResiduos(obraF, anoF) {
   const g = D.global;
   if (!obraF) obraF = (document.getElementById('filter-obra-global')||{}).value || '';
@@ -4574,153 +4849,8 @@ function renderResiduos(obraF, anoF) {
     semDados('chart-res-conama');
   }
 
-  // Tipo barras H (usa fonte filtrada) — cores conforme paleta por tipo
-  // Mapeamento: normalize p/ uppercase + sem acento + sem espaço extra
-  const CORES_TIPO = {
-    // Azul petróleo
-    'ENTULHO':                                              '#0E4A6B',
-    // Escala da cor azul (mais escuro → mais claro)
-    'GESSO':                                                '#185FA5',
-    'PAPEL, PAPELAO':                                       '#378ADD',
-    'PLASTICO':                                             '#85B7EB',
-    'ISOPOR':                                               '#B5D4F4',
-    // Escala de cor laranja
-    'LA DE PET':                                            '#EF9F27',
-    'TELA DE PROTECAO':                                     '#FAC775',
-    // Marrom
-    'MADEIRA':                                              '#6B4423',
-    // Escalas de cinza
-    'METAL, SUCATA':                                        '#D3D1C7',  // cinza claro
-    'EFLUENTE CONTAMINADO (LIQUIDO)':                       '#888780',  // cinza médio
-    'RESIDUO CONTAMINADO (SOLIDO)':                         '#5F5E5A',  // cinza escuro
-    // Preto
-    'NAO RECICLADO (FITAS ADESIVAS, LIXAS ENTRE OUTROS)':   '#2C2C2A',
-  };
-  const norm = s => String(s || '').toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
-  const corPorTipo = tipo => CORES_TIPO[norm(tipo)] || '#888780';  // fallback cinza médio
-
-  // ─── Tipo × mês: 6 colunas (uma por mês) para cada um dos 8 tipos de maior volume ───
-  // Cada mês é um dataset → o Chart.js agrupa as 6 barras sob o rótulo do tipo.
-  // Escala sequencial azul, do mês mais antigo (claro) ao mais recente (escuro).
-  const CORES_MES_TIPO = ['#D6E7F8', '#B5D4F4', '#85B7EB', '#378ADD', '#185FA5', '#0E4A6B'];
-  const labelMesTipo = labelMesRes;
-  const badgeTipo = document.getElementById('res-tipo-badge');
-
-  // Últimos 6 meses COM dado dentro do recorte (obra × período)
-  const mesesComKg = [...new Set(filtRes.filter(r => (r.kg || 0) > 0).map(r => r.mes_ano))].sort();
-  const meses6 = mesesComKg.slice(-6);
-
-  if (hasRaw && meses6.length) {
-    const noRecorte = filtRes.filter(r => meses6.includes(r.mes_ano) && (r.kg || 0) > 0);
-
-    // Top 8 tipos por kg total nesses meses
-    const totalPorTipo = {};
-    noRecorte.forEach(r => {
-      const t = String(r.tipo || '').trim();
-      if (t && t.toLowerCase() !== 'nan') totalPorTipo[t] = (totalPorTipo[t] || 0) + r.kg;
-    });
-    const top8 = Object.entries(totalPorTipo).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([t]) => t);
-
-    // Matriz tipo × mês
-    const kgTipoMes = {};
-    noRecorte.forEach(r => {
-      const t = String(r.tipo || '').trim();
-      if (!top8.includes(t)) return;
-      if (!kgTipoMes[t]) kgTipoMes[t] = {};
-      kgTipoMes[t][r.mes_ano] = (kgTipoMes[t][r.mes_ano] || 0) + r.kg;
-    });
-
-    // Cores alinhadas à direita da escala: com menos de 6 meses, o mais recente segue o mais escuro
-    const cores = CORES_MES_TIPO.slice(CORES_MES_TIPO.length - meses6.length);
-
-    if (badgeTipo) badgeTipo.textContent = meses6.length > 1
-      ? `${labelMesTipo(meses6[0])} – ${labelMesTipo(meses6[meses6.length-1])}`
-      : labelMesTipo(meses6[0]);
-
-    makeChart('chart-res-tipo', {
-      type: 'bar',
-      data: {
-        labels: top8,
-        datasets: meses6.map((m, i) => ({
-          label: labelMesTipo(m),
-          data: top8.map(t => Math.round((kgTipoMes[t] || {})[m] || 0)),
-          backgroundColor: cores[i],
-          borderRadius: 3,
-        }))
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { position: 'top', labels: { boxWidth: 12, padding: 10 } },
-          tooltip: {
-            callbacks: {
-              title: items => items.length ? items[0].label : '',
-              label: ctx => ` ${ctx.dataset.label}: ${ctx.raw.toLocaleString('pt-BR')} kg`,
-            }
-          }
-        },
-        layout: { padding: { top: 18 } },
-        scales: {
-          x: {
-            ticks: {
-              autoSkip: false,
-              maxRotation: 30,
-              // Nomes de tipo são longos ("Não reciclado (fitas adesivas...)") — encurta no eixo;
-              // o nome completo aparece no título do tooltip
-              callback: function (v) {
-                const t = String(this.getLabelForValue(v));
-                return t.length > 20 ? t.slice(0, 19) + '…' : t;
-              }
-            }
-          },
-          y: { beginAtZero: true, title: { display: true, text: 'kg' } }
-        }
-      },
-      // Muitas barras estreitas (até 8 tipos × 6 meses): kg abreviado pra caber
-      plugins: [barLabels(v => v >= 10000 ? numBR(v / 1000, 0) + 'k'
-                             : v >= 1000  ? numBR(v / 1000, 1) + 'k'
-                             : numBR(v, 0),
-                          { id: 'restipo', font: '600 9px "Segoe UI", Inter, system-ui, sans-serif' })]
-    });
-  } else if (hasRaw) {
-    // Tem dado granular, mas o recorte (obra × período) está vazio — não cair no
-    // agregado histórico, que ignoraria o filtro de período
-    if (badgeTipo) badgeTipo.textContent = '—';
-    semDados('chart-res-tipo');
-  } else {
-    // Sem dado granular (caminho legado via Excel): mantém as barras H de total por tipo
-    if (badgeTipo) badgeTipo.textContent = 'total do período';
-    const tipoE = Object.entries(tipoSrc).filter(([k]) => k && k !== 'nan');
-    if (tipoE.length) {
-      makeChart('chart-res-tipo', {
-        type: 'bar',
-        data: {
-          labels: tipoE.map(([k]) => k),
-          datasets: [{
-            label: 'kg',
-            data: tipoE.map(([,v]) => v),
-            backgroundColor: tipoE.map(([k]) => corPorTipo(k)),
-            borderRadius: 4,
-          }]
-        },
-        options: {
-          responsive: true,
-          indexAxis: 'y',
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: ctx => ` ${ctx.raw.toLocaleString('pt-BR')} kg`,
-              }
-            }
-          },
-          scales: { x: { beginAtZero: true, title: { display: true, text: 'kg' } } }
-        }
-      });
-    } else {
-      semDados('chart-res-tipo');
-    }
-  }
+  // Volume por tipo de resíduo — função compartilhada com a aba Obra Individual
+  renderResTipo('chart-res-tipo', 'res-tipo-badge', filtRes, tipoSrc, hasRaw);
 
   // ─── Série mensal de resíduos (kg, kg/m², m³, m³/m²) ───
   const resMensal = D.residuos_mensal || [];
@@ -4949,6 +5079,23 @@ function initFilters() {
     sel.appendChild(opt);
   });
   initFilterBarSombra();
+  initSetorSelects();
+}
+// Popula os selects de setor dos blocos de água e energia.
+// A lista vem do payload (setores presentes em água OU energia); sem ela
+// (caminho legado via Excel, sem o dataset granular) os selects ficam só com
+// "Todos os setores" e o filtro simplesmente não tem efeito.
+function initSetorSelects() {
+  const setores = D.consumo_setores_list || [];
+  ['filter-energia-setor', 'filter-agua-setor'].forEach(id => {
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    setores.forEach(st => {
+      const opt = document.createElement('option');
+      opt.value = st; opt.textContent = st;
+      sel.appendChild(opt);
+    });
+  });
 }
 // A filter-bar já é sticky por CSS (top: 52px, colada abaixo do header).
 // Isto só liga/desliga a sombra (.is-stuck) quando ela está de fato colada,
@@ -4970,22 +5117,25 @@ function applyFilters() {
   renderHeatmap(obraF, anoF);
   renderTopNcs(obraF, anoF);
 
-  // Gráficos filtrados
-  renderResBarras(obraF);
-  renderResSenna(obraF);
+  // Gráficos filtrados por obra × período
+  renderResBarras(obraF, anoF);
+  renderResSenna(obraF, anoF);
   // renderIpaObras movido para a aba Obra Individual (renderObra)
-  renderRecPorObra(obraF);
-  renderMonitoramentoRuido(obraF);
-  renderEmergencias(obraF);
-  renderPaStatus(obraF);
+  renderRecPorObra(obraF, anoF);
+  renderMonitoramentoRuido(obraF, anoF);
+  renderEmergencias(obraF, anoF);
+  renderPaStatus(obraF, anoF);   // não filtra por período — ver comentário na função
+  renderSGAAnual(anoF);          // só reage às opções de ano (fonte é anual)
+  renderAuditorias(obraF, anoF);
 
-  // Energia + Água + Impressões respeitam o filtro global de obra
+  // Energia + Água + Impressões: filtro do card tem precedência; em branco,
+  // seguem o filtro global de obra × período
   renderConsumoEnergiaAll();
   renderConsumoAguaAll();
   renderImpressoes();
 
   // KPIs: se obra selecionada, troca para valores daquela obra
-  updateKpisFiltered(obraF);
+  updateKpisFiltered(obraF, anoF);
 
   // Propaga filtros para as outras páginas
   // Página "Obra individual" lê direto do filtro global (sem select próprio)
@@ -5008,11 +5158,67 @@ function applyFilters() {
   }
 }
 
-function updateKpisFiltered(obraF) {
+// Recalcula os KPIs do Consolidado dentro do recorte de período.
+// Devolve null quando não há período selecionado (usa os agregados prontos) ou
+// quando falta série mensal, para nunca inventar número.
+function kpisDoPeriodo(obraF, anoF) {
+  if (!anoF || anoF === 'all') return null;
+  const obras = obraF ? [obraF] : (D.obras || []);
+  const out = {};
+
+  // IPA: média dos meses do recorte na série ipa_mensal
+  const mesesIpa = mesesDoPeriodo(anoF, Object.values(D.ipa_mensal || {}).flat().map(x => x.mes));
+  const ipaVals = [];
+  obras.forEach(o => {
+    const serie = (D.ipa_mensal || {})[o] || [];
+    const noRec = serie.filter(x => mesesIpa.has(x.mes) && x.ipa != null);
+    if (noRec.length) ipaVals.push(noRec.reduce((s, x) => s + x.ipa, 0) / noRec.length);
+  });
+  if (ipaVals.length) out.ipa = Math.round(ipaVals.reduce((s, v) => s + v, 0) / ipaVals.length * 10) / 10;
+
+  // Conformidade: média das células do heatmap dentro do recorte
+  const mesesConf = mesesDoPeriodo(anoF, D.conf_meses || []);
+  const confVals = [], metaVals = [];
+  obras.forEach(o => {
+    const linha = (D.conf_heatmap || {})[o] || {};
+    Object.entries(linha).forEach(([m, c]) => {
+      if (!mesesConf.has(m) || !c || c.perc == null) return;
+      confVals.push(c.perc);
+      if (c.meta != null) metaVals.push(c.meta);
+    });
+  });
+  if (confVals.length) {
+    out.conf = Math.round(confVals.reduce((s, v) => s + v, 0) / confVals.length * 10) / 10;
+    if (metaVals.length) out.conf_meta = Math.round(metaVals.reduce((s, v) => s + v, 0) / metaVals.length * 10) / 10;
+  }
+
+  // Resíduos kg/m²: soma das linhas do recorte (mesmo critério da aba Resíduos)
+  const raw = D.residuos_raw || [];
+  if (raw.length) {
+    const mesesRes = mesesDoPeriodo(anoF, raw.map(r => r.mes_ano));
+    let linhas = raw.filter(r => mesesRes.has(r.mes_ano) && r.kg_m2 > 0);
+    if (obraF) linhas = linhas.filter(r => r.obra === obraF);
+    out.kg_m2 = linhas.length
+      ? Math.round(linhas.reduce((s, r) => s + r.kg_m2, 0) * 100) / 100
+      : 0;
+  }
+
+  // Reclamações: contagem real no recorte
+  out.rec = recFiltradas(obraF, anoF).length;
+  return out;
+}
+
+function updateKpisFiltered(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
+  const kp = kpisDoPeriodo(obraF, anoF);
   if (!obraF) {
     // Sem filtro de obra → restaura KPIs globais sem rerenderizar tudo
     const g = D.global;
-    const ipaVal = g.ipa;
+    // Com período selecionado, os KPIs vêm do recorte; sem ele, dos agregados
+    const ipaVal    = (kp && kp.ipa    != null) ? kp.ipa    : g.ipa;
+    const confVal   = (kp && kp.conf   != null) ? kp.conf   : g.conf_media;
+    const kgM2Val   = (kp && kp.kg_m2  != null) ? kp.kg_m2  : g.media_kg_m2;
+    const recVal    = (kp && kp.rec    != null) ? kp.rec    : g.total_rec;
     const ipaColor = ipaVal >= 90 ? 'green' : ipaVal >= 80 ? 'blue' : ipaVal >= 70 ? 'amber' : 'red';
     document.getElementById('kpis-global').innerHTML = `
       <div class="kpi ${ipaColor}">
@@ -5023,17 +5229,17 @@ function updateKpisFiltered(obraF) {
       </div>
       <div class="kpi green">
         <div class="kpi-label"><i class="ti ti-file-certificate"></i> Conformidade LAI/EIV</div>
-        <div class="kpi-value">${pct(g.conf_media)}</div>
+        <div class="kpi-value">${pct(confVal)}</div>
         <div class="kpi-sub">média LAI/EIV</div><i class="ti ti-file-certificate kpi-icon"></i>
       </div>
-      <div class="kpi ${resClass(g.media_kg_m2)}">
+      <div class="kpi ${resClass(kgM2Val)}">
         <div class="kpi-label"><i class="ti ti-package"></i> Resíduos gerados</div>
-        <div class="kpi-value">${num(g.media_kg_m2,2)}</div>
+        <div class="kpi-value">${num(kgM2Val,2)}</div>
         <div class="kpi-sub">kg/m² médio · Senna 50 · demais 36,6</div><i class="ti ti-trash kpi-icon"></i>
       </div>
-      <div class="kpi ${g.total_rec > 5 ? 'amber' : 'green'}">
+      <div class="kpi ${recVal > 5 ? 'amber' : 'green'}">
         <div class="kpi-label"><i class="ti ti-message-report"></i> Reclamações de Vizinhos</div>
-        <div class="kpi-value">${g.total_rec}</div>
+        <div class="kpi-value">${recVal}</div>
         <div class="kpi-sub">vizinhos no período</div><i class="ti ti-message-report kpi-icon"></i>
       </div>
       <div class="kpi ${g.pa_no_prazo_pct >= 80 ? 'green' : 'amber'}">
@@ -5048,13 +5254,17 @@ function updateKpisFiltered(obraF) {
   // Com filtro de obra
   const ipa_d = D.ipa[obraF] || {};
   const conf_d = D.conf_atual[obraF] || {};
-  const rec   = D.rec_por_obra[obraF] || 0;
-  const res   = D.res_por_obra[obraF] || {};
+  // Com período selecionado, troca os agregados da obra pelo recorte
+  const rec   = (kp && kp.rec != null) ? kp.rec : (D.rec_por_obra[obraF] || 0);
+  const resAg = D.res_por_obra[obraF] || {};
+  const res   = (kp && kp.kg_m2 != null) ? { ...resAg, kg_m2: kp.kg_m2 } : resAg;
   const pa_o  = D.pa_por_obra[obraF] || {};
   const total_pa = Object.values(pa_o).reduce((a,b) => a+b, 0);
   const done_pa  = (pa_o['Realizado']||0) + (pa_o['Em Andamento']||0);
   const pa_pct   = total_pa > 0 ? Math.round(done_pa/total_pa*100*10)/10 : 0;
-  const ipaVal   = ipa_d.ipa || 0;
+  const ipaVal   = (kp && kp.ipa != null) ? kp.ipa : (ipa_d.ipa || 0);
+  const confPerc = (kp && kp.conf != null) ? kp.conf : conf_d.perc;
+  const confMeta = (kp && kp.conf_meta != null) ? kp.conf_meta : conf_d.meta;
   const ipaColor = ipaVal >= 90 ? 'green' : ipaVal >= 80 ? 'blue' : ipaVal >= 70 ? 'amber' : 'red';
 
   document.getElementById('kpis-global').innerHTML = `
@@ -5063,10 +5273,10 @@ function updateKpisFiltered(obraF) {
       <div class="kpi-value large ${ipaClass(ipaVal)}">${ipaVal}</div>
       <div style="margin-top:6px">${badgeIpa(ipaVal)}</div>
     </div>
-    <div class="kpi ${(conf_d.perc||0)>=(conf_d.meta||90) ? 'green' : (conf_d.perc||0)>=(conf_d.meta||90)*0.9 ? 'amber' : 'red'}">
+    <div class="kpi ${(confPerc||0)>=(confMeta||90) ? 'green' : (confPerc||0)>=(confMeta||90)*0.9 ? 'amber' : 'red'}">
       <div class="kpi-label"><i class="ti ti-file-certificate"></i> Conformidade LAI/EIV</div>
-      <div class="kpi-value">${pct(conf_d.perc)}</div>
-      <div class="kpi-sub">meta: ${pct(conf_d.meta)}</div><i class="ti ti-file-certificate kpi-icon"></i>
+      <div class="kpi-value">${pct(confPerc)}</div>
+      <div class="kpi-sub">meta: ${pct(confMeta)}</div><i class="ti ti-file-certificate kpi-icon"></i>
     </div>
     <div class="kpi ${resClass(res.kg_m2, res.meta)}">
       <div class="kpi-label"><i class="ti ti-package"></i> Resíduos gerados</div>

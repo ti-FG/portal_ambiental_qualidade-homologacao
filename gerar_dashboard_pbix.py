@@ -628,6 +628,18 @@ for o in OBRAS:
         'm3_m2': round(float(m3),3) if m3 is not None and not pd.isna(m3) else None,
     }
 
+# Rótulo de setor de Fat_consumo_agua_luz. A coluna `nome_setor` mistura nomes
+# de obra em caixa alta (BLUE COAST, SENNA) com locais que não são obra
+# (Sede, Depósito, Sala 02, Plantão norte, ITC Busness SL 612, Tour Royalle).
+# Normaliza a grafia para casar com as demais tabelas e devolve 'Sem setor'
+# quando a célula está vazia, para o filtro nunca perder linha.
+def setor_col(df):
+    if 'nome_setor' not in df.columns:
+        return pd.Series(['Sem setor'] * len(df), index=df.index)
+    s = df['nome_setor'].astype(str).str.strip()
+    s = s.where(~s.str.lower().isin(['', 'nan', 'none', '<na>']), 'Sem setor')
+    return s.map(lambda v: norm_obra(v) if v != 'Sem setor' else v)
+
 # ─── Consumo de Água mensal (todas as obras) ─────────────────────────────────
 consumo_agua = []
 consumo_agua_m2 = []
@@ -697,15 +709,20 @@ if 'Luz (kwh)' in fat_al.columns and 'mes_ano' in fat_al.columns:
             win = consumo_energia_m2[max(0, i-5):i+1]
             consumo_energia_m2[i]['meta_6m'] = round(sum(w['kwh_m2'] for w in win) / len(win), 2)
 
-    # Raw por obra × mês (mantém qualquer mês com kWh > 0 OU Luz m² > 0)
+    # Raw por obra × setor × mês (mantém qualquer mês com kWh > 0 OU Luz m² > 0)
+    # O setor entra no grão para alimentar o filtro de setores do dashboard:
+    # `nome_setor` traz tanto obras (BLUE COAST, SENNA...) quanto locais que não
+    # são obra (Sede, Depósito, Sala 02, Plantão norte...), estes últimos com
+    # Obra = 'Outros'. Sem o setor no grão não dá para separar um do outro.
     if 'obra' in df_e.columns:
         df_raw = df_e.dropna(subset=['mes_ano', 'obra'])
         df_raw = df_raw[(df_raw['obra'] != '') & (df_raw['obra'].str.lower() != 'nan')]
-        df_raw_agg = df_raw.groupby([df_raw['mes_ano'].dt.to_period('M'), 'obra']).agg(
+        df_raw['setor_lbl'] = setor_col(df_raw)
+        df_raw_agg = df_raw.groupby([df_raw['mes_ano'].dt.to_period('M'), 'obra', 'setor_lbl']).agg(
             kwh=('kwh', 'sum'),
             luz_m2=('intensidade_col', 'mean'),
         ).reset_index()
-        df_raw_agg.columns = ['mes_periodo', 'obra', 'kwh', 'luz_m2']
+        df_raw_agg.columns = ['mes_periodo', 'obra', 'setor', 'kwh', 'luz_m2']
         for _, r in df_raw_agg.iterrows():
             mp = r['mes_periodo']
             kwh_v = float(r['kwh']) if not pd.isna(r['kwh']) else 0
@@ -715,6 +732,7 @@ if 'Luz (kwh)' in fat_al.columns and 'mes_ano' in fat_al.columns:
                 'mes_ano': str(mp),
                 'mes_label': f"{MESES_PT_ABR[mp.month]}/{str(mp.year)[-2:]}",
                 'obra': r['obra'],
+                'setor': r['setor'],
                 'kwh': int(round(kwh_v)),
                 'kwh_m2': round(lm2, 2) if lm2 is not None else None,
             })
@@ -779,15 +797,16 @@ if 'Água (m³)' in fat_al.columns and 'mes_ano' in fat_al.columns:
             win = consumo_agua_m2[max(0, i-5):i+1]
             consumo_agua_m2[i]['meta_6m'] = round(sum(w['m3_m2'] for w in win) / len(win), 2)
 
-    # Raw por obra × mês (m³ + m³/m²)
+    # Raw por obra × setor × mês (m³ + m³/m²) — mesmo grão do dataset de energia
     if 'obra' in df_a.columns:
         df_raw_a = df_a.dropna(subset=['mes_ano', 'obra'])
         df_raw_a = df_raw_a[(df_raw_a['obra'] != '') & (df_raw_a['obra'].str.lower() != 'nan')]
-        df_raw_a_agg = df_raw_a.groupby([df_raw_a['mes_ano'].dt.to_period('M'), 'obra']).agg(
+        df_raw_a['setor_lbl'] = setor_col(df_raw_a)
+        df_raw_a_agg = df_raw_a.groupby([df_raw_a['mes_ano'].dt.to_period('M'), 'obra', 'setor_lbl']).agg(
             m3=('m3', 'sum'),
             m3_m2=('m3_m2_col', 'mean'),
         ).reset_index()
-        df_raw_a_agg.columns = ['mes_periodo', 'obra', 'm3', 'm3_m2']
+        df_raw_a_agg.columns = ['mes_periodo', 'obra', 'setor', 'm3', 'm3_m2']
         for _, r in df_raw_a_agg.iterrows():
             mp = r['mes_periodo']
             m3_v = float(r['m3']) if not pd.isna(r['m3']) else 0
@@ -797,6 +816,7 @@ if 'Água (m³)' in fat_al.columns and 'mes_ano' in fat_al.columns:
                 'mes_ano': str(mp),
                 'mes_label': f"{MESES_PT_ABR[mp.month]}/{str(mp.year)[-2:]}",
                 'obra': r['obra'],
+                'setor': r['setor'],
                 'm3': int(round(m3_v)),
                 'm3_m2': round(m3m2_v, 2) if m3m2_v is not None else None,
             })
@@ -1334,6 +1354,9 @@ DATA = {
     'consumo_agua': consumo_agua,
     'consumo_agua_m2': consumo_agua_m2,
     'consumo_agua_raw': consumo_agua_raw,
+    # Setores que aparecem em água OU energia — alimenta o filtro de setores
+    'consumo_setores_list': sorted({r['setor'] for r in consumo_agua_raw if r.get('setor')}
+                                   | {r['setor'] for r in consumo_energia_raw if r.get('setor')}),
     'avanco_por_obra': avanco_por_obra,
 }
 DATA_JSON = json.dumps(DATA, cls=DateEncoder, ensure_ascii=False)

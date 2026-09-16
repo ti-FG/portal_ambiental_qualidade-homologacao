@@ -12,6 +12,7 @@ Documentos relacionados, todos neste repositório:
 | `ALTERACOES_ABA_OBRA_INDIVIDUAL.md` | Detalhe da aba Obra Individual |
 | `ALTERACOES_ABA_RESIDUOS.md` | Detalhe da aba Resíduos |
 | `ALTERACOES_ABA_DICIONARIO.md` | Detalhe da aba Dicionário de dados e termos |
+| `ALTERACOES_FILTRO_PERIODO_E_SETOR.md` | Filtro de Período em todos os gráficos e filtro de Setor em água/energia |
 | `etl/README.md` | **Modelo semântico e carga do banco** (ver seção 5) |
 
 ---
@@ -138,6 +139,10 @@ Conferências visuais:
 - [ ] Obra Individual: trocar o filtro de Período **muda** o gráfico de IPA
 - [ ] Rótulos de dados visíveis nas barras (IPA, Ruído, Resíduos, Plano de Ação)
 - [ ] Aba **Dicionário** presente na navegação, com 86 verbetes e busca funcionando
+- [ ] Trocar o **Período** no topo muda todos os gráficos (exceto Plano de Ação,
+      que avisa `histórico completo (sem data na fonte)` no badge)
+- [ ] Filtro de **Setor** nos blocos de água e energia com 25 setores
+- [ ] Aba Obra Individual com o gráfico **Volume por tipo de resíduo**
 
 > O valor do card "Resíduos gerados" é hoje **3.469,18** e não tem significado
 > físico — é a soma de todas as linhas de todas as obras e meses. É uma pendência
