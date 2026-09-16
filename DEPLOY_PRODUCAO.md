@@ -11,6 +11,7 @@ Documentos relacionados, todos neste repositório:
 | `ALTERACOES_ABA_CONSOLIDADO.md` | Detalhe de cada mudança da aba Consolidado |
 | `ALTERACOES_ABA_OBRA_INDIVIDUAL.md` | Detalhe da aba Obra Individual |
 | `ALTERACOES_ABA_RESIDUOS.md` | Detalhe da aba Resíduos |
+| `ALTERACOES_ABA_DICIONARIO.md` | Detalhe da aba Dicionário de dados e termos |
 | `etl/README.md` | **Modelo semântico e carga do banco** (ver seção 5) |
 
 ---
@@ -22,6 +23,7 @@ Documentos relacionados, todos neste repositório:
 | Aba Consolidado | `gerar_dashboard_pbix.py` | NC LAI/EIV 32 → 20 (conta assunto, não linha); reclamações 16 → 11 (descarta linha vazia); `kg/m²` de média para soma; KPIs de 6 para 5 |
 | Aba Obra Individual | `gerar_dashboard.py` | IPA com histórico de 12 meses e reagindo ao filtro de período; rótulos de dados em 4 gráficos; grid de KPI 4 → 3 |
 | Aba Resíduos | `gerar_dashboard.py` | Formatação pt-BR; KPIs 5 → 3; Senna Tower separada; gráfico de tipo por mês; tabelas renomeadas |
+| Aba Dicionário (nova) | `gerar_dashboard.py` | Quarta aba com regras de negócio, fórmulas dos KPIs, modelo de dados, glossário e limitações |
 | Infraestrutura | `requirements.txt` (novo) | Versões fixas — `pbixray` muda o resultado (seção 2) |
 
 Tamanhos de referência dos arquivos corretos:
@@ -135,6 +137,7 @@ Conferências visuais:
 - [ ] Gráfico "Resíduos Gerados kg/m² por obra" com o botão **"Ver Senna Tower"**
 - [ ] Obra Individual: trocar o filtro de Período **muda** o gráfico de IPA
 - [ ] Rótulos de dados visíveis nas barras (IPA, Ruído, Resíduos, Plano de Ação)
+- [ ] Aba **Dicionário** presente na navegação, com 86 verbetes e busca funcionando
 
 > O valor do card "Resíduos gerados" é hoje **3.469,18** e não tem significado
 > físico — é a soma de todas as linhas de todas as obras e meses. É uma pendência

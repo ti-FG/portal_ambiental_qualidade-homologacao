@@ -922,6 +922,30 @@ HTML = r"""<!DOCTYPE html>
   .obra-selector label { font-weight: 500; font-size: 12px; color: var(--gz3); }
   .obra-selector select { border: 1.5px solid var(--fg4); border-radius: 8px; padding: 6px 12px; font-size: 14px; font-weight: 500; color: var(--gz1); background: var(--fg7); cursor: pointer; }
 
+  /* Dicionário de dados e termos */
+  .dic-intro { font-size: 12px; color: var(--gz3); line-height: 1.5; margin-bottom: 12px; max-width: 900px; }
+  .dic-search { width: 100%; max-width: 420px; border: 1px solid var(--gz6); border-radius: 8px; padding: 7px 12px; font-size: 12px; color: var(--gz1); background: var(--bg); font-family: inherit; }
+  .dic-search:focus { outline: 2px solid var(--fg4); }
+  .dic-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  .dic-chip { border: 1px solid var(--gz6); background: var(--white); color: var(--gz2); border-radius: 14px; padding: 4px 11px; font-size: 11px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .dic-chip:hover { background: var(--fg7); border-color: var(--fg4); color: var(--fg1); }
+  .dic-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .dic-table th { background: var(--gz7); padding: 7px 10px; text-align: left; font-weight: 500; color: var(--gz2); border-bottom: 2px solid var(--gz6); white-space: nowrap; }
+  .dic-table td { padding: 8px 10px; border-bottom: 1px solid var(--gz7); vertical-align: top; line-height: 1.45; }
+  .dic-table tr:last-child td { border-bottom: none; }
+  .dic-table tr:hover td { background: var(--gz7); }
+  .dic-table td.dic-nome { font-weight: 500; color: var(--gz1); white-space: nowrap; }
+  .dic-table td.dic-onde { color: var(--gz3); white-space: nowrap; }
+  .dic-code { font-family: Consolas, 'Courier New', monospace; font-size: 11px; background: var(--gz7); color: var(--gz1); padding: 1px 5px; border-radius: 4px; }
+  .dic-nota { display: block; margin-top: 4px; font-size: 10.5px; color: var(--gz4); }
+  .dic-alerta { color: var(--am3); }
+  .dic-peso-wrap { display: flex; align-items: center; gap: 8px; }
+  .dic-peso-bar { flex: 1; max-width: 160px; height: 7px; background: var(--gz7); border-radius: 4px; overflow: hidden; }
+  .dic-peso-fill { height: 100%; background: var(--fg4); border-radius: 4px; }
+  .dic-peso-num { font-weight: 500; font-size: 11px; color: var(--gz2); width: 34px; text-align: right; }
+  .dic-vazio { padding: 14px; font-size: 12px; color: var(--gz4); text-align: center; }
+  .dic-hidden { display: none !important; }
+
   /* Footer */
   .dash-footer { margin-top: 24px; padding: 12px 24px; background: var(--gz7); border-top: 1px solid var(--gz6); text-align: center; font-size: 10px; color: var(--gz4); }
 
@@ -1015,6 +1039,9 @@ HTML = r"""<!DOCTYPE html>
     </button>
     <button class="nav-tab" onclick="showPage('residuos')" id="tab-residuos">
       <i class="ti ti-recycle"></i> Resíduos
+    </button>
+    <button class="nav-tab" onclick="showPage('dicionario')" id="tab-dicionario">
+      <i class="ti ti-book"></i> Dicionário
     </button>
   </div>
   <div class="nav-right" id="last-update">Atualizado em __DATA_DATE__</div>
@@ -1427,6 +1454,472 @@ HTML = r"""<!DOCTYPE html>
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════
+     PAGE 4 — DICIONÁRIO DE DADOS E TERMOS
+════════════════════════════════════════════════════════════ -->
+<div id="page-dicionario" class="page">
+
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-book" style="color:var(--fg3)"></i> Dicionário de dados e termos</div>
+      <span class="card-badge" id="dic-contador">—</span>
+    </div>
+    <p class="dic-intro">
+      Referência das regras de negócio, das fórmulas dos indicadores e da origem de cada dado
+      apresentado neste dashboard. O objetivo é que qualquer número visto nas outras abas possa ser
+      rastreado até a regra que o produziu e até a tabela do modelo semântico de onde ele saiu.
+      Os valores marcados em <span class="dic-code">destaque</span> são parâmetros fixos definidos
+      no gerador — mudá-los exige alteração de código e nova validação.
+    </p>
+    <input id="dic-busca" class="dic-search" type="search" autocomplete="off"
+           placeholder="Buscar termo, indicador, tabela ou regra..." oninput="filtrarDicionario()">
+    <div class="dic-chips">
+      <button class="dic-chip" onclick="irParaDic('dic-sec-kpis')">Indicadores e KPIs</button>
+      <button class="dic-chip" onclick="irParaDic('dic-sec-ipa')">Composição do IPA</button>
+      <button class="dic-chip" onclick="irParaDic('dic-sec-regras')">Regras de negócio</button>
+      <button class="dic-chip" onclick="irParaDic('dic-sec-modelo')">Modelo de dados</button>
+      <button class="dic-chip" onclick="irParaDic('dic-sec-glossario')">Glossário</button>
+      <button class="dic-chip" onclick="irParaDic('dic-sec-limites')">Limitações conhecidas</button>
+    </div>
+  </div>
+
+  <!-- ─── Indicadores e KPIs ─────────────────────────────────────────────── -->
+  <div class="dic-sec" id="dic-sec-kpis">
+    <div class="section-title"><i class="ti ti-chart-bar"></i> Indicadores e KPIs</div>
+    <div class="card">
+      <table class="dic-table">
+        <thead>
+          <tr><th style="width:190px">Indicador</th><th style="width:130px">Onde aparece</th><th>Como é calculado</th><th style="width:210px">Fonte</th></tr>
+        </thead>
+        <tbody>
+          <tr class="dic-row">
+            <td class="dic-nome">IPA — Índice de Performance Ambiental</td>
+            <td class="dic-onde">Consolidado · Obra individual</td>
+            <td>Média ponderada de cinco scores de 0 a 1, multiplicada por 100 e arredondada em 1 casa:
+              conformidade 40%, resíduos 20%, ruído 15%, auditoria 15%, plano de ação 10%.
+              Cada score é calculado por obra — ver a seção <em>Composição do IPA</em>.
+              <span class="dic-nota">Faixas: ≥ 90 excelente · ≥ 80 bom · ≥ 70 atenção · &lt; 70 crítico.</span></td>
+            <td>Todas as tabelas dos cinco componentes</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">IPA global</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Média <strong>simples</strong> do IPA das obras — cada obra pesa igual, independentemente
+              de porte, área construída ou volume de lançamentos.</td>
+            <td>Derivado do IPA por obra</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">IPA mensal</td>
+            <td class="dic-onde">Obra individual</td>
+            <td>Mesma fórmula recalculada mês a mês nos últimos 12 meses. Quando falta o dado de um
+              componente naquele mês, o score agregado da obra é usado como retaguarda.
+              <span class="dic-nota">O plano de ação fica constante na série: a fonte não tem data histórica confiável.</span></td>
+            <td>Derivado dos scores mensais</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Conformidade LAI/EIV</td>
+            <td class="dic-onde">Consolidado · Obra individual</td>
+            <td>Percentual de conformidade lançado por obra e mês, comparado à meta da obra
+              (padrão <span class="dic-code">90%</span> quando a meta não está preenchida).
+              O card consolidado é a média das obras.</td>
+            <td>Fat_Conformidade_LAI_EIV · Fat_Metas_LAI_EIV</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">NC registradas LAI/EIV</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Contagem por <strong>assunto</strong>, não por linha. Cada linha é uma auditoria e pode
+              apontar vários assuntos separados por <span class="dic-code">|</span> nas colunas
+              <em>NC LAI</em> e <em>NC EIV</em>; as duas colunas são somadas.
+              <span class="dic-nota">Exemplo: “Armazenamento de resíduos | Ruído | Placa da LAI” conta 3 NCs. Campos “-” ou vazios não contam.</span></td>
+            <td>Dim_NC_LAI_EIV</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Top NC recorrentes</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Os 10 assuntos de NC mais frequentes, pelo mesmo critério do card — por isso os dois
+              números sempre fecham entre si.</td>
+            <td>Dim_NC_LAI_EIV</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Reclamações de vizinhos</td>
+            <td class="dic-onde">Consolidado · Obra individual</td>
+            <td>Número de reclamações <strong>reais</strong>: linhas com ao menos um campo preenchido
+              (obra, ocorrência, status ou canal).
+              <span class="dic-nota">As linhas em branco da grade da planilha são descartadas — é o que faz o card bater com o gráfico por obra.</span></td>
+            <td>Dim_reclamacoes_vizinhos</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Resíduos gerados (kg/m²)</td>
+            <td class="dic-onde">Consolidado · Resíduos</td>
+            <td>Soma dos <span class="dic-code">Kg/m²</span> das linhas do recorte. Cada linha já é a
+              intensidade de um tipo de resíduo naquele mês (Kg do tipo ÷ m² construído da obra), então
+              somá-las dá a intensidade total. Zeros são tratados como ausência de lançamento.
+              <span class="dic-nota dic-alerta">Atenção: na visão por obra a soma acumula entre meses, enquanto a meta é mensal — ver Limitações conhecidas.</span></td>
+            <td>Fat_soma_residuos</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Volume total de resíduos</td>
+            <td class="dic-onde">Resíduos</td>
+            <td>Soma da coluna de peso (Kg) do recorte, exibida em toneladas nos gráficos de geração.</td>
+            <td>Fat_soma_residuos</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Classe CONAMA de maior geração</td>
+            <td class="dic-onde">Resíduos</td>
+            <td>Classe com maior peso gerado dentro do recorte, com o total em toneladas e o percentual
+              que representa do total.</td>
+            <td>Fat_soma_residuos (coluna Classe)</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Plano Ação Auditorias</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Percentual de ações com status <em>Realizado</em> ou <em>Em andamento</em> sobre o total
+              de linhas do plano de ação.
+              <span class="dic-nota dic-alerta">O denominador conta todas as linhas, inclusive as em branco da planilha — por isso o percentual sai baixo.</span></td>
+            <td>Dim_Plano_acao</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Ações atrasadas</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Ações cujo prazo já passou da data de geração do dashboard e cujo status ainda não é
+              <em>Realizado</em>.</td>
+            <td>Dim_Plano_acao</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Auditorias realizadas</td>
+            <td class="dic-onde">Obra individual</td>
+            <td>Auditorias com <em>Realizado = Sim</em> dividido pelas auditorias com o campo
+              <strong>preenchido</strong> (Sim ou Não). Linhas sem preenchimento ficam fora do
+              numerador e do denominador.</td>
+            <td>Dim_Auditoria_Ambientais</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Ruído — média e conformidade</td>
+            <td class="dic-onde">Consolidado · Obra individual</td>
+            <td>Média das medições em dB e percentual de medições dentro do limite de
+              <span class="dic-code">70 dB</span>. Medições sem valor são descartadas.
+              <span class="dic-nota dic-alerta">Medições gravadas como 0 dB hoje contam como conformes — ver Limitações conhecidas.</span></td>
+            <td>Fat_Ruido</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Emergências ambientais</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Contagem de ocorrências registradas (vazamentos, derrames e afins).</td>
+            <td>Dim_emergencias_ambientais</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Pessoas alcançadas — SGA</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Soma da coluna de pessoas atingidas pelas ações do Sistema de Gestão Ambiental,
+              agrupada por ano.</td>
+            <td>Dim_Acoes_SGA</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Consumo de água e energia</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Consumo absoluto (m³ e kWh) e intensidade por m² construído. A intensidade usa
+              <strong>média</strong> das linhas, diferente dos resíduos, que usam soma.</td>
+            <td>Fat_consumo_agua_luz</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Impressões</td>
+            <td class="dic-onde">Consolidado</td>
+            <td>Total de páginas, custo acumulado e percentual médio de impressão em preto e branco,
+              com quebra por setor e histórico mensal.</td>
+            <td>Fat_Impressoes · Fat_Impressoes_por_setor</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">NC de resíduos (obra-mês acima da meta)</td>
+            <td class="dic-onde">Não exibido</td>
+            <td>Conta 1 ocorrência por obra e mês em que o kg/m² realizado ultrapassa a meta da obra.
+              <span class="dic-nota">Está calculado e disponível nos dados, mas <strong>não</strong> é somado ao card de NC LAI/EIV.</span></td>
+            <td>Fat_soma_residuos + meta por obra</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dic-vazio dic-hidden">Nenhum item desta seção corresponde à busca.</div>
+  </div>
+
+  <!-- ─── Composição do IPA ──────────────────────────────────────────────── -->
+  <div class="dic-sec" id="dic-sec-ipa">
+    <div class="section-title"><i class="ti ti-math-function"></i> Composição do IPA</div>
+    <div class="card">
+      <table class="dic-table">
+        <thead>
+          <tr><th style="width:170px">Componente</th><th style="width:190px">Peso</th><th>Score (0 a 1)</th><th style="width:210px">Fonte</th></tr>
+        </thead>
+        <tbody>
+          <tr class="dic-row">
+            <td class="dic-nome">Conformidade LAI/EIV</td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:100%"></div></div><span class="dic-peso-num">40%</span></div></td>
+            <td>Conformidade média da obra ÷ meta da obra, com teto em 1,0.</td>
+            <td>Fat_Conformidade_LAI_EIV</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Resíduos</td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:50%"></div></div><span class="dic-peso-num">20%</span></div></td>
+            <td>Meta da obra ÷ kg/m² médio da obra, com teto em 1,0 — quanto menor a geração, maior o
+              score. Aqui a agregação é <strong>média</strong> das linhas, e não soma.
+              <span class="dic-nota">Usa a meta fixa por obra, não a coluna “Meta Kg” do modelo.</span></td>
+            <td>Fat_soma_residuos</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Ruído</td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:37.5%"></div></div><span class="dic-peso-num">15%</span></div></td>
+            <td>Medições ≤ 70 dB ÷ medições com valor preenchido.</td>
+            <td>Fat_Ruido</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Auditoria</td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:37.5%"></div></div><span class="dic-peso-num">15%</span></div></td>
+            <td>Auditorias com <em>Realizado = Sim</em> ÷ total de auditorias da obra.</td>
+            <td>Dim_Auditoria_Ambientais</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Plano de ação</td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:25%"></div></div><span class="dic-peso-num">10%</span></div></td>
+            <td>Ações <em>Realizado</em> ou <em>Em andamento</em> ÷ total de ações da obra.</td>
+            <td>Dim_Plano_acao</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Sem dado — retaguarda</td>
+            <td class="dic-onde">—</td>
+            <td>Quando a obra não tem dado de um componente, aquele score entra como
+              <span class="dic-code">0,5</span> (neutro), e não como zero. É uma decisão deliberada:
+              obra sem lançamento não é penalizada como se tivesse desempenho ruim, mas também não é
+              premiada.
+              <span class="dic-nota dic-alerta">Efeito colateral: uma obra com pouquíssimo dado tende ao IPA 50, o que pode mascarar tanto um bom quanto um mau desempenho real.</span></td>
+            <td>—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dic-vazio dic-hidden">Nenhum item desta seção corresponde à busca.</div>
+  </div>
+
+  <!-- ─── Regras de negócio ──────────────────────────────────────────────── -->
+  <div class="dic-sec" id="dic-sec-regras">
+    <div class="section-title"><i class="ti ti-gavel"></i> Regras de negócio</div>
+    <div class="card">
+      <table class="dic-table">
+        <thead>
+          <tr><th style="width:230px">Regra</th><th>Definição</th></tr>
+        </thead>
+        <tbody>
+          <tr class="dic-row">
+            <td class="dic-nome">Meta de resíduos</td>
+            <td><span class="dic-code" id="dic-meta-default">36,6</span> kg/m² para todas as obras e
+              <span class="dic-code" id="dic-meta-senna">50</span> kg/m² para a Senna Tower.
+              A meta é <strong>mensal</strong> e está fixa no gerador — não vem da planilha nem da
+              coluna “Meta Kg” do modelo.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Senna Tower fora da visão consolidada</td>
+            <td>A Senna tem meta diferente e intensidade muito acima das demais obras. Se entrasse na
+              mesma escala, achataria todas as outras barras. Por isso o gráfico consolidado mostra as
+              demais obras com a meta padrão e a Senna aparece num recorte próprio, pelo botão
+              “Ver Senna Tower”.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Limite de ruído</td>
+            <td>Referência de <span class="dic-code">70 dB</span> para classificar uma medição como
+              conforme.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Meta de conformidade</td>
+            <td>Quando a obra não tem meta preenchida, o cálculo assume <span class="dic-code">90%</span>.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Obra é o mesmo que empreendimento</td>
+            <td>Não existe dimensão de empreendimento separada de obra. As obras de Dim_Obras
+              (Blue Coast, Sapphire, Titanium e demais) <strong>são</strong> os empreendimentos.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Normalização do nome da obra</td>
+            <td>O mesmo empreendimento aparece grafado de formas diferentes entre as tabelas de origem.
+              O gerador normaliza antes de cruzar: remove sufixos após hífen, colapsa espaços e aplica
+              um mapa de equivalências.
+              <span class="dic-nota">Exemplo: “Garden” em reclamações e “Garden Park” nas demais tabelas são a mesma obra — sem essa regra, as reclamações dessa obra somem do gráfico.</span></td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Precedência dos filtros</td>
+            <td>O filtro global de obra tem precedência sobre os botões de recorte dos gráficos
+              (como o de Senna Tower). Com uma obra selecionada, o gráfico mostra aquela obra
+              independentemente do estado do botão.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Sem dado não é zero</td>
+            <td>A distinção vale por indicador: em ruído, mês sem medição é descartado da série;
+              em NC e reclamações, mês sem registro conta como zero real, porque ali a ausência de
+              ocorrência é a informação.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Contagem por assunto</td>
+            <td>Não-conformidades são contadas por assunto apontado, não por linha de auditoria.
+              Uma auditoria que aponta três problemas conta três NCs.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Linha em branco não é ocorrência</td>
+            <td>Reclamações e emergências vêm de planilhas com grade pré-formatada, cheia de linhas
+              vazias. Só entram no indicador as linhas com conteúdo real.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Origem dos números publicados</td>
+            <td>O dashboard é gerado a partir do modelo semântico do Power BI (arquivo .pbix), não
+              diretamente da planilha. Um lançamento feito na planilha só aparece aqui depois que o
+              modelo é atualizado e o dashboard é regerado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dic-vazio dic-hidden">Nenhum item desta seção corresponde à busca.</div>
+  </div>
+
+  <!-- ─── Modelo de dados ────────────────────────────────────────────────── -->
+  <div class="dic-sec" id="dic-sec-modelo">
+    <div class="section-title"><i class="ti ti-database"></i> Modelo de dados — tabelas de origem</div>
+    <div class="card">
+      <p class="dic-intro" style="margin-bottom:10px">
+        As 19 tabelas do modelo semântico. Cada uma vem de uma tabela nomeada da planilha
+        <em>Controle Ambiental — oficial</em>; a coluna <em>Grão</em> indica o que identifica uma linha.
+      </p>
+      <table class="dic-table">
+        <thead>
+          <tr><th style="width:215px">Tabela</th><th style="width:150px">Origem na planilha</th><th style="width:235px">Grão (chave)</th><th>Conteúdo</th></tr>
+        </thead>
+        <tbody>
+          <tr class="dic-row"><td class="dic-nome">Dim_Obras</td><td class="dic-onde">Metas_LAI_EIV</td><td class="dic-onde">Obra</td><td>Lista canônica de obras, com a área construída usada como denominador dos indicadores por m².</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_Calendario</td><td class="dic-onde">gerada</td><td class="dic-onde">Data</td><td>Calendário gerado pelo modelo; não depende da planilha. Não é usada pelo dashboard.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_Acoes_SGA</td><td class="dic-onde">Acoes_SGA</td><td class="dic-onde">Ano + Mês</td><td>Pessoas alcançadas pelas ações do Sistema de Gestão Ambiental.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_Auditoria_Ambientais</td><td class="dic-onde">Auditoria_Ambientais</td><td class="dic-onde">Obra + Mês/Ano</td><td>Auditorias ambientais por obra e mês, com o campo Realizado (Sim/Não).<span class="dic-nota">O mês correto vem das colunas de texto Mês e Ano — a coluna de data tem dias variando por obra e não reflete o mês real.</span></td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_NC_LAI_EIV</td><td class="dic-onde">NC_LAI_EIV</td><td class="dic-onde">Obra + Data</td><td>Não-conformidades de LAI e EIV em texto livre, com vários assuntos por linha separados por barra vertical.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_Plano_acao</td><td class="dic-onde">Plano_acao</td><td class="dic-onde">Obra + Ação</td><td>Plano de ação das auditorias, com status e prazo.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_emergencias_ambientais</td><td class="dic-onde">emergencias_ambientais</td><td class="dic-onde">Obra + Mês/Ano + N° FMC</td><td>Emergências ambientais registradas (vazamentos, derrames e afins).</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Dim_reclamacoes_vizinhos</td><td class="dic-onde">reclamacoes_vizinhos</td><td class="dic-onde">Mês/Ano + Cód. Chamado</td><td>Reclamações de vizinhos, com canal de entrada (Ouvidoria ou Relacionamento), categoria e status.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Conformidade_LAI_EIV</td><td class="dic-onde">Conformidade_LAI_EIV</td><td class="dic-onde">Obra + Data</td><td>Percentual de conformidade LAI/EIV por obra e mês, com a meta do período.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Eco_urbana</td><td class="dic-onde">Eco_urbana</td><td class="dic-onde">Obra + Mês/Ano</td><td>Medições de ruído feitas por terceiros. Não é usada pelo dashboard.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Impressoes</td><td class="dic-onde">Impressoes</td><td class="dic-onde">Data</td><td>Consumo mensal de impressão da empresa: páginas, custo e percentual em preto e branco.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Impressoes_por_pessoa</td><td class="dic-onde">Impressoes_por_pessoa</td><td class="dic-onde">Data + Usuário</td><td>Impressões por usuário, com a obra deduzida da conta. Não é usada pelo dashboard.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Impressoes_por_setor</td><td class="dic-onde">Impressoes_por_setor</td><td class="dic-onde">Data + Nome do setor</td><td>Impressões por setor e obra; alimenta o ranking de setores.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Metas_LAI_EIV</td><td class="dic-onde">Metas_LAI_EIV</td><td class="dic-onde">Obra</td><td>Meta de conformidade por obra, com uma coluna por mês (formato largo herdado da planilha).</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Residuos_m³_m²</td><td class="dic-onde">Residuos_m³_m²</td><td class="dic-onde">Obra + Data</td><td>Volume de resíduos em m³ e a intensidade por m² construído.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_Ruido</td><td class="dic-onde">Ruido</td><td class="dic-onde">Obra + Data + Ponto</td><td>Medições de ruído por obra e ponto de medição, com horário e valor em dB.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_avanco_fisico</td><td class="dic-onde">Avanco_fisico</td><td class="dic-onde">Obra + Data</td><td>Avanço físico da obra em percentual e em m². É a base do denominador dos indicadores por m².</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_consumo_agua_luz</td><td class="dic-onde">agua_luz</td><td class="dic-onde">Setor + Data</td><td>Consumo de água e energia por setor e obra, em valor absoluto e por m².</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Fat_soma_residuos</td><td class="dic-onde">SOMA_RESIDUOS</td><td class="dic-onde">Obra + Data + Classe + Tipo</td><td>Resíduos por obra, mês, classe CONAMA e tipo. É a tabela mais usada do dashboard: Kg = m³ × densidade e Kg/m² = Kg ÷ m² construído.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dic-vazio dic-hidden">Nenhum item desta seção corresponde à busca.</div>
+  </div>
+
+  <!-- ─── Glossário ──────────────────────────────────────────────────────── -->
+  <div class="dic-sec" id="dic-sec-glossario">
+    <div class="section-title"><i class="ti ti-vocabulary"></i> Glossário de termos</div>
+    <div class="card">
+      <table class="dic-table">
+        <thead>
+          <tr><th style="width:200px">Termo</th><th>Significado</th></tr>
+        </thead>
+        <tbody>
+          <tr class="dic-row"><td class="dic-nome">LAI</td><td>Licença Ambiental de Instalação — autorização para implantar o empreendimento, com condicionantes que a obra precisa cumprir e comprovar.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">EIV</td><td>Estudo de Impacto de Vizinhança — estudo urbanístico que gera medidas mitigadoras e compensatórias exigidas da obra.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">NC — não-conformidade</td><td>Item exigido pela LAI ou pelo EIV que a auditoria encontrou descumprido. Aqui a unidade de contagem é o assunto apontado, não a linha de auditoria.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Conformidade</td><td>Percentual de itens da LAI e do EIV atendidos pela obra no mês.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">IPA</td><td>Índice de Performance Ambiental — nota única de 0 a 100 que resume conformidade, resíduos, ruído, auditoria e plano de ação de uma obra.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">SGA</td><td>Sistema de Gestão Ambiental — conjunto de práticas e ações de conscientização; o indicador aqui é o número de pessoas alcançadas.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">CONAMA 307</td><td>Resolução que classifica os resíduos da construção civil em quatro classes.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Classe A</td><td>Resíduos reutilizáveis ou recicláveis como agregado: concreto, argamassa, alvenaria, entulho em geral. É a maior parcela do volume gerado.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Classe B</td><td>Recicláveis para outras destinações: plástico, papel e papelão, metal, madeira, gesso.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Classe C</td><td>Resíduos sem tecnologia ou aplicação viável de reciclagem.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Classe D</td><td>Resíduos perigosos: tintas, solventes, óleos, materiais contaminados. Exigem destinação específica.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">kg/m²</td><td>Intensidade de geração: peso de resíduo dividido pelos m² construídos da obra. Permite comparar obras de portes diferentes.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">m³/m²</td><td>Mesma lógica em volume: m³ de resíduo por m² construído.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Densidade</td><td>Fator de conversão de volume para peso por tipo de resíduo. É o que transforma m³ lançado em Kg.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Avanço físico</td><td>Percentual e área executados da obra no período. Fornece os m² que servem de denominador das intensidades.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">dB — decibel</td><td>Unidade de intensidade sonora das medições de ruído. O limite de referência adotado é 70 dB.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Ponto de medição</td><td>Local fixo da obra onde o ruído é medido. A mesma obra tem vários pontos, medidos no mesmo dia.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Obra-mês</td><td>Unidade de análise que combina uma obra e um mês. Usada, por exemplo, para contar quantas vezes uma obra passou da meta de resíduos.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Score</td><td>Nota de 0 a 1 de um componente do IPA, antes da ponderação. 1 significa atingiu ou superou a referência.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Recorte</td><td>Combinação dos filtros ativos (obra e período) que define o conjunto de linhas usado para calcular o que está na tela.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Modelo semântico</td><td>Conjunto de tabelas tratadas e relacionadas que fica dentro do arquivo .pbix. É o que o dashboard lê — não a planilha bruta.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">Ouvidoria / Relacionamento</td><td>Canais por onde a reclamação de vizinho chega até a empresa.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">FMC</td><td>Número do formulário que identifica o registro de uma emergência ambiental.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dic-vazio dic-hidden">Nenhum item desta seção corresponde à busca.</div>
+  </div>
+
+  <!-- ─── Limitações conhecidas ──────────────────────────────────────────── -->
+  <div class="dic-sec" id="dic-sec-limites">
+    <div class="section-title"><i class="ti ti-alert-triangle"></i> Limitações conhecidas</div>
+    <div class="card">
+      <p class="dic-intro" style="margin-bottom:10px">
+        Pontos já identificados e ainda em aberto. Estão listados aqui para que quem lê o dashboard
+        interprete os números com o contexto certo — nenhum deles é erro de geração.
+      </p>
+      <table class="dic-table">
+        <thead>
+          <tr><th style="width:250px">Ponto</th><th>O que acontece</th></tr>
+        </thead>
+        <tbody>
+          <tr class="dic-row">
+            <td class="dic-nome">kg/m² acumula entre meses</td>
+            <td>Na visão consolidada por obra, o kg/m² soma todas as linhas da obra, inclusive de meses
+              diferentes, enquanto a meta é mensal. O valor cresce a cada mês lançado e o ranking fica
+              distorcido: uma obra com poucos meses lançados aparece melhor do que realmente é.
+              <span class="dic-nota">No eixo mensal o problema não existe — ali cada barra já é um mês.</span></td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Agregações diferentes lado a lado</td>
+            <td>O kg/m² usa soma e o m³/m² usa média, e os dois aparecem na mesma tabela. Comparar as
+              duas colunas diretamente induz a erro.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Plano de ação com denominador inflado</td>
+            <td>A tabela do plano de ação tem a maioria das linhas em branco e todas entram no
+              denominador, o que derruba o percentual exibido.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Medições de 0 dB contam como conformes</td>
+            <td>Existem medições gravadas com 0 dB. Como 0 é menor que 70, elas entram como conformes
+              e inflam o score de ruído da obra.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Setor “Unknown” nas impressões</td>
+            <td>Aparece entre os primeiros do ranking de setores, mas não é um setor real: são
+              impressões sem usuário mapeado.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Água por m² zerada na origem</td>
+            <td>A coluna de água por m² é convertida para número inteiro ainda no modelo, então valores
+              fracionários viram zero. O indicador nasce zerado antes de chegar ao dashboard.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Defasagem do modelo</td>
+            <td>O dashboard reflete a última atualização do modelo Power BI, que pode estar atrás da
+              planilha. Obra nova ou lançamento recente só aparece depois que o modelo é atualizado.</td>
+          </tr>
+          <tr class="dic-row">
+            <td class="dic-nome">Nomes de obra ainda divergentes na origem</td>
+            <td>Algumas obras são grafadas de formas diferentes entre as planilhas. O gerador corrige
+              as variações conhecidas, mas uma grafia nova que apareça na origem pode fazer a obra
+              sumir de um gráfico até o mapa ser atualizado.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="dic-vazio dic-hidden">Nenhum item desta seção corresponde à busca.</div>
+  </div>
+
+  <div id="dic-sem-resultado" class="card dic-hidden" style="margin-top:var(--gap)">
+    <div class="dic-vazio">Nenhum resultado para a busca. Tente outro termo.</div>
+  </div>
+
+</div>
+
 <div class="dash-footer">
   FG Sustentabilidade · Dashboard Indicadores Ambientais · Gerado em __DATA_DATE__
 </div>
@@ -1440,13 +1933,17 @@ const D = __DATA_JSON__;
 // ═══════════════════════════════════════════════════════════
 //  Navegação
 // ═══════════════════════════════════════════════════════════
-const PAGES = ['consolidado', 'obra', 'residuos'];
+const PAGES = ['consolidado', 'obra', 'residuos', 'dicionario'];
 function showPage(id) {
   PAGES.forEach(p => {
     document.getElementById('page-' + p).classList.toggle('active', p === id);
     document.getElementById('tab-' + p).classList.toggle('active', p === id);
   });
   if (id === 'obra') renderObra();
+  if (id === 'dicionario') renderDicionario();
+  // A barra de filtros nao tem efeito sobre o dicionario (conteudo de referencia).
+  const fb = document.getElementById('filter-bar-consolidado');
+  if (fb) fb.style.display = (id === 'dicionario') ? 'none' : '';
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4572,6 +5069,65 @@ function updateKpisFiltered(obraF) {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  Dicionário de dados e termos
+// ═══════════════════════════════════════════════════════════
+// A aba é conteúdo estático, com duas exceções lidas dos dados para não
+// envelhecer sozinhas: as metas de resíduos e a contagem de verbetes.
+
+// Busca sem acento e sem caixa — "residuo" acha "Resíduo".
+function dicNorm(s) {
+  return (s || '').toString().toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+// Meta sem decimal quando é inteira (50), com 1 casa quando não é (36,6).
+function dicMeta(v) {
+  if (v == null) return '—';
+  return Number.isInteger(Number(v)) ? numBR(v, 0) : numBR(v, 1);
+}
+
+function renderDicionario() {
+  const metas = (D && D.meta_residuos) || {};
+  const elDef = document.getElementById('dic-meta-default');
+  const elSen = document.getElementById('dic-meta-senna');
+  if (elDef && metas.default != null) elDef.textContent = dicMeta(metas.default);
+  if (elSen && metas.senna != null) elSen.textContent = dicMeta(metas.senna);
+  filtrarDicionario();
+}
+
+function irParaDic(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filtrarDicionario() {
+  const campo = document.getElementById('dic-busca');
+  const q = dicNorm(campo ? campo.value : '').trim();
+  let visiveis = 0, total = 0;
+
+  document.querySelectorAll('#page-dicionario .dic-sec').forEach(sec => {
+    const linhas = sec.querySelectorAll('tr.dic-row');
+    let n = 0;
+    linhas.forEach(tr => {
+      const ok = !q || dicNorm(tr.textContent).includes(q);
+      tr.classList.toggle('dic-hidden', !ok);
+      if (ok) n++;
+    });
+    total += linhas.length;
+    visiveis += n;
+    // Seção inteira sai de cena quando nenhum verbete dela casa com a busca.
+    sec.classList.toggle('dic-hidden', !!q && n === 0);
+    const vazio = sec.querySelector('.dic-vazio');
+    if (vazio) vazio.classList.add('dic-hidden');
+  });
+
+  const semRes = document.getElementById('dic-sem-resultado');
+  if (semRes) semRes.classList.toggle('dic-hidden', !(q && visiveis === 0));
+
+  const cont = document.getElementById('dic-contador');
+  if (cont) cont.textContent = q ? (visiveis + ' de ' + total + ' verbetes') : (total + ' verbetes');
+}
+
+// ═══════════════════════════════════════════════════════════
 //  Init
 // ═══════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
@@ -4580,6 +5136,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initImpFilters();
   renderConsolidado();
   renderResiduos();
+  renderDicionario();
 });
 </script>
 </body>

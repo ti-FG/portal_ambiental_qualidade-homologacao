@@ -632,7 +632,43 @@ Este arquivo (`homologacao_ambiental.md`) consolida **todas** as alterações, d
 
 ---
 
-## 16. Pendências e Próximos Passos
+## 16. Aba Dicionário de Dados e Termos
+
+### Data: 16 de setembro de 2026
+
+Quarta aba do dashboard, ao lado de Consolidado, Obra Individual e Resíduos.
+Documenta as regras de negócio, as fórmulas dos indicadores e a origem de cada
+dado, para que qualquer número do dashboard possa ser rastreado até a regra que
+o produziu.
+
+**86 verbetes em 6 seções:** Indicadores e KPIs (18), Composição do IPA (6),
+Regras de negócio (11), Modelo de dados — as 19 tabelas (19), Glossário (24) e
+Limitações conhecidas (8).
+
+Tem busca no topo (insensível a acento e maiúscula, esconde seção sem resultado)
+e chips de atalho para cada seção. A barra de filtros fica escondida nessa aba —
+conteúdo de referência não reage a recorte.
+
+**Só `gerar_dashboard.py` foi alterado** (o template). `gerar_dashboard_pbix.py`
+extrai o template desse arquivo, então a aba aparece nos dois caminhos de geração
+sem mudança no gerador do PBIX. Nenhum dado novo no JSON: consome apenas
+`D.meta_residuos`, que já existia.
+
+**Conteúdo estático por decisão**, com duas exceções lidas dos dados para não
+envelhecerem: as metas (36,6 / 50) e o contador de verbetes.
+
+O texto foi apurado lendo o código, não de memória — `calc_ipa`, os cinco
+`score_*`, `meta_obra`, `OBRA_MAP`, `_assuntos_nc`, a montagem de
+`reclamacoes_lista` e `etl/tabelas.py`.
+
+**Risco de manutenção:** regra que mudar no gerador tem que mudar o verbete
+junto. Esta aba envelhece em silêncio se isso não for feito.
+
+Detalhe completo em `ALTERACOES_ABA_DICIONARIO.md`.
+
+---
+
+## 17. Pendências e Próximos Passos
 
 ### Aguardando Decisão da Usuária
 
