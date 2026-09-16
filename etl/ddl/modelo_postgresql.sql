@@ -1,5 +1,5 @@
 -- DDL do modelo semantico Ambiental/Qualidade (postgresql)
--- Gerado por etl/etl_excel_para_db.py em 2026-09-15
+-- Gerado por etl/etl_excel_para_db.py em 2026-09-16
 
 CREATE TABLE _carga_execucao (
 	iniciado_em VARCHAR(32), 
@@ -177,7 +177,7 @@ CREATE TABLE fat_consumo_agua_luz (
 	luz_m2 FLOAT(53), 
 	luz_kwh_m3_m2 FLOAT(53), 
 	agua_m2 FLOAT(53), 
-	agua_m3_m2 BIGINT
+	agua_m3_m2 FLOAT(53)
 );
 CREATE INDEX ix_fat_consumo_agua_luz_chave ON fat_consumo_agua_luz (nome_setor, data);
 CREATE INDEX ix_fat_consumo_agua_luz_data ON fat_consumo_agua_luz (data);

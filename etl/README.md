@@ -177,40 +177,36 @@ formas:
 2. **Índice** na coluna de junção de cada fato (`obra`, `data`, `mes_ano`).
 3. **FOREIGN KEY** em `ddl/modelo_<dialeto>_fk.sql`, script separado.
 
-As FKs ficam num script à parte porque **13 das 26 não podem ser criadas hoje**
-— o dado tem órfão. As 13 que podem foram **aplicadas de verdade** sobre a carga
-real e passaram com zero violação. As outras 13 saem **comentadas**, com a
-contagem de órfãos ao lado:
+No modelo puro do pbix, **13 das 26 não podiam ser criadas** — o dado tinha
+órfão (valor de obra que não existe em `Dim_Obras`). Isso foi **corrigido por
+padrão** (16/09/2026): o ETL agora saneia a coluna Obra antes de carregar, e as
+**26 FKs valem hoje**, aplicadas de verdade sobre a carga real, zero violação.
 
-| Relacionamento | Órfãs | Valor que não existe em `Dim_Obras` |
-|---|---:|---|
-| `Fat_Impressoes_por_pessoa.Obra` | 4.279 / 4.895 | `Outros` |
-| `Fat_Impressoes_por_setor.Obra` | 787 / 986 | `Outros` |
-| `Fat_consumo_agua_luz.Obra` | 397 / 666 | `Outros` |
-| `Fat_soma_residuos.Obra` | 60 / 1.860 | `North Tower` |
-| `Dim_emergencias_ambientais.Obra` | 8 / 20 | `GARDEN`, `ICONIC`, `IMPERIUM`, `NORTH` |
-| `Dim_reclamacoes_vizinhos.Obra` | 6 / 21 | `Blue View Tower`, `Garden`, `Iconic Tower`, `North Tower` |
-| `Fat_Conformidade_LAI_EIV.Obra` | 4 / 293 | `NORTH` |
-| `Fat_Ruido.Obra` | 4 / 293 | `North` |
-| `Fat_avanco_fisico.Obra` | 3 / 172 | `North`, `North Tower` |
-| `Dim_Plano_acao.Obra` | 3 / 11 | `Garden` |
-| `Fat_Residuos_m³_m².Obra` | 2 / 170 | `North Tower` |
-| `Dim_Auditoria_Ambientais.Obra ` | 1 / 45 | `NORTH TOWER` |
-| `Fat_Eco_urbana.Obra` | 1 / 14 | `Gran Place` (erro de digitação na planilha) |
+O saneamento (`sanear_obras()` em `etl_excel_para_db.py`) resolve três causas
+diferentes, cada uma com o tratamento certo — **nenhuma delas é defeito do
+ETL**, é o estado do modelo no pbix, que nunca precisou de integridade
+referencial:
 
-**Nada disso é defeito do ETL** — é o estado do modelo no pbix, que não impõe
-integridade referencial. São três causas:
+| Causa | Tratamento | Onde doía |
+|---|---|---|
+| `Outros` — valor que o próprio Power Query atribui a setor que não é obra (Financeiro, Marketing, Sede...) | **Cadastrada** como obra válida em `Dim_Obras` (não é obra de verdade, mas precisa existir para o vínculo fechar) | Impressões por pessoa (4.279 linhas) e por setor (787), consumo água/luz (397) |
+| `North Tower` — obra real, ainda sem linha em `Metas_LAI_EIV` (de onde sai `Dim_Obras`), grafada de 3 jeitos (`NORTH`, `North`, `North Tower`) | **Cadastrada** + grafias **normalizadas** para `North Tower` | Resíduos (60), reclamações, ruído, avanço físico, conformidade, auditorias |
+| `Garden`, `Iconic Tower`, `Blue View Tower`, `ICONIC`, `IMPERIUM`, `GARDEN`, `Gran Place` — a **mesma obra já cadastrada**, só escrita diferente (abreviada, com sufixo "Tower" sobrando, maiúscula, ou erro de digitação) | Só **normalizadas** para a grafia oficial (`Garden Park`, `Iconic`, `Blue View`, `Imperium`, `Grand Place`) — nada é cadastrado, porque a obra já existe | Plano de ação (3), reclamações (8), emergências (5), eco urbana (1) |
 
-- **`Outros`** é um valor que o próprio Power Query cria quando o setor não é
-  obra (Financeiro, Marketing, Sede...). Resolve-se acrescentando uma linha
-  `Outros` em `Dim_Obras`.
-- **`North Tower` / `NORTH` / `North`** — obra nova, ainda não cadastrada em
-  `Metas_LAI_EIV` (de onde sai `Dim_Obras`) e grafada de 3 jeitos diferentes.
-- **`Garden`, `Iconic Tower`, `Blue View Tower`, `Gran Place`** — normalização
-  de nome que falta no M, e um erro de digitação.
+Confirmado nos dados antes de normalizar: em `Dim_Plano_acao`, o valor
+`'Garden'` aparece na mesma coluna ao lado de `'Imperium'`, `'Sapphire'` — é a
+mesma obra abreviada, não uma obra nova. O mesmo padrão se repete nas outras
+três tabelas.
 
-As 13 que já valem (`fk_aplicavel = 'S'` em `_relacionamentos_modelo`) são as 11
-de data mais `Fat_Metas_LAI_EIV.Obra` e `Dim_NC_LAI_EIV.Obra`.
+**Este saneamento é só de vínculo — não muda nenhum fato.** Não cria, apaga
+nem recalcula nenhuma linha; só corrige a etiqueta de obra para que a linha
+passe a contar para a obra certa. As 3 linhas de "Garden" em Plano de Ação, por
+exemplo, passam a aparecer nas ações de Garden Park (antes, ficavam soltas,
+sem bater com nenhuma obra).
+
+Use `--fiel-ao-pbix` para desligar o saneamento e obter a saída idêntica ao
+pbix, órfãos incluídos — é o modo que `validar_vs_pbix.py` usa, para a prova
+de fidelidade continuar valendo sobre o modelo *original*, sem a correção.
 
 Duas observações sobre o modelo original:
 
@@ -226,30 +222,51 @@ Duas observações sobre o modelo original:
 
 ## Defeitos do modelo reproduzidos de propósito
 
-A regra deste ETL é **fidelidade ao pbix, inclusive nos defeitos** — corrigir
-qualquer um deles muda número no dashboard, e isso é decisão da área, não
-ajuste técnico. Todos estão listados em `ALERTAS_MODELO` (`tabelas.py`) e são
-impressos a cada execução:
+A regra deste ETL é **fidelidade ao pbix, inclusive nos defeitos que mudam
+número de indicador** — corrigir um desses é decisão da área, não ajuste
+técnico (mesmo critério já usado para a agregação de kg/m² de resíduos). Os
+dois que **continuam em aberto**, aguardando decisão, estão em
+`ALERTAS_MODELO` (`tabelas.py`) e são impressos a cada execução:
 
-1. **`Fat_consumo_agua_luz."Água m³/m²"` é convertida para inteiro** pelo Power
-   Query. A planilha tem `0,206` e o modelo guarda `0`. A intensidade de água
-   do dashboard está zerada por causa disso. O valor correto é
-   `"Água (m³)" / "Água m²"`.
-2. **`Fat_consumo_agua_luz.Obra`** — a lista de obras válidas do M não inclui
-   `SENNA` nem `NORTH TOWER`, então o consumo dessas obras cai em `"Outros"`.
-   `GARDEN PARK` está na lista mas não tem substituição, então ficaria em
-   maiúsculo.
-3. **`Dim_reclamacoes_vizinhos.Obra`** — só há normalização para Imperium,
-   Horizon, Titanium e Garden. `'Iconic Tower '`, `'North Tower '` e
-   `'Blue View Tower '` ficam como estão e não casam com `Dim_Obras`.
-4. **`Fat_soma_residuos.Kg` é TEXTO**, com vírgula decimal pt-BR
+1. **`Fat_soma_residuos.Kg` é TEXTO**, com vírgula decimal pt-BR
    (`'1200,8399999999999'`). Em SQL exige
    `CAST(REPLACE(kg, ',', '.') AS FLOAT)`.
-5. **`Fat_Metas_LAI_EIV` é tabela larga** — uma coluna por mês
+2. **`Fat_Metas_LAI_EIV` é tabela larga** — uma coluna por mês
    (`ago/25` … `dez/26`). Cada competência nova exige `ALTER TABLE`.
-6. **`Dim_Obras` tem 12 obras** e sai de `Metas_LAI_EIV`. `North Tower` aparece
-   em `SOMA_RESIDUOS`, `Auditoria_Ambientais` e `Conformidade_LAI_EIV` mas não
-   está em `Dim_Obras` — 60 linhas de `fat_soma_residuos` ficam sem dimensão.
+
+Quatro outros **já foram corrigidos por padrão** (16/09/2026) — três são
+defeito de vínculo (ver seção "Relacionamentos" acima; não mudam nenhum valor
+exibido, só ligam a linha à obra certa) e um muda um indicador de verdade, com
+aprovação explícita da área. Continuam documentados em
+`ALERTAS_MODELO_CORRIGIDOS` (`tabelas.py`) e só reaparecem com
+`--fiel-ao-pbix`:
+
+- `Fat_consumo_agua_luz.Obra` não reconhecia `SENNA` nem `NORTH TOWER`.
+- `Dim_reclamacoes_vizinhos.Obra` não reconhecia `Iconic Tower`, `North Tower`,
+  `Blue View Tower`.
+- `Dim_Obras` tinha 12 obras; faltava `North Tower`.
+- **`Fat_consumo_agua_luz."Água m³/m²"`** — ver a seção seguinte.
+
+### Indicador de água corrigido (aprovado pela área em 16/09/2026)
+
+O Power Query convertia essa coluna para inteiro: a planilha tem `0,206` e o
+modelo guardava `0`. A tabela já tinha os dois ingredientes certos, decimais,
+sem truncamento — `Água (m³)` e `Água m²` — então a correção é
+`corrigir_intensidade_agua()` em `etl_excel_para_db.py`: recalcula
+`Água m³/m²` como `Água (m³) ÷ Água m²` (nulo, não zero, quando a área é 0 ou
+não lançada) e substitui o valor truncado.
+
+Medido antes de aplicar (666 linhas, 521 com intensidade calculável): **72
+linhas (13,8%) viravam zero só por causa do arredondamento**, não porque o
+consumo foi zero. Confirmado depois de carregar de verdade: zero linhas
+restantes com água > 0 e área > 0 mostrando intensidade zero.
+
+Efeito colateral aceito: a coluna passa a ser **decimal** no banco (era
+`BIGINT` no modelo fiel ao pbix). O ETL detecta isso sozinho pelo tipo real
+do dado — tanto o schema (`_tipo_sql`) quanto o dicionário
+(`_dicionario_modelo`) se ajustam automaticamente, sem precisar declarar nada
+a mais em `tabelas.py`. Passe `--fiel-ao-pbix` para ver a coluna como no pbix
+(truncada, `BIGINT`).
 
 ---
 

@@ -477,6 +477,51 @@ RELACIONAMENTOS = [
 # Lado "1" de cada relacionamento: precisa de chave unica para a FK existir.
 CHAVES_DIMENSAO = {'Dim_Obras': ['Obra'], 'Dim_Calendario': ['Data']}
 
+
+# --- Saneamento de obra (NAO vem do pbix) -----------------------------------
+# Tudo daqui pra baixo e DESVIO PROPOSITAL do modelo do pbix, feito para o dado
+# fechar num banco relacional. Desligue com --fiel-ao-pbix (e o que o
+# validar_vs_pbix.py usa, para a prova de fidelidade continuar valendo).
+#
+# Sao dois problemas diferentes, e a diferenca importa:
+#   - obra que EXISTE no dado mas nao em Dim_Obras  -> cadastrar (abaixo)
+#   - a MESMA obra escrita de outro jeito           -> normalizar (mais abaixo)
+# Confundir os dois criaria obra duplicada ("Garden" e "Garden Park" como se
+# fossem duas).
+
+# Obras ausentes de Metas_LAI_EIV, que e de onde Dim_Obras sai.
+OBRAS_COMPLEMENTARES = [
+    ('Outros',
+     'Nao e obra: e o rotulo que o proprio Power Query poe em tudo que nao '
+     'esta na lista de obras validas (Financeiro, Marketing, Sede, Deposito, '
+     'plantoes de venda...). Precisa existir na dimensao para as 3 tabelas de '
+     'impressoes/consumo fecharem.'),
+    ('North Tower',
+     'Obra real, sem linha em Metas_LAI_EIV - por isso nunca entrou em '
+     'Dim_Obras. O certo e a area cadastrar a meta dela na planilha; ate la '
+     'entra por aqui para nao derrubar 65 linhas de resIduos, ruido e avanco.'),
+]
+
+# Grafias diferentes da MESMA obra ja existente. Nao sao obras novas.
+# Aplicado DEPOIS das substituicoes do pbix, em toda coluna que aponta para
+# Dim_Obras. A contagem e de 16/09/2026.
+NORMALIZACAO_OBRA = {
+    # North Tower escrita de 4 jeitos em 4 tabelas diferentes
+    'NORTH': 'North Tower',            # Conformidade (4), emergencias (3)
+    'North': 'North Tower',            # Ruido (4), avanco fisico (1)
+    'NORTH TOWER': 'North Tower',      # auditorias (1)
+    # maiusculas que o M de emergencias_ambientais nao trata
+    'ICONIC': 'Iconic',                # emergencias (3)
+    'IMPERIUM': 'Imperium',            # emergencias (1)
+    'GARDEN': 'Garden Park',           # emergencias (1)
+    # nome curto / com sufixo "Tower" que sobrou do texto original
+    'Garden': 'Garden Park',           # plano de acao (3), reclamacoes (2)
+    'Iconic Tower': 'Iconic',          # reclamacoes (2)
+    'Blue View Tower': 'Blue View',    # reclamacoes (1)
+    # erro de digitacao na planilha (aba Eco urbana)
+    'Gran Place': 'Grand Place',       # eco urbana (1)
+}
+
 # Medida DAX que existe no modelo (o dashboard nao a usa; recalcula em Python).
 MEDIDAS_DAX = {
     '%_Conformidade_LAI_EIV':
@@ -485,19 +530,10 @@ MEDIDAS_DAX = {
 }
 
 # --- Defeitos conhecidos do modelo, reproduzidos de proposito ---------------
+# Defeitos do modelo do pbix que continuam SEM CORRECAO por decisao pendente
+# da area - mudam o valor de um indicador, entao nao sao mexidos sem sinal
+# verde explicito (mesmo padrao ja usado para [kg/m2 - ver kgm2-agregacao]).
 ALERTAS_MODELO = [
-    ('Fat_consumo_agua_luz', 'Água m³/m²',
-     'O Power Query converte esta coluna para Int64, truncando a intensidade '
-     'de agua (0,71 m3/m2 vira 0). No Excel o valor e decimal. O ETL reproduz '
-     'o truncamento; a coluna decimal correta e Agua (m3) / Agua m2.'),
-    ('Fat_consumo_agua_luz', 'Obra',
-     'A lista de obras validas nao inclui SENNA nem NORTH TOWER: o consumo '
-     'dessas obras cai em "Outros". E "GARDEN PARK" nao tem ReplaceText, '
-     'entao ficaria em MAIUSCULO se aparecesse.'),
-    ('Dim_reclamacoes_vizinhos', 'Obra',
-     'So ha ReplaceText para Imperium/Horizon/Titanium/Garden. Registros de '
-     '"Iconic Tower", "North Tower" e "Blue View Tower" nao sao normalizados '
-     'e nao casam com Dim_Obras.'),
     ('Fat_soma_residuos', 'Kg',
      'Kg e TEXTO no modelo, com virgula decimal pt-BR ("1200,8399999999999"). '
      'Quem consumir o banco precisa converter. Num banco relacional o natural '
@@ -506,7 +542,32 @@ ALERTAS_MODELO = [
      'Tabela larga: uma coluna por mes (ago/25..dez/26). Toda competencia nova '
      'exige ALTER TABLE. O natural no banco e despivotar para '
      '(obra, competencia, meta).'),
+]
+
+# Estes JA FORAM CORRIGIDOS por padrao (ver sanear_obras() e
+# corrigir_intensidade_agua() em etl_excel_para_db.py). Nao sao mais um
+# problema no caminho normal - so reaparecem com --fiel-ao-pbix.
+ALERTAS_MODELO_CORRIGIDOS = [
+    ('Fat_consumo_agua_luz', 'Água m³/m²',
+     'APROVADO PELA AREA em 16/09/2026. O Power Query convertia esta coluna '
+     'para Int64, truncando a intensidade de agua (0,206 m3/m2 virava 0) - '
+     '72 das 521 linhas calculaveis (14%) zeravam so por arredondamento, nao '
+     'porque o consumo foi zero. Corrigido: recalculada como '
+     '"Água (m³)" / "Água m²" (as duas ja existiam decimais na mesma tabela; '
+     'a conta bate 100% onde as duas existem). Onde a area e 0/nula, o '
+     'resultado fica nulo, nao zero.'),
+    ('Fat_consumo_agua_luz', 'Obra',
+     'A lista de obras validas nao incluia SENNA nem NORTH TOWER: o consumo '
+     'dessas obras caia em "Outros". Corrigido: "Outros" agora e uma obra '
+     'valida em Dim_Obras (nao e obra de verdade, e o valor que o proprio '
+     'Power Query atribui a setor que nao e obra).'),
+    ('Dim_reclamacoes_vizinhos', 'Obra',
+     'So havia ReplaceText para Imperium/Horizon/Titanium/Garden. "Iconic '
+     'Tower", "North Tower" e "Blue View Tower" nao casavam com Dim_Obras. '
+     'Corrigido: normalizados para a grafia oficial (Iconic, North Tower, '
+     'Blue View).'),
     ('Dim_Obras', '(cobertura)',
-     'Dim_Obras sai de Metas_LAI_EIV e hoje tem 12 obras; North Tower aparece '
-     'em SOMA_RESIDUOS e Auditoria_Ambientais mas nao esta em Dim_Obras.'),
+     'Dim_Obras saia de Metas_LAI_EIV e tinha so 12 obras; North Tower '
+     'aparecia em SOMA_RESIDUOS e Auditoria_Ambientais mas nao estava em '
+     'Dim_Obras. Corrigido: North Tower acrescentada.'),
 ]

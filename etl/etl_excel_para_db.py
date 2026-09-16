@@ -38,6 +38,7 @@ except Exception:
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 from openpyxl import load_workbook  # noqa: E402
 from openpyxl.utils.cell import range_boundaries  # noqa: E402
@@ -48,7 +49,8 @@ from modelo_semantico import (  # noqa: E402
 )
 import origem as org  # noqa: E402
 from tabelas import (  # noqa: E402
-    ALERTAS_MODELO, CHAVES_DIMENSAO, RELACIONAMENTOS, TABELAS,
+    ALERTAS_MODELO, ALERTAS_MODELO_CORRIGIDOS, CHAVES_DIMENSAO,
+    NORMALIZACAO_OBRA, OBRAS_COMPLEMENTARES, RELACIONAMENTOS, TABELAS,
 )
 
 DIR_SCRIPT = os.path.dirname(os.path.abspath(__file__))
@@ -152,6 +154,96 @@ def extrair(caminho_excel, avisos):
         wb.close()
 
 
+# ------------------------------------------------------------- saneamento ---
+def sanear_obras(dados, avisos):
+    """Corrige a ligacao fato -> Dim_Obras, SEM alterar nenhum outro dado.
+
+    Dois problemas diferentes, tratados de dois jeitos diferentes (ver a nota
+    no topo de NORMALIZACAO_OBRA em tabelas.py sobre por que nao confundir):
+
+    1. OBRAS_COMPLEMENTARES: valor que e obra de verdade mas nao esta em
+       Dim_Obras (ela sai de Metas_LAI_EIV) -> acrescenta a linha na dimensao.
+    2. NORMALIZACAO_OBRA: a MESMA obra escrita de outro jeito ("Garden" en vez
+       de "Garden Park") -> reescreve para a grafia oficial. Isso muda quais
+       linhas ficam associadas a cada obra (ex.: as 3 acoes de "Garden" em
+       Plano_acao passam a contar para Garden Park), mas nao cria nem apaga
+       nenhum fato - so corrige a etiqueta.
+
+    Roda em toda coluna que RELACIONAMENTOS aponta para Dim_Obras. Chamada
+    depois de aplicar_tipos, entao os valores ja sao string (ou None).
+    """
+    obras = dados['Dim_Obras']
+    existentes = set(obras['Obra'].dropna().astype(str))
+    novas = [nome for nome, _ in OBRAS_COMPLEMENTARES if nome not in existentes]
+    if novas:
+        dados['Dim_Obras'] = pd.concat(
+            [obras, pd.DataFrame({'Obra': novas})], ignore_index=True)
+        for nome, motivo in OBRAS_COMPLEMENTARES:
+            if nome in novas:
+                avisos.append('Dim_Obras: acrescentada "%s" (%s)' % (nome, motivo))
+
+    colunas_obra = {(r.origem, r.coluna_origem) for r in RELACIONAMENTOS
+                    if r.destino == 'Dim_Obras'}
+    trocas = {}
+    for tabela, coluna in colunas_obra:
+        df = dados.get(tabela)
+        if df is None or coluna not in df.columns:
+            continue
+        serie = df[coluna]
+        alvo = serie.map(lambda v: NORMALIZACAO_OBRA.get(str(v).strip())
+                         if v is not None else None)
+        mudou = alvo.notna()
+        if not mudou.any():
+            continue
+        n = int(mudou.sum())
+        trocas[(tabela, coluna)] = n
+        df.loc[mudou, coluna] = alvo[mudou]
+    if trocas:
+        detalhe = ', '.join('%s.%s (%d)' % (t, c, n) for (t, c), n in trocas.items())
+        avisos.append('Normalizacao de grafia de obra aplicada em: %s' % detalhe)
+    return dados
+
+
+def corrigir_intensidade_agua(dados, avisos):
+    """Recalcula Fat_consumo_agua_luz."Água m³/m²", em vez do Int64 do pbix.
+
+    APROVADO PELA AREA em 16/09/2026 (a agua era o unico dos 3 defeitos abertos
+    corrigido; kg/m2 de residuos e a tabela larga de metas continuam como o
+    pbix - ver ALERTAS_MODELO em tabelas.py).
+
+    O Power Query converte essa coluna para Int64, entao toda intensidade
+    menor que 0,5 m3/m2 vira 0 - medido: 72 das 521 linhas calculaveis (14%)
+    zeravam so por causa do arredondamento, nao porque o consumo foi zero.
+
+    A conta certa nao precisa ser inventada: "Água (m³)" e "Água m²" ja estao
+    na mesma tabela, decimais, sem truncamento, e Agua(m3)/AguaM2 bate exato
+    com o valor real em 100% das linhas onde as duas existem (confirmado por
+    amostra antes de aplicar). Onde a area e 0/nula, o resultado fica nulo (em
+    vez de erro de divisao por zero ou um "0" que pareceria consumo zero).
+
+    Efeito colateral aceito: essa coluna passa a ser DECIMAL na saida, nao
+    mais o inteiro do pbix. `_tipo_sql`/`dicionario` detectam isso pelo dtype
+    real da coluna e ajustam o schema/dicionario sozinhos.
+    """
+    tab, coluna = 'Fat_consumo_agua_luz', 'Água m³/m²'
+    df = dados.get(tab)
+    if df is None or 'Água (m³)' not in df.columns or 'Água m²' not in df.columns:
+        return dados
+    m3 = df['Água (m³)']
+    m2 = df['Água m²'].mask(lambda s: s == 0)
+    corrigido = (m3 / m2).astype('Float64')
+
+    antes = df[coluna]
+    zerou_indevido = int(((antes.fillna(0) == 0) & corrigido.fillna(0).gt(0)).sum())
+    df[coluna] = corrigido
+    if zerou_indevido:
+        avisos.append(
+            'Fat_consumo_agua_luz."Água m³/m²": recalculada como "Água (m³)" / '
+            '"Água m²" (o pbix guardava Int64 truncado) - %d linha(s) que '
+            'apareciam como 0 tem valor real agora.' % zerou_indevido)
+    return dados
+
+
 # ------------------------------------------------------------ verificacoes ---
 def verificar(dados, avisos):
     """Checagens de qualidade que NAO alteram o dado, so reportam."""
@@ -198,6 +290,11 @@ def verificar(dados, avisos):
 def _tipo_sql(tipo, serie):
     from sqlalchemy import BigInteger, Date, DateTime, Float, Numeric, Time
     from sqlalchemy import Unicode, UnicodeText
+    # Uma correcao (ex.: corrigir_intensidade_agua) pode trocar o dtype real
+    # da coluna sem mudar o tipo logico declarado em tabelas.py - o SCHEMA
+    # tem que refletir o dado de verdade, senao a carga falha ou trunca nele.
+    if tipo == INT and pd.api.types.is_float_dtype(serie):
+        return Float(53)
     if tipo == INT:
         return BigInteger()
     if tipo in (FLOAT, PERCENT):
@@ -322,11 +419,18 @@ def montar_metadata(dados, schema=None):
 def dicionario(dados):
     linhas = []
     for t in TABELAS:
+        df = dados[t.nome]
         for i, (c, tp) in enumerate(t.colunas, start=1):
+            # Mesma logica de _tipo_sql: se uma correcao trocou o dtype real
+            # da coluna, o dicionario documenta o tipo de verdade, nao o do
+            # modelo original do pbix.
+            tp_doc = tp
+            if tp == INT and c in df.columns and pd.api.types.is_float_dtype(df[c]):
+                tp_doc = FLOAT
             linhas.append({
                 'tabela_modelo': t.nome, 'coluna_modelo': c,
                 'tabela_db': t.tabela, 'coluna_db': nome_fisico(c),
-                'tipo_logico': tp, 'ordem': str(i),
+                'tipo_logico': tp_doc, 'ordem': str(i),
                 'fonte_excel': t.fonte or '(gerada)',
                 'chave': 'S' if c in t.chave else 'N',
                 'descricao_tabela': t.descricao,
@@ -580,6 +684,10 @@ def main(argv=None):
     p.add_argument('--se-mudou', action='store_true',
                    help='so carrega se a planilha mudou desde a ultima carga OK '
                         '(use na tarefa agendada)')
+    p.add_argument('--fiel-ao-pbix', action='store_true',
+                   help='NAO normaliza obra (Outros/North Tower/Garden/...); '
+                        'sai identico ao pbix, com as 13 FKs de obra orfas. '
+                        'E o modo usado por validar_vs_pbix.py.')
     p.add_argument('--copiar-local', choices=['auto', 'sim', 'nao'], default='auto',
                    help='copiar a planilha para disco local antes de ler; "auto" '
                         '(padrao) copia quando a origem esta em rede')
@@ -617,6 +725,12 @@ def main(argv=None):
 
     avisos = []
     dados = extrair(local, avisos)
+    if a.fiel_ao_pbix:
+        print('\n--fiel-ao-pbix: obra NAO normalizada e agua NAO recalculada '
+              '(saida identica ao pbix).')
+    else:
+        sanear_obras(dados, avisos)
+        corrigir_intensidade_agua(dados, avisos)
     problemas = verificar(dados, avisos)
 
     if avisos:
@@ -624,8 +738,12 @@ def main(argv=None):
         for x in avisos:
             print('  * %s' % x)
     if ALERTAS_MODELO:
-        print('\n--- Defeitos conhecidos do modelo, reproduzidos de proposito ---')
+        print('\n--- Defeitos do modelo AINDA em aberto (decisao pendente da area) ---')
         for tab, col, txt in ALERTAS_MODELO:
+            print('  * %s.%s: %s' % (tab, col, txt))
+    if not a.fiel_ao_pbix and ALERTAS_MODELO_CORRIGIDOS:
+        print('\n--- Corrigidos por padrao (use --fiel-ao-pbix p/ ver como no pbix) ---')
+        for tab, col, txt in ALERTAS_MODELO_CORRIGIDOS:
             print('  * %s.%s: %s' % (tab, col, txt))
     if problemas:
         print('\n--- ERROS ---')
