@@ -786,8 +786,9 @@ HTML = r"""<!DOCTYPE html>
   .nav-tab.active { background: var(--tab-active-bg); color: var(--tab-active-fg); font-weight: 500; }
   .nav-right { margin-left: 24px; font-size: 11px; color: rgba(255,255,255,0.7); }
 
-  /* Filter bar */
-  .filter-bar { background: var(--white); border-bottom: 1px solid var(--gz6); padding: 8px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  /* Filter bar — colada abaixo do header (52px), acompanha o scroll junto com ele */
+  .filter-bar { background: var(--white); border-bottom: 1px solid var(--gz6); padding: 8px 24px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; position: sticky; top: 52px; z-index: 90; transition: box-shadow 0.15s; }
+  .filter-bar.is-stuck { box-shadow: 0 4px 10px -4px rgba(0,0,0,0.18); }
   .filter-group { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--gz3); }
   .filter-group label { font-weight: 500; }
   .filter-group select { border: 1px solid var(--gz6); border-radius: 6px; padding: 4px 8px; font-size: 12px; color: var(--gz1); background: var(--bg); cursor: pointer; }
@@ -1046,6 +1047,10 @@ HTML = r"""<!DOCTYPE html>
   </div>
   <div class="nav-right" id="last-update">Atualizado em __DATA_DATE__</div>
 </nav>
+
+<!-- Sentinela: 1px acima da filter-bar. Enquanto ela intersecta a viewport,
+     a filter-bar ainda não colou no header. Ver initFilterBarSombra(). -->
+<div id="filter-bar-sentinela" style="height:1px"></div>
 
 <!-- Filter bar (shared) -->
 <div class="filter-bar" id="filter-bar-consolidado">
@@ -4943,6 +4948,19 @@ function initFilters() {
     opt.value = o; opt.textContent = o;
     sel.appendChild(opt);
   });
+  initFilterBarSombra();
+}
+// A filter-bar já é sticky por CSS (top: 52px, colada abaixo do header).
+// Isto só liga/desliga a sombra (.is-stuck) quando ela está de fato colada,
+// usando a sentinela de 1px que fica logo acima dela no HTML.
+function initFilterBarSombra() {
+  const barra = document.getElementById('filter-bar-consolidado');
+  const sentinela = document.getElementById('filter-bar-sentinela');
+  if (!barra || !sentinela || typeof IntersectionObserver === 'undefined') return;
+  new IntersectionObserver(
+    ([entry]) => barra.classList.toggle('is-stuck', !entry.isIntersecting),
+    { rootMargin: '-52px 0px 0px 0px', threshold: 0 }
+  ).observe(sentinela);
 }
 function applyFilters() {
   const obraF  = document.getElementById('filter-obra-global').value;
