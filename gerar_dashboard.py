@@ -817,6 +817,12 @@ HTML = r"""<!DOCTYPE html>
   .kpi-value { font-size: 26px; font-weight: 500; color: var(--gz1); line-height: 1; }
   .kpi-value.large { font-size: 32px; }
   .kpi-sub { font-size: 10px; color: var(--gz4); margin-top: 4px; }
+  /* Subtítulo dos KPIs (texto abaixo do valor) +10%, só em Consolidado, Obra
+     individual e Resíduos — mesmo escopo por página das demais mudanças de
+     fonte. Os KPIs são gerados por JS (innerHTML) dentro do container de
+     cada aba, então o seletor por #page-id alcança tanto o HTML estático
+     quanto o que é montado em runtime. */
+  #page-consolidado .kpi-sub, #page-obra .kpi-sub, #page-residuos .kpi-sub { font-size: 11px; }
   .kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-top: 4px; }
   .kpi-delta.up { background: var(--fg7); color: var(--fg2); }
   .kpi-delta.down { background: var(--vr7); color: var(--vr2); }

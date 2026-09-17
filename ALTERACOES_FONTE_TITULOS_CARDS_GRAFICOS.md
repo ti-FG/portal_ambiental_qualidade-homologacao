@@ -38,6 +38,24 @@ pegar texto errado): 11 títulos de eixo (kg/m², dB, kg, ton, Pontuação, Pess
 treinadas) e os 3 placeholders "Sem dados" que aparecem quando um gráfico fica
 vazio no recorte.
 
+## Complemento — subtítulo dos KPIs (17/09/2026)
+
+Pedido de acompanhamento: os KPIs no topo (IPA Global, Conformidade LAI/EIV,
+Resíduos Gerados etc.) são um componente **diferente** de `.card-title`/
+`.card-badge` — usam `.kpi-label` (título em caixa alta) e `.kpi-sub` (texto
+menor abaixo do valor, ex.: "Índice de Performance Ambiental", "média LAI/EIV").
+O pedido original não cobria esse componente.
+
+`.kpi-sub` subiu de 10px para **11px**, mesmo escopo por página
+(`#page-consolidado`, `#page-obra`, `#page-residuos`). Esses KPIs são montados
+por JS (`innerHTML` de `updateKpisFiltered()` e `renderObra()`), então o
+seletor por `#page-id` precisa alcançar tanto o HTML estático quanto o gerado
+em runtime — confirmado filtrando por obra e checando que o subtítulo
+continua em 11px depois da reescrita do DOM.
+
+`.kpi-label` (o título em caixa alta acima do valor) não foi alterado — o
+pedido foi só subtítulo.
+
 ## Validação feita
 
 - [x] `.card-title` = 15,4px e `.card-badge` = 13,2px nas 3 abas
@@ -47,3 +65,5 @@ vazio no recorte.
       `Chart.instances[...].options.scales.y.title.font`
 - [x] IPA global 78,4 mantido (nenhuma mudança de dado/regra)
 - [x] Console do navegador sem erro
+- [x] `.kpi-sub` = 11px nas 3 abas, inclusive após reescrita via JS (testado
+      filtrando por obra); aba Dicionário não tem KPIs (sem risco de vazamento)
