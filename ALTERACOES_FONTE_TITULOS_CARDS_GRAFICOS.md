@@ -53,8 +53,15 @@ seletor por `#page-id` precisa alcançar tanto o HTML estático quanto o gerado
 em runtime — confirmado filtrando por obra e checando que o subtítulo
 continua em 11px depois da reescrita do DOM.
 
-`.kpi-label` (o título em caixa alta acima do valor) não foi alterado — o
-pedido foi só subtítulo.
+`.kpi-label` (o título em caixa alta acima do valor) ficou fora nesta rodada
+por pedido explícito de só mexer no subtítulo — coberto no complemento
+seguinte.
+
+## Complemento 2 — título dos KPIs, `.kpi-label` (17/09/2026)
+
+Fechando o par: `.kpi-label` também subiu 10%, de 10px para **11px**, mesmo
+escopo por página. Título e subtítulo dos KPIs ficam agora no mesmo tamanho
+(11px) — antes eram os dois em 10px.
 
 ## Validação feita
 
@@ -67,3 +74,4 @@ pedido foi só subtítulo.
 - [x] Console do navegador sem erro
 - [x] `.kpi-sub` = 11px nas 3 abas, inclusive após reescrita via JS (testado
       filtrando por obra); aba Dicionário não tem KPIs (sem risco de vazamento)
+- [x] `.kpi-label` = 11px nas 3 abas, inclusive após reescrita via JS

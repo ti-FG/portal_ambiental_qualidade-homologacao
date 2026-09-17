@@ -814,6 +814,9 @@ HTML = r"""<!DOCTYPE html>
   .kpi.red { border-left-color: var(--vr4); }
   .kpi.gray { border-left-color: var(--gz4); }
   .kpi-label { font-size: 10px; color: var(--gz3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; display: flex; align-items: center; gap: 5px; }
+  /* Título do KPI (caixa alta acima do valor) +10%, mesmo escopo por página
+     do .kpi-sub — Dicionário fica de fora (não tem KPI). */
+  #page-consolidado .kpi-label, #page-obra .kpi-label, #page-residuos .kpi-label { font-size: 11px; }
   .kpi-value { font-size: 26px; font-weight: 500; color: var(--gz1); line-height: 1; }
   .kpi-value.large { font-size: 32px; }
   .kpi-sub { font-size: 10px; color: var(--gz4); margin-top: 4px; }
