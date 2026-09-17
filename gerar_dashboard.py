@@ -846,6 +846,11 @@ HTML = r"""<!DOCTYPE html>
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--gz7); }
   .card-title { font-size: 14px; font-weight: 500; color: var(--gz1); display: flex; align-items: center; gap: 6px; }
   .card-badge { font-size: 12px; background: rgba(0, 72, 76, 0.08); color: #00484C; padding: 2px 8px; border-radius: 10px; }
+  /* Títulos/subtítulos dos cards +10% só em Consolidado, Obra individual e
+     Resíduos — escopado por página para não alterar o cabeçalho do card
+     "Dicionário de dados e termos", que reaproveita .card-title. */
+  #page-consolidado .card-title, #page-obra .card-title, #page-residuos .card-title { font-size: 15.4px; }
+  #page-consolidado .card-badge, #page-obra .card-badge, #page-residuos .card-badge { font-size: 13.2px; }
   .card-body { }
   canvas { max-height: 280px; }
 
@@ -1011,6 +1016,10 @@ HTML = r"""<!DOCTYPE html>
   /* Section header com filtros inline (Impressões) */
   .imp-section-header { display: flex; align-items: center; gap: 14px; margin: 18px 0 10px; flex-wrap: wrap; }
   .imp-section-title { font-size: 11px; font-weight: 500; color: var(--gz3); text-transform: uppercase; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+  /* Só existe hoje dentro do Consolidado (blocos de energia/água/impressões);
+     escopado do mesmo jeito para acompanhar as outras duas abas se um dia
+     um bloco assim aparecer lá também. */
+  #page-consolidado .imp-section-title, #page-obra .imp-section-title, #page-residuos .imp-section-title { font-size: 12.1px; }
   .imp-filters { display: inline-flex; align-items: center; gap: 8px; font-size: 11px; color: var(--gz3); background: var(--white); border: 1px solid var(--gz6); border-radius: 8px; padding: 4px 10px; }
   .imp-filters label { font-weight: 500; }
   .imp-filters select { border: 1px solid var(--gz6); border-radius: 5px; padding: 3px 8px; font-size: 11px; color: var(--gz1); background: var(--bg); cursor: pointer; }
@@ -2446,7 +2455,7 @@ function resGraficoMensal(canvasId, obra, serie, meses, badgeEl, comMeta) {
           }
         }
       },
-      scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } } }
+      scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²', font: { size: 12.1 } } } }
     },
     plugins: [barLabels(v => resFmtKg(v), { id: canvasId })]
   });
@@ -2540,7 +2549,7 @@ function renderResBarras(obraF, anoF) {
       },
       scales: {
         x: { ticks: { autoSkip: false, maxRotation: 30 } },
-        y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } }
+        y: { beginAtZero: true, title: { display: true, text: 'kg/m²', font: { size: 12.1 } } }
       }
     },
     plugins: [barLabels(v => resFmtKg(v), { id: 'resobra' })]
@@ -2666,7 +2675,7 @@ function renderRuidoBarras(obraF) {
         y: {
           min: 40,
           suggestedMax: 95,
-          title: { display: true, text: 'dB' },
+          title: { display: true, text: 'dB', font: { size: 12.1 } },
           grid: { color: 'rgba(0,0,0,0.04)' }
         }
       }
@@ -2883,7 +2892,7 @@ function renderMonitoramentoRuido(obraF, anoF) {
       },
       scales: {
         x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#1A3668' } },
-        y: { beginAtZero: true, suggestedMax: 95, title: { display: true, text: 'dB', color: '#1A3668' }, grid: { color: '#EBEBEB' }, ticks: { color: '#1A3668' } }
+        y: { beginAtZero: true, suggestedMax: 95, title: { display: true, text: 'dB', font: { size: 12.1 }, color: '#1A3668' }, grid: { color: '#EBEBEB' }, ticks: { color: '#1A3668' } }
       }
     },
     plugins: [valuePlugin]
@@ -3313,7 +3322,7 @@ function renderIpaObras(obraF, anoF) {
       responsive: true,
       layout: { padding: { top: 18 } },
       plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: tooltipLabel } } },
-      scales: { y: { min: 0, max: 100, ticks: { stepSize: 10 }, title: { display: true, text: 'Pontuação' } } }
+      scales: { y: { min: 0, max: 100, ticks: { stepSize: 10 }, title: { display: true, text: 'Pontuação', font: { size: 12.1 } } } }
     },
     plugins: [barValueLabels(v => String(v))]
   });
@@ -3367,7 +3376,7 @@ function renderRuidoObra(obraF, anoF) {
     makeChart('chart-obra-ruido', {
       type: 'bar',
       data: { labels: [obraF || '—'], datasets: [{ data: [0], backgroundColor: '#D3D1C7', borderRadius: 6 }] },
-      options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados de ruído' } }, scales: { y: { min: 0, max: 100 } } }
+      options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados de ruído', font: { size: 12.1 } } }, scales: { y: { min: 0, max: 100 } } }
     });
     return;
   }
@@ -3402,7 +3411,7 @@ function renderRuidoObra(obraF, anoF) {
           }
         }
       },
-      scales: { y: { min: 40, max: 95, title: { display: true, text: 'dB' } } }
+      scales: { y: { min: 40, max: 95, title: { display: true, text: 'dB', font: { size: 12.1 } } } }
     },
     plugins: [barValueLabels(v => String(v))]
   });
@@ -3482,7 +3491,7 @@ function renderSGAAnual(anoF) {
         x: { grid: { display: false } },
         y: {
           beginAtZero: true,
-          title: { display: true, text: 'Pessoas treinadas' },
+          title: { display: true, text: 'Pessoas treinadas', font: { size: 12.1 } },
           ticks: { callback: v => v.toLocaleString('pt-BR') },
           grid: { color: 'rgba(0,0,0,0.04)' }
         }
@@ -4367,7 +4376,7 @@ function renderResTipo(canvasId, badgeId, filtRes, tipoSrc, hasRaw) {
   const semDados = id => makeChart(id, {
     type: 'bar',
     data: { labels: [''], datasets: [{ data: [0], backgroundColor: '#D3D1C7' }] },
-    options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados' } }, scales: { y: { beginAtZero: true } } }
+    options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados', font: { size: 12.1 } } }, scales: { y: { beginAtZero: true } } }
   });
 // Tipo barras H (usa fonte filtrada) — cores conforme paleta por tipo
 // Mapeamento: normalize p/ uppercase + sem acento + sem espaço extra
@@ -4468,7 +4477,7 @@ if (hasRaw && meses6.length) {
             }
           }
         },
-        y: { beginAtZero: true, title: { display: true, text: 'kg' } }
+        y: { beginAtZero: true, title: { display: true, text: 'kg', font: { size: 12.1 } } }
       }
     },
     // Muitas barras estreitas (até 8 tipos × 6 meses): kg abreviado pra caber
@@ -4509,7 +4518,7 @@ if (hasRaw && meses6.length) {
             }
           }
         },
-        scales: { x: { beginAtZero: true, title: { display: true, text: 'kg' } } }
+        scales: { x: { beginAtZero: true, title: { display: true, text: 'kg', font: { size: 12.1 } } } }
       }
     });
   } else {
@@ -4633,7 +4642,7 @@ function renderResiduos(obraF, anoF) {
     }));
   }
 
-  const semDados = id => makeChart(id, { type: 'bar', data: { labels: [obraF||''], datasets: [{ data: [0], backgroundColor: '#D3D1C7' }] }, options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados' } }, scales: { y: { beginAtZero: true } } } });
+  const semDados = id => makeChart(id, { type: 'bar', data: { labels: [obraF||''], datasets: [{ data: [0], backgroundColor: '#D3D1C7' }] }, options: { responsive: true, plugins: { legend: { display: false }, subtitle: { display: true, text: 'Sem dados', font: { size: 12.1 } } }, scales: { y: { beginAtZero: true } } } });
 
   // ─── Eixo dos dois gráficos de volume ───
   // Sem obra filtrada → uma coluna por obra/empreendimento.
@@ -4728,7 +4737,7 @@ function renderResiduos(obraF, anoF) {
               }
             }
           },
-          scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²' } } }
+          scales: { y: { beginAtZero: true, title: { display: true, text: 'kg/m²', font: { size: 12.1 } } } }
         },
         plugins: [barLabels(v => resFmtKg(v), { id: 'resger' })]
       });
@@ -4840,7 +4849,7 @@ function renderResiduos(obraF, anoF) {
         layout: { padding: { top: 18 } },
         scales: {
           x: { grid: { display: false } },
-          y: { beginAtZero: true, title: { display: true, text: 'ton' } }
+          y: { beginAtZero: true, title: { display: true, text: 'ton', font: { size: 12.1 } } }
         }
       },
       plugins: [barLabels(v => numBR(v, 1), { id: 'reston' })]
