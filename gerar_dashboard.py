@@ -875,9 +875,6 @@ HTML = r"""<!DOCTYPE html>
   .cell-am { background: var(--am6); color: var(--am2); }
   .cell-vr { background: var(--vr7); color: var(--vr2); }
   .cell-nd { background: var(--gz7); color: var(--gz4); }
-  .gap-badge { display: inline-block; padding: 2px 6px; border-radius: 3px; font-size: 12px; font-weight: 500; }
-  .gap-ok { background: var(--fg6); color: var(--fg1); }
-  .gap-bad { background: var(--vr6); color: var(--vr2); }
 
   /* Risk list */
   .risk-list { list-style: none; }
@@ -2287,22 +2284,17 @@ function renderHeatmap(obraF, anoF) {
   };
   let html = '<table class="heatmap"><thead><tr><th class="obra-col">Obra</th>';
   meses.forEach(m => { html += `<th>${labelMes(m)}</th>`; });
-  html += '<th>Gap</th></tr></thead><tbody>';
+  html += '</tr></thead><tbody>';
   obras.forEach(o => {
     const row = D.conf_heatmap[o] || {};
     const meta = D.conf_atual[o] ? D.conf_atual[o].meta : 90;
     html += `<tr><td class="obra-name">${o}</td>`;
-    let last = null;
     meses.forEach(m => {
       const cell = row[m] || {};
       const v = cell.perc;
-      if (v != null) last = v;
       const cls = v != null ? semClass(v, meta||90) : 'cell-nd';
       html += `<td class="${cls}">${v != null ? v.toFixed(0)+'%' : '—'}</td>`;
     });
-    const gap = last != null ? (last - (meta||90)) : null;
-    const gapCls = gap != null ? (gap >= 0 ? 'gap-ok' : 'gap-bad') : '';
-    html += `<td><span class="gap-badge ${gapCls}">${gap != null ? (gap >= 0 ? '+' : '') + gap.toFixed(1) + 'pp' : '—'}</span></td>`;
     html += '</tr>';
   });
   html += '</tbody></table>';
