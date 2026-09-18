@@ -1208,6 +1208,34 @@ if not dim_sga.empty and 'pessoas' in dim_sga.columns and 'Ano' in dim_sga.colum
     for _, r in agg.iterrows():
         sga_por_ano.append({'ano': int(r['_ano']), 'pessoas': int(r['pessoas'])})
 
+# SGA granular (ano × mês) — permite o gráfico reagir ao filtro de Período.
+# A coluna `Mês` traz o nome do mês em português para 2025/2026, mas os anos
+# antigos (2021–2024) vêm consolidados com Mês = 'Todos', sem detalhe mensal.
+# Esses ficam marcados com `anual: True` e só entram quando o recorte cobre o
+# ano inteiro — recortar um total anual por mês seria inventar precisão.
+_MES_PT_NUM = {
+    'janeiro': 1, 'fevereiro': 2, 'marco': 3, 'março': 3, 'abril': 4,
+    'maio': 5, 'junho': 6, 'julho': 7, 'agosto': 8, 'setembro': 9,
+    'outubro': 10, 'novembro': 11, 'dezembro': 12,
+}
+sga_por_mes = []
+if not dim_sga.empty and 'pessoas' in dim_sga.columns and 'Ano' in dim_sga.columns:
+    _df = dim_sga.copy()
+    _df['_ano'] = pd.to_numeric(_df['Ano'], errors='coerce')
+    _df = _df.dropna(subset=['_ano', 'pessoas'])
+    for _, r in _df.iterrows():
+        _ano = int(r['_ano'])
+        _mes_txt = str(r.get('Mês', '') or '').strip().lower()
+        _num = _MES_PT_NUM.get(_mes_txt)
+        sga_por_mes.append({
+            'ano': _ano,
+            'mes': f"{_ano}-{_num:02d}" if _num else None,
+            'anual': _num is None,          # linha 'Todos' — ano fechado, sem mês
+            'pessoas': int(r['pessoas']),
+        })
+    _n_anual = sum(1 for x in sga_por_mes if x['anual'])
+    print(f"  SGA: {len(sga_por_mes)} linhas ({_n_anual} sem detalhe mensal)")
+
 # ─── Impressões ───────────────────────────────────────────────────────────────
 imp_total = int(fat_imp['total_pag'].sum()) if 'total_pag' in fat_imp.columns else 0
 imp_custo = round(float(fat_imp['custo'].sum()),2) if 'custo' in fat_imp.columns else 0
@@ -1375,6 +1403,7 @@ DATA = {
     'auditorias_ocorrencias': auditorias_ocorrencias,
     'auditorias_obra_mes': auditorias_obra_mes,
     'sga_por_ano': sga_por_ano,
+    'sga_por_mes': sga_por_mes,
     'meta_residuos': {
         'default': META_RESIDUOS_DEFAULT,
         'senna': META_RESIDUOS_SENNA,

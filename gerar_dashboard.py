@@ -3344,22 +3344,49 @@ function renderRuidoObra(obraF, anoF) {
 // ═══════════════════════════════════════════════════════════
 function renderSGAAnual(anoF) {
   if (anoF === undefined) anoF = periodoGlobal();
-  let data = D.sga_por_ano || [];
-  // Dim_Acoes_SGA é agregada por ANO — não há mês. Então este gráfico só
-  // consegue reagir às opções de ano do filtro ('2025', '2026'); com
-  // "últimos 6/12 meses" mantém a série completa, porque recortar um ano
-  // inteiro por causa de meses seria inventar precisão que o dado não tem.
-  if (anoF && anoF !== 'all' && anoF !== '6m' && anoF !== '12m') {
-    const doAno = data.filter(d => String(d.ano) === String(anoF));
-    if (doAno.length) data = doAno;
+  const granular = D.sga_por_mes || [];
+  const j = janelaPeriodo(anoF);
+  let data, anosCheios = [];
+
+  if (!j || !granular.length) {
+    // "Todo o período" (ou base antiga, sem o dataset granular): série completa
+    data = (D.sga_por_ano || []).slice();
+  } else {
+    // Dim_Acoes_SGA tem o mês para 2025/2026, mas os anos antigos (2021–2024)
+    // vêm consolidados com Mês = 'Todos'. As linhas com mês são recortadas
+    // normalmente; as consolidadas só entram quando a janela cobre o ano
+    // INTEIRO — recortar um total anual por mês seria inventar precisão.
+    const acc = {};
+    granular.forEach(r => {
+      let entra = false;
+      if (r.anual) {
+        entra = j.de <= r.ano + '-01' && j.ate >= r.ano + '-12';
+        if (entra && !anosCheios.includes(r.ano)) anosCheios.push(r.ano);
+      } else {
+        entra = !!r.mes && r.mes >= j.de && r.mes <= j.ate;
+      }
+      if (entra) acc[r.ano] = (acc[r.ano] || 0) + (r.pessoas || 0);
+    });
+    data = Object.keys(acc).sort().map(a => ({ ano: Number(a), pessoas: acc[a] }));
   }
+
+  const badgeSga = document.getElementById('sga-badge');
   if (!data.length) {
     if (chartReg['chart-sga-anual']) { chartReg['chart-sga-anual'].destroy(); delete chartReg['chart-sga-anual']; }
+    if (badgeSga) badgeSga.textContent = 'sem eventos no recorte';
     return;
   }
   const labels = data.map(d => String(d.ano));
   const valores = data.map(d => d.pessoas);
   const total = valores.reduce((s, v) => s + v, 0);
+  if (badgeSga) {
+    // Com recorte ativo o badge deixa de dizer "acumulado desde 2021" (que
+    // seria falso) e mostra a janela; avisa quando algum ano entrou fechado.
+    badgeSga.textContent = !j
+      ? `total acumulado: ${numBR(total, 0)} pessoas`
+      : `${numBR(total, 0)} pessoas · ${faixaPeriodo(anoF)}`
+        + (anosCheios.length ? ` · ${anosCheios.join(', ')} sem detalhe mensal` : '');
+  }
   const palette = ['#97C459', '#639922', '#3B6D11', '#27500A', '#185FA5', '#0C447C'];
   const colors = labels.map((_, i) => palette[i % palette.length]);
 
@@ -3421,9 +3448,7 @@ function renderSGAAnual(anoF) {
     },
     plugins: [labelPlugin]
   });
-
-  const badge = document.getElementById('sga-badge');
-  if (badge) badge.textContent = `total acumulado: ${total.toLocaleString('pt-BR')} pessoas`;
+  // O badge é preenchido no início da função (respeita o recorte de período).
 }
 
 // ═══════════════════════════════════════════════════════════

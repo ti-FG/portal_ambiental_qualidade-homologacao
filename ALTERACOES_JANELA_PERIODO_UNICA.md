@@ -132,6 +132,50 @@ Outros testes:
 
 ---
 
+## Complemento — gráfico "Eventos Ambientais" (SGA)
+
+Reportado logo depois: mesmo com "Últimos 6 meses", o gráfico continuava
+mostrando 2021 a 2026.
+
+Era uma limitação que eu tinha assumido como definitiva — "`Dim_Acoes_SGA` é
+agregada por ano, sem mês" — e estava **errada**. A tabela tem sim a coluna
+`Mês`, preenchida com o nome do mês em português para 2025 e 2026:
+
+```
+2021   Todos        600        2025   Janeiro      341
+2022   Todos      1.006        2025   Fevereiro    273
+2023   Todos      1.739        ...
+2024   Todos      3.378        2026   Março      1.279
+```
+
+Só os anos antigos (2021–2024) vêm consolidados com `Mês = 'Todos'`.
+
+### Correção
+
+- Novo `sga_por_mes` no gerador (ano × mês × pessoas), com as linhas sem mês
+  marcadas como `anual: true`.
+- `renderSGAAnual()` passou a somar só os meses dentro da janela. As linhas
+  consolidadas (2021–2024) entram **apenas quando a janela cobre o ano
+  inteiro** — recortar um total anual por mês seria inventar precisão.
+- Badge deixou de dizer "acumulado desde 2021" quando há recorte (seria
+  falso) e passou a mostrar a janela; avisa quando algum ano entrou fechado.
+
+### Resultado
+
+| Filtro | Janela | Barras | Total |
+|---|---|---|---|
+| Todo o período | — | 2021…2026 | 12.405 |
+| Últimos 6 meses | Dez/25 – Mai/26 | só 2026 | 1.502 |
+| Últimos 12 meses | Jun/25 – Mai/26 | 2025 e 2026 | 3.520 |
+| 2025 | Jan/25 – Dez/25 | só 2025 | 4.180 |
+| 2026 | Jan/26 – Dez/26 | só 2026 | 1.502 |
+
+Repare no caso de 12 meses: 2025 aparece com **2.018**, não com os 4.180 do
+ano inteiro — é a soma de Jun (958), Set (880) e Nov (180), os únicos meses de
+2025 dentro da janela. É recorte de verdade, não filtro de ano.
+
+---
+
 ## Pendência que isto expõe
 
 O `.pbix` é de maio/2026 e o dashboard é gerado em setembro/2026. Como a âncora
