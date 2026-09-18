@@ -1983,16 +1983,55 @@ const COLORS = {
 // ═══════════════════════════════════════════════════════════
 //  Filtro de Período — helper único
 // ═══════════════════════════════════════════════════════════
-// Cada fonte de dados tem seu próprio universo de meses (ruído tem meses que
-// resíduos não tem, e vice-versa). Por isso o recorte é sempre calculado sobre
-// o universo da própria fonte, e não sobre um calendário fixo: "últimos 6
-// meses" significa os 6 últimos meses COM DADO naquela fonte.
+// "Últimos 6/12 meses" é uma JANELA DE CALENDÁRIO ÚNICA, igual para todos os
+// gráficos, ancorada em D.periodo_ref (o mês mais recente com dado real,
+// calculado no gerador).
+//
+// Antes cada gráfico pegava os N últimos meses da SUA PRÓPRIA fonte. Como cada
+// tabela termina num mês diferente — conformidade em 2026-05, água em 2026-03,
+// resíduos com grade zerada até 2026-07, auditorias com planejamento até
+// 2026-10 —, a mesma seleção produzia sete janelas diferentes na mesma tela:
+// "últimos 6 meses" mostrava Dez/25–Mai/26 na conformidade, Out/25–Mar/26 na
+// água e Fev/26–Jul/26 nos resíduos.
+//
+// Agora a janela é a mesma em todo lugar; cada gráfico mostra o que tem dentro
+// dela (pode ter menos barras que o teto, quando a fonte acaba antes).
+function mesAnterior(mes, n) {
+  const [a, m] = String(mes).split('-').map(Number);
+  const total = a * 12 + (m - 1) - n;
+  return String(Math.floor(total / 12)).padStart(4, '0') + '-' + String(total % 12 + 1).padStart(2, '0');
+}
+// Janela {de, ate} em 'YYYY-MM' para o valor do filtro; null = sem recorte.
+function janelaPeriodo(anoF) {
+  if (!anoF || anoF === 'all') return null;
+  const ref = (typeof D !== 'undefined' && D.periodo_ref) || null;
+  if (anoF === '6m' || anoF === '12m') {
+    if (!ref) return null;                       // sem âncora, não recorta
+    const n = anoF === '6m' ? 5 : 11;
+    return { de: mesAnterior(ref, n), ate: ref };
+  }
+  return { de: anoF + '-01', ate: anoF + '-12' };  // ano cheio: '2025' / '2026'
+}
+// true se o mês 'YYYY-MM' (ou 'YYYY-MM-DD') cai dentro do recorte.
+function noPeriodo(mes, anoF) {
+  const j = janelaPeriodo(anoF);
+  if (!j) return true;
+  const m = String(mes || '').slice(0, 7);
+  return !!m && m >= j.de && m <= j.ate;
+}
+// Set dos meses do universo que caem no recorte. O universo continua servindo
+// para o caso "todo o período" e para as funções que precisam da lista pronta.
 function mesesDoPeriodo(anoF, universo) {
-  const ms = [...new Set(universo)].filter(Boolean).sort();
-  if (!anoF || anoF === 'all') return new Set(ms);
-  if (anoF === '6m')  return new Set(ms.slice(-6));
-  if (anoF === '12m') return new Set(ms.slice(-12));
-  return new Set(ms.filter(m => String(m).startsWith(anoF)));   // '2025' / '2026'
+  const ms = [...new Set((universo || []).map(m => String(m || '').slice(0, 7)))].filter(Boolean).sort();
+  const j = janelaPeriodo(anoF);
+  if (!j) return new Set(ms);
+  return new Set(ms.filter(m => m >= j.de && m <= j.ate));
+}
+// Rótulo da janela, ex.: "Dez/25 – Mai/26" — usado nos badges.
+function faixaPeriodo(anoF) {
+  const j = janelaPeriodo(anoF);
+  if (!j) return 'todo o período';
+  return labelMesRes(j.de) + ' – ' + labelMesRes(j.ate);
 }
 // Valor corrente do filtro global de Período.
 function periodoGlobal() {
@@ -2194,10 +2233,7 @@ function renderTopNcs(obraF, anoF) {
   if (lista.length) {
     // Janela de meses: mesma régua do heatmap/IPA (conf_meses)
     const allMeses = D.conf_meses || [];
-    let mesesSet = null;
-    if (anoF === '6m') mesesSet = new Set(allMeses.slice(-6));
-    else if (anoF === '12m') mesesSet = new Set(allMeses.slice(-12));
-    else if (anoF && anoF !== 'all') mesesSet = new Set(allMeses.filter(m => m.startsWith(anoF)));
+    const mesesSet = (anoF && anoF !== 'all') ? mesesDoPeriodo(anoF, allMeses) : null;
 
     let filt = lista;
     if (obraF) filt = filt.filter(r => r.obra === obraF);
@@ -2243,9 +2279,7 @@ function renderHeatmap(obraF, anoF) {
   let meses = D.conf_meses || [];
   let obras = Object.keys(D.conf_heatmap || {});
   if (obraF) obras = obras.filter(o => o === obraF);
-  if (anoF === '6m') meses = meses.slice(-6);
-  else if (anoF === '12m') meses = meses.slice(-12);
-  else if (anoF && anoF !== 'all') meses = meses.filter(m => m.startsWith(anoF));
+  if (anoF && anoF !== 'all') meses = meses.filter(m => noPeriodo(m, anoF));
   if (!meses.length || !obras.length) {
     cont.innerHTML = '<div class="empty-msg">Sem dados de conformidade</div>';
     return;
@@ -2580,9 +2614,11 @@ function renderEmergencias(obraF, anoF) {
   const all = D.emergencias_lista || [];
   let data = all;
   if (obraF) data = data.filter(r => r.obra === obraF);
+  // mes_ano das emergências tem DIA ('2026-04-14'); o campo `mes` é o mesmo
+  // valor truncado no mês. Comparar direto o mes_ano fazia o filtro recortar
+  // por dia, não por mês.
   if (anoF && anoF !== 'all') {
-    const mesesSet = mesesDoPeriodo(anoF, all.map(r => r.mes_ano));
-    data = data.filter(r => mesesSet.has(r.mes_ano));
+    data = data.filter(r => noPeriodo(r.mes || r.mes_ano, anoF));
   }
 
   const tblEl = document.getElementById('emerg-table-content');
@@ -2656,6 +2692,7 @@ function renderMonitoramentoRuido(obraF, anoF) {
 
   // Últimos 6 meses no eixo, todas as obras com dados no eixo X
   const mesesAll = [...new Set(all.map(r => r.mes_ano))].sort();
+  // `all` já vem recortado pelo período; aqui é só o teto de 6 colunas do eixo
   const meses = mesesAll.slice(-6);
   const mesesSet = new Set(meses);
   const filt = all.filter(r => mesesSet.has(r.mes_ano));
@@ -3154,10 +3191,8 @@ function renderIpaObras(obraF, anoF) {
 
   // Conjunto de meses do período selecionado (mesmo padrão usado no heatmap de conformidade)
   const allMeses = D.conf_meses || [];
-  let mesesSet = null;
-  if (anoF === '6m') mesesSet = new Set(allMeses.slice(-6));
-  else if (anoF === '12m') mesesSet = new Set(allMeses.slice(-12));
-  else if (anoF && anoF !== 'all') mesesSet = new Set(allMeses.filter(m => m.startsWith(anoF)));
+  // Janela de calendário única (ver mesesDoPeriodo/janelaPeriodo)
+  let mesesSet = (anoF && anoF !== 'all') ? mesesDoPeriodo(anoF, allMeses) : null;
 
   const tituloEl = document.getElementById('ipa-obras-title');
   // Paleta nova baseada no IPA:
@@ -3224,10 +3259,8 @@ function renderRuidoObra(obraF, anoF) {
   if (!anoF) anoF = (document.getElementById('filter-periodo')||{}).value || 'all';
 
   const allMeses = D.conf_meses || [];
-  let mesesSet = null;
-  if (anoF === '6m') mesesSet = new Set(allMeses.slice(-6));
-  else if (anoF === '12m') mesesSet = new Set(allMeses.slice(-12));
-  else if (anoF && anoF !== 'all') mesesSet = new Set(allMeses.filter(m => m.startsWith(anoF)));
+  // Janela de calendário única (ver mesesDoPeriodo/janelaPeriodo)
+  let mesesSet = (anoF && anoF !== 'all') ? mesesDoPeriodo(anoF, allMeses) : null;
 
   // Paleta: >85 → rosa (crítico, acima do limite Itajaí) · >60 → amarelo lima (acima BC) · ≤60 → verde teal (ok)
   const corDb = db => db > 85 ? '#CE8686' : db > 60 ? '#C5C639' : '#006B6B';
@@ -3630,12 +3663,11 @@ function _computeEnergiaSeries(obraF, setorF) {
 }
 
 function _filtraPeriodo(arr, periodoF) {
-  if (periodoF === '6m') return arr.slice(-6);
-  if (periodoF === '12m') return arr.slice(-12);
-  // '2025' / '2026': recorta pelo ano do próprio mês, não por posição.
-  // Sem isto, escolher um ano no filtro devolvia a série inteira.
+  // Janela de calendário única — antes era slice(-6)/slice(-12) por posição,
+  // que dava uma janela diferente da dos outros gráficos (água termina em
+  // 2026-03, conformidade em 2026-05).
   if (periodoF && periodoF !== 'all') {
-    return arr.filter(d => String(d.mes_ano || '').startsWith(periodoF));
+    return arr.filter(d => noPeriodo(d.mes_ano, periodoF));
   }
   return arr;
 }
@@ -3802,9 +3834,7 @@ function renderImpressoes() {
   ].filter(Boolean))].sort();
 
   let mesesFiltrados;
-  if (periodoF === '6m') mesesFiltrados = allMonths.slice(-6);
-  else if (periodoF === '12m') mesesFiltrados = allMonths.slice(-12);
-  else if (periodoF !== 'all') mesesFiltrados = allMonths.filter(m => m.startsWith(periodoF));
+  if (periodoF && periodoF !== 'all') mesesFiltrados = allMonths.filter(m => noPeriodo(m, periodoF));
   else mesesFiltrados = allMonths;
   const mesesSet = new Set(mesesFiltrados);
 
@@ -3996,10 +4026,8 @@ function renderObra(obraF, anoF) {
 
   // Conjunto de meses do período selecionado (mesmo padrão do heatmap/IPA/Ruído)
   const allMeses = D.conf_meses || [];
-  let mesesSet = null;
-  if (anoF === '6m') mesesSet = new Set(allMeses.slice(-6));
-  else if (anoF === '12m') mesesSet = new Set(allMeses.slice(-12));
-  else if (anoF && anoF !== 'all') mesesSet = new Set(allMeses.filter(m => m.startsWith(anoF)));
+  // Janela de calendário única (ver mesesDoPeriodo/janelaPeriodo)
+  let mesesSet = (anoF && anoF !== 'all') ? mesesDoPeriodo(anoF, allMeses) : null;
 
   const g = D.global || {};
   const obrasEscopo = isAll ? (D.obras || []) : [obra];
@@ -4092,9 +4120,7 @@ function renderObra(obraF, anoF) {
     heatmap = D.conf_heatmap[obra] || {};
   }
   let meses = D.conf_meses || [];
-  if (anoF === '6m') meses = meses.slice(-6);
-  else if (anoF === '12m') meses = meses.slice(-12);
-  else if (anoF && anoF !== 'all') meses = meses.filter(m => m.startsWith(anoF));
+  if (anoF && anoF !== 'all') meses = meses.filter(m => noPeriodo(m, anoF));
   let confHtml = '';
   if (meses.length) {
     const labelMes = m => { const p = m.split('-'); const mn = ['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez']; return (mn[parseInt(p[1])]||p[1])+"'"+p[0].slice(2); };
@@ -4205,9 +4231,9 @@ function renderObraEmergencias(obra, anoF) {
   if (anoF === undefined) anoF = periodoGlobal();
   const all = D.emergencias_lista || [];
   let data = obra ? all.filter(r => r.obra === obra) : all.slice();
+  // Ver comentário em renderEmergencias: usa `mes` (YYYY-MM), não mes_ano (com dia)
   if (anoF && anoF !== 'all') {
-    const mesesSet = mesesDoPeriodo(anoF, all.map(r => r.mes_ano));
-    data = data.filter(r => mesesSet.has(r.mes_ano));
+    data = data.filter(r => noPeriodo(r.mes || r.mes_ano, anoF));
   }
   const tblEl = document.getElementById('obra-emerg-table');
   const badge = document.getElementById('obra-emerg-badge');
@@ -4448,10 +4474,7 @@ function renderResiduos(obraF, anoF) {
   // Conjunto de meses do filtro
   const allMonthsRes = (D.residuos_mensal || []).map(r => r.mes_ano).sort();
   let mesesSet;
-  if (anoF === '6m') mesesSet = new Set(allMonthsRes.slice(-6));
-  else if (anoF === '12m') mesesSet = new Set(allMonthsRes.slice(-12));
-  else if (anoF && anoF !== 'all') mesesSet = new Set(allMonthsRes.filter(m => m.startsWith(anoF)));
-  else mesesSet = new Set(allMonthsRes);
+  mesesSet = mesesDoPeriodo(anoF, allMonthsRes);
 
   // Fonte granular compartilhada (KPIs + gráficos por obra), recortada por obra × período
   const rawRes = D.residuos_raw || [];
@@ -4921,9 +4944,7 @@ function renderAuditorias(obraF, periodoF) {
   }
 
   // Filtro de período (mesmas opções do filtro global: all / 6m / 12m / 2025 / 2026)
-  if (periodoEfetivo === '6m') meses = meses.slice(-6);
-  else if (periodoEfetivo === '12m') meses = meses.slice(-12);
-  else if (periodoEfetivo && periodoEfetivo !== 'all') meses = meses.filter(m => m.mes_ano && m.mes_ano.startsWith(periodoEfetivo));
+  if (periodoEfetivo && periodoEfetivo !== 'all') meses = meses.filter(m => noPeriodo(m.mes_ano, periodoEfetivo));
 
   // Filtrar ocorrências pelo mesmo recorte (pelos mes_ano que sobraram)
   if (meses.length && (D.auditorias_meses || []).length) {
@@ -5078,14 +5099,12 @@ function applyFilters() {
   // Página "Resíduos" filtra por obra/período
   renderResiduos(obraF, anoF);
 
-  // Badge no heatmap
+  // Badge no heatmap — mostra a JANELA real (ex.: "últimos 6 meses · Dez/25 – Mai/26"),
+  // para ficar explícito qual recorte de calendário está valendo em toda a tela.
   const badge = document.getElementById('heatmap-badge');
   if (badge) {
-    const periodoLabel = {
-      'all': 'todo o período',
-      '6m': 'últimos 6 meses',
-      '12m': 'últimos 12 meses',
-    }[anoF] || anoF;
+    let periodoLabel = labelPeriodo(anoF);
+    if (anoF === '6m' || anoF === '12m') periodoLabel += ' · ' + faixaPeriodo(anoF);
     badge.textContent = obraF
       ? (anoF !== 'all' ? obraF + ' · ' + periodoLabel : obraF)
       : periodoLabel;

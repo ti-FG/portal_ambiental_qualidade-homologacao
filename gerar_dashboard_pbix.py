@@ -1175,7 +1175,11 @@ if not dim_emerg.empty:
         ma = r.get('mes_ano') if 'mes_ano' in r else None
         mes_label = ma.strftime('%m/%Y') if isinstance(ma, pd.Timestamp) and pd.notna(ma) else ''
         item = {
+            # mes_ano aqui tem DIA (a data exata da ocorrência importa e é o que
+            # ordena a tabela). `mes` é o mesmo valor truncado no mês, para o
+            # filtro de Período comparar com as demais fontes, que são mensais.
             'mes_ano':    ma.strftime('%Y-%m-%d') if isinstance(ma, pd.Timestamp) and pd.notna(ma) else '',
+            'mes':        ma.strftime('%Y-%m') if isinstance(ma, pd.Timestamp) and pd.notna(ma) else '',
             'mes_label':  mes_label,
             'obra':       _str(r.get('obra', '')),
             'fonte':      _str(r.get(col_fonte, '')) if col_fonte else '',
@@ -1302,9 +1306,49 @@ ruido_barras.sort(key=lambda x: x['db'] or 0, reverse=True)
 res_barras = [{'obra': o, 'kg_m2': v['kg_m2'], 'meta': v['meta']} for o, v in res_por_obra.items() if v['kg_m2'] is not None]
 res_barras.sort(key=lambda x: x['kg_m2'] or 0, reverse=True)
 
+# ─── Mês de referência do filtro de Período ──────────────────────────────────
+# "Últimos 6/12 meses" precisa significar A MESMA janela de calendário em todos
+# os gráficos. Antes cada gráfico pegava os N últimos meses DA SUA PRÓPRIA
+# fonte, e como cada tabela termina num mês diferente (conformidade em 2026-05,
+# água em 2026-03, resíduos com linhas zeradas até 2026-07, auditorias com
+# planejamento até 2026-10), a mesma seleção mostrava sete janelas diferentes
+# na mesma tela.
+#
+# A âncora é o mês mais recente com dado REAL, o que exclui de propósito:
+#   - meses de grade zerada (resíduos Mai–Jul/2026: linhas existem, valor é 0)
+#   - meses de planejamento futuro (auditorias até Out/2026)
+#   - qualquer mês posterior ao mês de geração do dashboard
+def _ultimo_mes_real(pares):
+    # pares: lista de (mes_str, valor) — só entra mês com valor de verdade
+    ms = [m for m, v in pares if m and v not in (None, 0) and not pd.isna(v)]
+    return max(ms) if ms else None
+
+_TETO_MES = TODAY.strftime('%Y-%m')   # nunca aponta para o futuro
+_candidatos = []
+
+# Conformidade: mês com percentual lançado
+for _o, _linha in conf_heatmap.items():
+    _candidatos.append(_ultimo_mes_real([(m, c.get('perc')) for m, c in _linha.items()]))
+# Resíduos: mês com kg lançado (descarta a grade zerada)
+_candidatos.append(_ultimo_mes_real([(r['mes_ano'], r.get('kg')) for r in residuos_raw]))
+# Ruído, água, energia, impressões, reclamações, emergências
+_candidatos.append(_ultimo_mes_real([(r['mes_ano'], r.get('db')) for r in ruido_obra_mes]))
+_candidatos.append(_ultimo_mes_real([(r['mes_ano'], r.get('m3')) for r in consumo_agua_raw]))
+_candidatos.append(_ultimo_mes_real([(r['mes_ano'], r.get('kwh')) for r in consumo_energia_raw]))
+_candidatos.append(_ultimo_mes_real([(r['mes_ano'], r.get('paginas')) for r in imp_setor_mes]))
+_candidatos.append(_ultimo_mes_real([(r['mes_ano'], 1) for r in reclamacoes_lista]))
+_candidatos.append(_ultimo_mes_real([(r.get('mes'), 1) for r in emergencias_lista]))
+
+_candidatos = [m for m in _candidatos if m and m <= _TETO_MES]
+PERIODO_REF = max(_candidatos) if _candidatos else _TETO_MES
+print(f"  Mes de referencia do filtro de Periodo: {PERIODO_REF}")
+
 # ─── Compilar JSON ────────────────────────────────────────────────────────────
 DATA = {
     'obras': OBRAS,
+    # Âncora do filtro de Período: "últimos 6/12 meses" conta a partir daqui,
+    # igual para todos os gráficos (ver bloco acima).
+    'periodo_ref': PERIODO_REF,
     'global': {
         'ipa': global_ipa, 'ipa_classe': ipa_class(global_ipa),
         'conf_media': round(np.mean([v['perc'] for v in conf_atual.values() if v['perc'] is not None]),1) if conf_atual else 0,

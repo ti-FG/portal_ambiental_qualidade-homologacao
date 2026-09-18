@@ -14,6 +14,7 @@ Documentos relacionados, todos neste repositório:
 | `ALTERACOES_ABA_DICIONARIO.md` | Detalhe da aba Dicionário de dados e termos |
 | `ALTERACOES_FILTRO_PERIODO_E_SETOR.md` | Filtro de Período em todos os gráficos e filtro de Setor em água/energia |
 | `ALTERACOES_AUDITORIA_FILTRO_PERIODO.md` | Auditoria e correção dos 4 gráficos/cards que o Período ainda não alcançava |
+| `ALTERACOES_JANELA_PERIODO_UNICA.md` | "Últimos 6/12 meses" vira janela de calendário única para todos os gráficos |
 | `etl/README.md` | **Modelo semântico e carga do banco** (ver seção 5) |
 
 ---
@@ -151,6 +152,10 @@ Conferências visuais:
       ao trocar o Período
 - [ ] **Resíduos por Obra** (aba Resíduos) muda os valores de Kg/m² e Total kg
       ao trocar o Período
+- [ ] Com **Últimos 6 meses**, o badge do heatmap mostra a janela (ex.:
+      `últimos 6 meses · Dez/25 – Mai/26`) e **todos** os gráficos ficam dentro dela
+- [ ] Água e energia mostram menos de 6 barras nesse recorte — é o correto,
+      o dado dessas fontes acaba antes do fim da janela
 
 > O valor do card "Resíduos gerados" é hoje **3.469,18** e não tem significado
 > físico — é a soma de todas as linhas de todas as obras e meses. É uma pendência
