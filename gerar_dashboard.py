@@ -850,7 +850,6 @@ HTML = r"""<!DOCTYPE html>
   /* Variante mais compacta — ~10% menor que o padrão */
   .card.compact { padding: 12px; }
   .card.compact .card-header { margin-bottom: 8px; padding-bottom: 7px; }
-  .card.compact .risk-item { padding: 6px 0; }
   .card.compact .nc-item { padding: 5px 0; }
   .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--gz7); }
   .card-title { font-size: 14px; font-weight: 500; color: var(--gz1); display: flex; align-items: center; gap: 6px; }
@@ -876,12 +875,6 @@ HTML = r"""<!DOCTYPE html>
   .cell-vr { background: var(--vr7); color: var(--vr2); }
   .cell-nd { background: var(--gz7); color: var(--gz4); }
 
-  /* Risk list */
-  .risk-list { list-style: none; }
-  .risk-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--gz7); }
-  .risk-item:last-child { border-bottom: none; }
-  .risk-name { font-weight: 500; font-size: 12px; }
-  .risk-pct { font-size: 12px; }
   .badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 500; gap: 4px; }
   .badge-ex { background: var(--fg7); color: var(--fg2); }
   .badge-bom { background: var(--az7); color: var(--az2); }
@@ -1101,15 +1094,8 @@ HTML = r"""<!DOCTYPE html>
 
   <!-- Bloco principal -->
   <div class="cards-grid cols-1-2" style="margin-bottom:var(--gap)">
-    <!-- Risco + Top NCs (esquerda) -->
+    <!-- Top NCs (esquerda) -->
     <div style="display:flex; flex-direction:column; gap:var(--gap); height:100%">
-      <div class="card" style="flex:0 0 auto">
-        <div class="card-header">
-          <div class="card-title"><i class="ti ti-alert-triangle" style="color:var(--vr4)"></i> Obras em risco crítico</div>
-          <span id="risco-count" class="badge badge-cr"></span>
-        </div>
-        <div id="risco-list"></div>
-      </div>
       <div class="card" style="flex:1 1 auto; display:flex; flex-direction:column">
         <div class="card-header">
           <div class="card-title"><i class="ti ti-list-check" style="color:var(--am4)"></i> Top não conformidades recorrentes</div>
@@ -2178,9 +2164,6 @@ function renderConsolidado() {
   // Heatmap
   renderHeatmap();
 
-  // Obras em risco
-  renderObrasRisco();
-
   renderTopNcs();
 
   // Charts
@@ -2191,53 +2174,6 @@ function renderConsolidado() {
   // IPA por obra agora está na aba Obra Individual — renderizado em renderObra()
   renderMonitoramentoRuido();
   renderEmergencias();
-}
-
-// ═══════════════════════════════════════════════════════════
-//  Obras em risco crítico (conformidade < 85%) — respeita obra e período
-// ═══════════════════════════════════════════════════════════
-// Antes era um bloco estático (D.obras_risco, calculado uma vez no Python
-// sobre o histórico completo) que nunca mudava com o filtro. Recalcula por
-// obra dentro do recorte de período usando D.conf_heatmap; sem dado no
-// recorte, cai no agregado histórico da obra (mesmo padrão de fallback do
-// IPA e do ruído em renderObra/renderIpaObras).
-function renderObrasRisco(obraF, anoF) {
-  if (anoF === undefined) anoF = periodoGlobal();
-  const countEl = document.getElementById('risco-count');
-  const ricoEl  = document.getElementById('risco-list');
-  if (!countEl || !ricoEl) return;
-
-  const mesesSet = (anoF && anoF !== 'all') ? mesesDoPeriodo(anoF, D.conf_meses || []) : null;
-  const todasObras = D.obras || Object.keys(D.conf_heatmap || {});
-  const obrasEscopo = obraF ? [obraF] : todasObras;
-
-  const risco = [];
-  obrasEscopo.forEach(o => {
-    let perc = null;
-    if (mesesSet) {
-      const cells = Object.entries(D.conf_heatmap[o] || {})
-        .filter(([m, c]) => mesesSet.has(m) && c && c.perc != null);
-      if (cells.length) perc = cells.reduce((a, [, c]) => a + c.perc, 0) / cells.length;
-    }
-    if (perc == null) {
-      const agg = D.conf_atual[o];
-      if (agg && agg.perc != null) perc = agg.perc;
-    }
-    if (perc != null && perc < 85) risco.push({ obra: o, perc });
-  });
-  risco.sort((a, b) => a.perc - b.perc);
-
-  countEl.textContent = risco.length + ' obra' + (risco.length !== 1 ? 's' : '');
-  if (!risco.length) {
-    ricoEl.innerHTML = '<div class="empty-msg"><i class="ti ti-check"></i> Nenhuma obra em situação crítica</div>';
-  } else {
-    ricoEl.innerHTML = '<ul class="risk-list">' + risco.map(r => `
-      <li class="risk-item">
-        <span class="semaforo sem-red"></span>
-        <span class="risk-name">${r.obra}</span>
-        <span class="risk-pct" style="color:var(--vr3)">${pct(r.perc)}</span>
-      </li>`).join('') + '</ul>';
-  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -5113,7 +5049,6 @@ function applyFilters() {
 
   // Heatmap filtrado
   renderHeatmap(obraF, anoF);
-  renderObrasRisco(obraF, anoF);
   renderTopNcs(obraF, anoF);
 
   // Gráficos filtrados por obra × período
