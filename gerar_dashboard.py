@@ -1375,6 +1375,32 @@ HTML = r"""<!DOCTYPE html>
       <table class="emerg-table" id="obra-emerg-table"></table>
     </div>
   </div>
+
+  <!-- Auditorias Ambientais (Dim_Auditoria_Ambientais) — movida da aba Resíduos -->
+  <div class="card" style="margin-top:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-clipboard-check" style="color:var(--fg4)"></i> Auditorias ambientais</div>
+      <span style="display:inline-flex; gap:8px; align-items:center; font-size:11px; color:var(--gz3)">
+        <label>Período:</label>
+        <select id="filter-aud-mes" onchange="renderAuditorias()"
+          style="border:1px solid var(--gz6); border-radius:5px; padding:3px 8px; font-size:11px; color:var(--gz1); background:var(--bg); cursor:pointer">
+          <option value="all">Todo o período</option>
+          <option value="6m">Últimos 6 meses</option>
+          <option value="12m">Últimos 12 meses</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+        </select>
+        <span class="card-badge" id="aud-badge" style="margin-left:6px">—</span>
+      </span>
+    </div>
+    <div id="aud-tabela"></div>
+    <div style="margin-top: 12px; padding: 10px 12px; background: var(--gz7); border-radius: 8px; border-left: 3px solid var(--fg4);">
+      <div style="font-size: 11px; font-weight: 500; color: var(--gz2); margin-bottom: 6px;">
+        <i class="ti ti-notes" style="color:var(--gz3)"></i> Principais ocorrências da última auditoria
+      </div>
+      <div id="aud-ocorrencias" style="font-size: 11px; color: var(--gz1);"></div>
+    </div>
+  </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -1449,32 +1475,6 @@ HTML = r"""<!DOCTYPE html>
       <div class="card-title"><i class="ti ti-table" style="color:var(--fg4)"></i> Resíduos por Obra</div>
     </div>
     <div id="res-tabela-detalhe"></div>
-  </div>
-
-  <!-- Auditorias Ambientais (Dim_Auditoria_Ambientais) -->
-  <div class="card" style="margin-top:var(--gap)">
-    <div class="card-header">
-      <div class="card-title"><i class="ti ti-clipboard-check" style="color:var(--fg4)"></i> Auditorias ambientais</div>
-      <span style="display:inline-flex; gap:8px; align-items:center; font-size:11px; color:var(--gz3)">
-        <label>Período:</label>
-        <select id="filter-aud-mes" onchange="renderAuditorias()"
-          style="border:1px solid var(--gz6); border-radius:5px; padding:3px 8px; font-size:11px; color:var(--gz1); background:var(--bg); cursor:pointer">
-          <option value="all">Todo o período</option>
-          <option value="6m">Últimos 6 meses</option>
-          <option value="12m">Últimos 12 meses</option>
-          <option value="2025">2025</option>
-          <option value="2026">2026</option>
-        </select>
-        <span class="card-badge" id="aud-badge" style="margin-left:6px">—</span>
-      </span>
-    </div>
-    <div id="aud-tabela"></div>
-    <div style="margin-top: 12px; padding: 10px 12px; background: var(--gz7); border-radius: 8px; border-left: 3px solid var(--fg4);">
-      <div style="font-size: 11px; font-weight: 500; color: var(--gz2); margin-bottom: 6px;">
-        <i class="ti ti-notes" style="color:var(--gz3)"></i> Principais ocorrências da última auditoria
-      </div>
-      <div id="aud-ocorrencias" style="font-size: 11px; color: var(--gz1);"></div>
-    </div>
   </div>
 </div>
 
@@ -4250,6 +4250,11 @@ function renderObra(obraF, anoF) {
 
   // Emergências Ambientais da obra (analítica)
   renderObraEmergencias(isAll ? '' : obra, anoF);
+
+  // Auditorias Ambientais — movida da aba Resíduos; mesma função, sem mudança
+  // de regra. O filtro de Período próprio do card (#filter-aud-mes) continua
+  // com precedência sobre o global, como já era.
+  renderAuditorias(isAll ? '' : obra, anoF);
 }
 
 function renderObraEmergencias(obra, anoF) {
@@ -4894,8 +4899,7 @@ function renderResiduos(obraF, anoF) {
     }
   }
 
-  // ─── Auditorias Ambientais — matriz Meta × Realizado + ocorrências ───
-  renderAuditorias(obraF, anoF);
+  // Auditorias Ambientais foi movida para a aba Obra Individual (renderObra)
 
   // Tabela detalhe por obra (filtra por obra × período)
   // Antes só a obra filtrava — o período era ignorado e a tabela sempre
@@ -5106,7 +5110,7 @@ function applyFilters() {
   renderEmergencias(obraF, anoF);
   renderPaStatus(obraF, anoF);   // não filtra por período — ver comentário na função
   renderSGAAnual(anoF);          // só reage às opções de ano (fonte é anual)
-  renderAuditorias(obraF, anoF);
+  // renderAuditorias movida para a aba Obra Individual (chamada dentro de renderObra)
 
   // Energia + Água + Impressões: filtro do card tem precedência; em branco,
   // seguem o filtro global de obra × período
