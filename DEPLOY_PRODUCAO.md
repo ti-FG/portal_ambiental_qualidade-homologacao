@@ -13,6 +13,7 @@ Documentos relacionados, todos neste repositório:
 | `ALTERACOES_ABA_RESIDUOS.md` | Detalhe da aba Resíduos |
 | `ALTERACOES_ABA_DICIONARIO.md` | Detalhe da aba Dicionário de dados e termos |
 | `ALTERACOES_FILTRO_PERIODO_E_SETOR.md` | Filtro de Período em todos os gráficos e filtro de Setor em água/energia |
+| `ALTERACOES_AUDITORIA_FILTRO_PERIODO.md` | Auditoria e correção dos 4 gráficos/cards que o Período ainda não alcançava |
 | `etl/README.md` | **Modelo semântico e carga do banco** (ver seção 5) |
 
 ---
@@ -143,6 +144,13 @@ Conferências visuais:
       que avisa `histórico completo (sem data na fonte)` no badge)
 - [ ] Filtro de **Setor** nos blocos de água e energia com 25 setores
 - [ ] Aba Obra Individual com o gráfico **Volume por tipo de resíduo**
+- [ ] **Obras em risco crítico** (Consolidado) muda de obra/percentual ao trocar o Período
+- [ ] **Plano Ação Auditorias** na Obra Individual mostra o aviso de histórico
+      completo quando há período selecionado
+- [ ] **Emergências ambientais — analítica** (Obra Individual) muda de contagem
+      ao trocar o Período
+- [ ] **Resíduos por Obra** (aba Resíduos) muda os valores de Kg/m² e Total kg
+      ao trocar o Período
 
 > O valor do card "Resíduos gerados" é hoje **3.469,18** e não tem significado
 > físico — é a soma de todas as linhas de todas as obras e meses. É uma pendência

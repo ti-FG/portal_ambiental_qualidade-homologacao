@@ -1364,6 +1364,7 @@ HTML = r"""<!DOCTYPE html>
     <div class="card">
       <div class="card-header">
         <div class="card-title"><i class="ti ti-clipboard-check" style="color:var(--fg4)"></i> Plano Ação Auditorias</div>
+        <span class="card-badge" id="obra-pa-badge">—</span>
       </div>
       <canvas id="chart-obra-pa" style="max-height:170px"></canvas>
     </div>
@@ -2020,6 +2021,10 @@ function periodoEfetivo(idSelectCard, padraoCard) {
   const g = periodoGlobal();
   return g !== 'all' ? g : (v || 'all');
 }
+// Rótulo curto do valor do filtro de Período, para badges e mensagens.
+function labelPeriodo(anoF) {
+  return { all: 'todo o período', '6m': 'últimos 6 meses', '12m': 'últimos 12 meses' }[anoF] || anoF;
+}
 function pct(v) { return v != null ? v.toFixed(1) + '%' : '—'; }
 function num(v, dec=0) { return v != null ? Number(v).toFixed(dec) : '—'; }
 // Número no padrão pt-BR: milhar "." e decimal "," (ex.: 1.234,56)
@@ -2174,22 +2179,7 @@ function renderConsolidado() {
   renderHeatmap();
 
   // Obras em risco
-  const obras_risco = D.obras_risco || [];
-  const ricoEl = document.getElementById('risco-list');
-  document.getElementById('risco-count').textContent = obras_risco.length + ' obra' + (obras_risco.length !== 1 ? 's' : '');
-  if (obras_risco.length === 0) {
-    ricoEl.innerHTML = '<div class="empty-msg"><i class="ti ti-check"></i> Nenhuma obra em situação crítica</div>';
-  } else {
-    ricoEl.innerHTML = '<ul class="risk-list">' + obras_risco.map(o => {
-      const v = D.conf_atual[o];
-      const p = v ? v.perc : null;
-      return `<li class="risk-item">
-        <span class="semaforo sem-red"></span>
-        <span class="risk-name">${o}</span>
-        <span class="risk-pct" style="color:var(--vr3)">${pct(p)}</span>
-      </li>`;
-    }).join('') + '</ul>';
-  }
+  renderObrasRisco();
 
   renderTopNcs();
 
@@ -2201,6 +2191,53 @@ function renderConsolidado() {
   // IPA por obra agora está na aba Obra Individual — renderizado em renderObra()
   renderMonitoramentoRuido();
   renderEmergencias();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Obras em risco crítico (conformidade < 85%) — respeita obra e período
+// ═══════════════════════════════════════════════════════════
+// Antes era um bloco estático (D.obras_risco, calculado uma vez no Python
+// sobre o histórico completo) que nunca mudava com o filtro. Recalcula por
+// obra dentro do recorte de período usando D.conf_heatmap; sem dado no
+// recorte, cai no agregado histórico da obra (mesmo padrão de fallback do
+// IPA e do ruído em renderObra/renderIpaObras).
+function renderObrasRisco(obraF, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
+  const countEl = document.getElementById('risco-count');
+  const ricoEl  = document.getElementById('risco-list');
+  if (!countEl || !ricoEl) return;
+
+  const mesesSet = (anoF && anoF !== 'all') ? mesesDoPeriodo(anoF, D.conf_meses || []) : null;
+  const todasObras = D.obras || Object.keys(D.conf_heatmap || {});
+  const obrasEscopo = obraF ? [obraF] : todasObras;
+
+  const risco = [];
+  obrasEscopo.forEach(o => {
+    let perc = null;
+    if (mesesSet) {
+      const cells = Object.entries(D.conf_heatmap[o] || {})
+        .filter(([m, c]) => mesesSet.has(m) && c && c.perc != null);
+      if (cells.length) perc = cells.reduce((a, [, c]) => a + c.perc, 0) / cells.length;
+    }
+    if (perc == null) {
+      const agg = D.conf_atual[o];
+      if (agg && agg.perc != null) perc = agg.perc;
+    }
+    if (perc != null && perc < 85) risco.push({ obra: o, perc });
+  });
+  risco.sort((a, b) => a.perc - b.perc);
+
+  countEl.textContent = risco.length + ' obra' + (risco.length !== 1 ? 's' : '');
+  if (!risco.length) {
+    ricoEl.innerHTML = '<div class="empty-msg"><i class="ti ti-check"></i> Nenhuma obra em situação crítica</div>';
+  } else {
+    ricoEl.innerHTML = '<ul class="risk-list">' + risco.map(r => `
+      <li class="risk-item">
+        <span class="semaforo sem-red"></span>
+        <span class="risk-name">${r.obra}</span>
+        <span class="risk-pct" style="color:var(--vr3)">${pct(r.perc)}</span>
+      </li>`).join('') + '</ul>';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2598,91 +2635,6 @@ function renderResSenna(obraF, anoF) {
   resGraficoMensal('chart-res-senna', obra, serie, meses, badge, true);
 }
 
-function renderRuidoBarras(obraF) {
-  let data = D.ruido_barras || [];
-  if (obraF) data = data.filter(d => d.obra === obraF);
-  if (!data.length) {
-    const ctx = document.getElementById('chart-ruido-barras');
-    if (ctx) ctx.parentElement.querySelector('.card-body') && (ctx.style.display = 'none');
-    return;
-  }
-  // Limites legais: 85 dB Itajaí · 60 dB Balneário Camboriú
-  // Coloração: vermelho se > 85 (extrapola Itajaí); âmbar se > 60 (extrapola BC); azul caso ok
-  const barColor = v => {
-    const db = v || 0;
-    if (db > 85) return '#CE8686';
-    if (db > 60) return '#EF9F27';
-    return '#185FA5';
-  };
-
-  makeChart('chart-ruido-barras', {
-    type: 'bar',
-    data: {
-      labels: data.map(d => d.obra),
-      datasets: [
-        {
-          label: 'dB médio',
-          data: data.map(d => d.db),
-          backgroundColor: data.map(d => barColor(d.db)),
-          borderRadius: 4,
-          order: 3,
-        },
-        {
-          label: 'Limite Itajaí (85 dB)',
-          data: data.map(() => 85),
-          type: 'line',
-          borderColor: '#CE8686',
-          borderWidth: 2,
-          borderDash: [6, 3],
-          pointRadius: 0,
-          fill: false,
-          tension: 0,
-          order: 1,
-        },
-        {
-          label: 'Limite BC (60 dB)',
-          data: data.map(() => 60),
-          type: 'line',
-          borderColor: '#3B6D11',
-          borderWidth: 2,
-          borderDash: [6, 3],
-          pointRadius: 0,
-          fill: false,
-          tension: 0,
-          order: 2,
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: true, position: 'top', labels: { boxWidth: 14, padding: 10, font: { size: 11 } } },
-        tooltip: {
-          callbacks: {
-            label: ctx => {
-              if (ctx.datasetIndex === 0) {
-                const v = ctx.raw;
-                let status = '🟢 OK (≤ 60 dB)';
-                if (v > 85) status = '🔴 Acima do limite Itajaí (>85 dB)';
-                else if (v > 60) status = '🟡 Acima do limite BC (>60 dB)';
-                return [` dB médio: ${v}`, ` ${status}`];
-              }
-              return ` ${ctx.dataset.label}`;
-            }
-          }
-        }
-      },
-      scales: {
-        y: {
-          min: 40,
-          suggestedMax: 95,
-          title: { display: true, text: 'dB', font: { size: 12.1 } },
-          grid: { color: 'rgba(0,0,0,0.04)' }
-        }
-      }
-    }
-  });
-}
 
 // ═══════════════════════════════════════════════════════════
 //  Emergências Ambientais — tabela detalhada
@@ -4282,6 +4234,16 @@ function renderObra(obraF, anoF) {
     paObra = D.pa_por_obra[obra] || {};
   }
   const paEntries = Object.entries(paObra).filter(([,v]) => v > 0);
+  // ATENÇÃO — mesmo caso do card de Plano de Ação no Consolidado: Dim_Plano_acao
+  // não tem data de registro da ação (só Prazo, que é data futura de conclusão),
+  // então este donut não filtra por período. Em vez de fingir que filtrou, o
+  // badge avisa quando há período selecionado.
+  const paBadgeEl = document.getElementById('obra-pa-badge');
+  if (paBadgeEl) {
+    const totalPaObra = paEntries.reduce((a, [, v]) => a + v, 0);
+    const avisoPeriodoPa = (anoF && anoF !== 'all') ? ' · histórico completo (sem data na fonte)' : '';
+    paBadgeEl.textContent = totalPaObra + (totalPaObra !== 1 ? ' ações' : ' ação') + avisoPeriodoPa;
+  }
   if (paEntries.length) {
     const colorsMap2 = { 'Realizado': '#005E70', 'Em Andamento': '#89B1C5', 'Pendente': '#888780', 'Atrasado': '#CE8686' };
     makeChart('chart-obra-pa', {
@@ -4300,12 +4262,17 @@ function renderObra(obraF, anoF) {
   renderIpaObras(isAll ? '' : obra, anoF);
 
   // Emergências Ambientais da obra (analítica)
-  renderObraEmergencias(isAll ? '' : obra);
+  renderObraEmergencias(isAll ? '' : obra, anoF);
 }
 
-function renderObraEmergencias(obra) {
+function renderObraEmergencias(obra, anoF) {
+  if (anoF === undefined) anoF = periodoGlobal();
   const all = D.emergencias_lista || [];
-  const data = obra ? all.filter(r => r.obra === obra) : all.slice();
+  let data = obra ? all.filter(r => r.obra === obra) : all.slice();
+  if (anoF && anoF !== 'all') {
+    const mesesSet = mesesDoPeriodo(anoF, all.map(r => r.mes_ano));
+    data = data.filter(r => mesesSet.has(r.mes_ano));
+  }
   const tblEl = document.getElementById('obra-emerg-table');
   const badge = document.getElementById('obra-emerg-badge');
   if (!tblEl) return;
@@ -4313,7 +4280,7 @@ function renderObraEmergencias(obra) {
   const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c =>
     ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
 
-  const scopeLabel = obra || 'todas as obras';
+  const scopeLabel = (obra || 'todas as obras') + (anoF && anoF !== 'all' ? ' · ' + labelPeriodo(anoF) : '');
 
   if (!data.length) {
     tblEl.innerHTML = `
@@ -4946,14 +4913,35 @@ function renderResiduos(obraF, anoF) {
   // ─── Auditorias Ambientais — matriz Meta × Realizado + ocorrências ───
   renderAuditorias(obraF, anoF);
 
-  // Tabela detalhe por obra (filtra se obraF setada)
+  // Tabela detalhe por obra (filtra por obra × período)
+  // Antes só a obra filtrava — o período era ignorado e a tabela sempre
+  // mostrava o agregado histórico de D.res_por_obra, mesmo com um período
+  // selecionado no topo.
   let obras = D.obras || [];
   if (obraF) obras = obras.filter(o => o === obraF);
   // Meta no formato "50kg/m²" (sem decimal quando inteira: 50 · 36,6)
   const metaFmt = m => numBR(m, Number.isInteger(m) ? 0 : 1) + 'kg/m²';
+
+  // "Todo o período" (ou sem dataset granular) → usa o agregado pronto,
+  // sem recomputar; com período ativo → recalcula do recorte já filtrado (filtRes)
+  const resPorObraRecorte = {};
+  if (isAllAll || !hasRaw) {
+    obras.forEach(o => { resPorObraRecorte[o] = D.res_por_obra[o] || {}; });
+  } else {
+    obras.forEach(o => {
+      const linhas = filtRes.filter(r => r.obra === o);
+      const kgM2Vals = linhas.filter(r => r.kg_m2 != null && r.kg_m2 > 0).map(r => r.kg_m2);
+      resPorObraRecorte[o] = {
+        kg_m2: kgM2Vals.length ? kgM2Vals.reduce((a, b) => a + b, 0) / kgM2Vals.length : null,
+        meta: (D.res_por_obra[o] || {}).meta || metaObra(o),
+        total_kg: linhas.reduce((a, r) => a + (r.kg || 0), 0),
+      };
+    });
+  }
+
   let tblHtml = '<table class="mini-table"><thead><tr><th>Obra</th><th>Kg/m²</th><th>Meta</th><th>Status</th><th>Total kg</th></tr></thead><tbody>';
   obras.forEach(o => {
-    const r = D.res_por_obra[o] || {};
+    const r = resPorObraRecorte[o] || {};
     const v = r.kg_m2; const m = r.meta || 50;
     const cls = v == null ? 'sem-gray' : v <= m ? 'sem-green' : v <= m * 1.2 ? 'sem-amber' : 'sem-red';
     tblHtml += `<tr><td>${o}</td><td>${numBR(v, 2)}</td><td>${metaFmt(m)}</td><td><span class="semaforo ${cls}"></span></td><td>${numBR(r.total_kg||0, 0)}</td></tr>`;
@@ -5125,6 +5113,7 @@ function applyFilters() {
 
   // Heatmap filtrado
   renderHeatmap(obraF, anoF);
+  renderObrasRisco(obraF, anoF);
   renderTopNcs(obraF, anoF);
 
   // Gráficos filtrados por obra × período
