@@ -37,6 +37,8 @@ da sua tabela, e o campo `m` de cada `Tabela` resume esses passos.
 | `tabelas.py` | As 19 tabelas: origem, colunas, tipos, chave e transformações. |
 | `modelo_semantico.py` | Operações genéricas equivalentes às do Power Query (substituição de texto, classificação de obra, coerção de tipos). |
 | `validar_vs_pbix.py` | Compara o resultado do ETL com o `.pbix`, tabela a tabela. |
+| `validar_conexao.py` | Confere a conexão com o banco **antes** de carregar: usuário, `search_path`, permissões e registro em `meta.schemas`. |
+| `ddl/provisionar_app.sql` | Cria role, schema e registro no catálogo no 10.1.1.152. Roda uma vez, com o dono da base. |
 | `ddl/modelo_postgresql.sql` | DDL das tabelas. |
 | `ddl/modelo_*_fk.sql` | As 26 FOREIGN KEYs do modelo (as que ainda não podem ser criadas saem comentadas). |
 | `origem.py` | De onde vem a planilha, cópia local e detecção de mudança. |
@@ -47,32 +49,69 @@ da sua tabela, e o campo `m` de cada `Tabela` resume esses passos.
 ## Rodando
 
 > **O destino do modelo é PostgreSQL.** O SQLite foi removido em 15/09/2026 —
-> não há mais carga local de rascunho. `--db-url` é obrigatório para carregar, e
-> sem ele o programa erra em vez de gravar em algum lugar por conta própria.
+> não há mais carga local de rascunho. Sem destino o programa erra, em vez de
+> gravar em algum lugar por conta própria.
+
+O destino sai do **`.env` na raiz do projeto**, que o `etl_excel_para_db.py` lê
+sozinho desde 18/09/2026 — não é mais preciso repetir URL e schema em cada
+chamada, nem na tarefa agendada:
+
+| Variável | Valor hoje |
+|---|---|
+| `DATABASE_URL` | `postgresql+psycopg2://app_ambiental@10.1.1.152:5432/fg_apps` |
+| `DASHFG_DB_SCHEMA` | `bi_ambiental_qualidade` |
+| `PGPASSWORD` | senha do role `app_ambiental` |
+
+`--db-url` e `--schema` continuam existindo e **têm precedência** sobre o `.env`,
+para apontar a carga a outro destino sem editar arquivo nenhum.
 
 ```powershell
 # 1) conferir sem gravar nada (nao precisa de banco)
 py -3.12 etl_excel_para_db.py --somente-validar
 
-# 2) so o DDL do PostgreSQL, sem tocar em banco
+# 2) conferir o BANCO antes de carregar: conecta, confere search_path,
+#    permissoes e o registro em meta.schemas
+py -3.12 validar_conexao.py
+
+# 3) so o DDL do PostgreSQL, sem tocar em banco
 py -3.12 etl_excel_para_db.py --somente-ddl --ddl ddl\modelo_postgresql.sql
 
-# 3) carga em PostgreSQL, em schema proprio
-py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usuario:senha@servidor/base" --schema ambiental
+# 4) carga no destino do .env
+py -3.12 etl_excel_para_db.py
 
-# 4) carga agendada: so recarrega se a planilha mudou, com log
-py -3.12 etl_excel_para_db.py --excel "\\servidor\share\...\Controle Ambiental 2025_oficial_db.xlsx" ^
-    --db-url "postgresql+psycopg2://usuario@servidor/base" --schema ambiental ^
-    --se-mudou --log logs\etl_banco.log
+# 5) carga agendada: so recarrega se a planilha mudou, com log
+py -3.12 etl_excel_para_db.py --se-mudou --log logs\etl_banco.log
 
 # 6) exportar tambem em parquet/csv
 py -3.12 etl_excel_para_db.py --parquet saida\parquet --csv saida\csv
 
-# 7) carga agendada: so recarrega se a planilha mudou, com log
-py -3.12 etl_excel_para_db.py --excel "\\servidor\share\...\Controle Ambiental 2025_oficial_db.xlsx" ^
-    --db-url "postgresql+psycopg2://usuario@servidor/base" --schema ambiental ^
-    --se-mudou --log logs\etl_banco.log
+# 7) apontar para outro destino, ignorando o .env
+py -3.12 etl_excel_para_db.py ^
+    --db-url "postgresql+psycopg2://usuario:senha@servidor/base" ^
+    --schema bi_ambiental_qualidade
 ```
+
+### Onde os dados ficam
+
+O banco `fg_apps` no 10.1.1.152 é **compartilhado** entre os apps internos; o
+isolamento é **por schema**, um role dedicado por app. O nome do schema segue o
+*Guia de Nomenclatura de Schemas* (TI DEV, 03/08/2026), padrão
+`tipo_assunto_departamento`:
+
+| Segmento | Valor | Por quê |
+|---|---|---|
+| `tipo` | `bi` | dashboard de indicadores (seção 3 do guia) |
+| `assunto` | `ambiental` | controle ambiental |
+| `departamento` | `qualidade` | área **dona** do sistema, que decide dados e metas — TI DEV constrói e opera, mas não é a dona (seção 6) |
+
+→ schema **`bi_ambiental_qualidade`**, role **`app_ambiental`** (padrão
+`app_<assunto>`), com `search_path` fixado só nesse schema e sem permissão de
+criar em `public`.
+
+Quem cria tudo isso é [`ddl/provisionar_app.sql`](ddl/provisionar_app.sql) —
+roda **uma vez**, no 152, por quem administra a base (exige dono/superusuário,
+não o role do app). Ele também registra o schema em `meta.schemas` na mesma
+transação, como manda a seção 9 do guia.
 
 A carga é **full refresh**: apaga e regrava todas as tabelas dentro de **uma
 única transação**. Se qualquer tabela falhar, nada é gravado.

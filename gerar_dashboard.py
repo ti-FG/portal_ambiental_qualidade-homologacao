@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Dashboard FG Sustentabilidade — Gerador HTML
+Dashboard FG Viva+ / Sustentabilidade — Gerador HTML
 Gera dashboard_fg.html a partir do Excel de controle ambiental.
 """
 import pandas as pd
@@ -251,13 +251,18 @@ def score_plano_obra(obra):
     no_prazo = d['status'].str.lower().isin(['realizado', 'em andamento']).sum()
     return float(no_prazo / total) if total > 0 else 0.5
 
+# Pesos do IPA definidos pela área (out/2026): conformidade 45%, auditoria 35%,
+# resíduos 20% — fecha 100%. Ruído e plano de ação saíram da composição (os
+# scores continuam calculados e publicados em D.ipa, só não pesam mais).
+IPA_PESOS = {'conf': 0.45, 'aud': 0.35, 'res': 0.20}
+
 def calc_ipa(obra):
     sc = score_conformidade_obra(obra)
     sr = score_residuos_obra(obra)
     sru = score_ruido_obra(obra)
     sa = score_auditoria_obra(obra)
     spa = score_plano_obra(obra)
-    raw = sc * 0.40 + sr * 0.20 + sru * 0.15 + sa * 0.15 + spa * 0.10
+    raw = sc * IPA_PESOS['conf'] + sa * IPA_PESOS['aud'] + sr * IPA_PESOS['res']
     return round(raw * 100, 1)
 
 def ipa_class(v):
@@ -384,11 +389,9 @@ for o in OBRAS:
         sru = _score_ruido_mes(o, mp)
         sa  = _score_aud_mes(o, mp)
         val = round((
-            (sc if sc is not None else sc_agg) * 0.40 +
-            (sr if sr is not None else sr_agg) * 0.20 +
-            (sru if sru is not None else sru_agg) * 0.15 +
-            (sa if sa is not None else sa_agg) * 0.15 +
-            spa_agg * 0.10
+            (sc if sc is not None else sc_agg) * IPA_PESOS['conf'] +
+            (sa if sa is not None else sa_agg) * IPA_PESOS['aud'] +
+            (sr if sr is not None else sr_agg) * IPA_PESOS['res']
         ) * 100, 1)
         serie.append({'mes': mp_str, 'mes_label': _mes_label_ipa(mp_str), 'ipa': val})
     ipa_mensal[o] = serie
@@ -743,7 +746,7 @@ HTML = r"""<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard Indicadores Ambientais — FG Sustentabilidade</title>
+<title>Dashboard Indicadores Ambientais — FG Viva+ / Sustentabilidade</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.8.0/dist/tabler-icons.min.css">
 <style>
@@ -843,6 +846,16 @@ HTML = r"""<!DOCTYPE html>
   @media (max-width: 1100px) { .cards-grid.cols-res { grid-template-columns: 1fr; } }
   @media (max-width: 1100px) { .cards-grid.cols-pa-rec { grid-template-columns: 1fr; } }
   .cards-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  /* Classe A e Classe B: um painel por tipo de resíduo, escala própria em cada um */
+  .ct-classe { font-size: 12px; font-weight: 600; color: var(--gz2); margin: 6px 0 8px; display: flex; align-items: center; gap: 8px; }
+  .ct-classe .ct-dot { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+  .ct-classe .ct-tot { font-weight: 400; color: var(--gz4); }
+  .ct-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 14px; }
+  .ct-painel { border: 1px solid var(--gz6); border-radius: 8px; padding: 8px 10px 4px; min-width: 0; }
+  .ct-painel-titulo { font-size: 12px; font-weight: 600; color: var(--gz1); display: flex; justify-content: space-between; gap: 6px; margin-bottom: 2px; }
+  .ct-painel-titulo span:last-child { font-weight: 400; color: var(--gz4); white-space: nowrap; }
+  @media (max-width: 1100px) { .ct-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 700px)  { .ct-grid { grid-template-columns: 1fr; } }
   .cards-grid.cols-2 { grid-template-columns: 1fr 1fr; }
 
   /* Card */
@@ -972,7 +985,7 @@ HTML = r"""<!DOCTYPE html>
 
   /* Tabela de Emergências Ambientais */
   /* Painel "Reclamações — assuntos e maiores incidências" */
-  .rec-detalhe-wrap { max-height: 220px; overflow-y: auto; }
+  .rec-detalhe-wrap { max-height: 460px; overflow-y: auto; }
   .rec-table { width: 100%; border-collapse: collapse; font-size: 10.5px; }
   .rec-table thead th {
     background: var(--gz7); padding: 6px 8px; text-align: left; font-weight: 500;
@@ -1036,7 +1049,7 @@ HTML = r"""<!DOCTYPE html>
     <div class="brand-logo"><i class="ti ti-leaf" style="color:#fff"></i></div>
     <div>
       <div class="brand-name">INDICADORES AMBIENTAIS</div>
-      <div class="brand-sub">FG Sustentabilidade</div>
+      <div class="brand-sub">FG Viva+ / Sustentabilidade</div>
     </div>
   </div>
   <div class="nav-tabs">
@@ -1089,12 +1102,20 @@ HTML = r"""<!DOCTYPE html>
 ════════════════════════════════════════════════════════════ -->
 <div id="page-consolidado" class="page active">
 
-  <!-- 6 KPI cards -->
-  <div class="kpi-row cols-5" id="kpis-global"></div>
+  <!-- 6 KPI cards — mesma ordem na aba Obra Individual (ver kpiCardsHtml) -->
+  <div class="kpi-row cols-6" id="kpis-global"></div>
 
   <!-- Bloco principal -->
-  <div class="cards-grid cols-1-2" style="margin-bottom:var(--gap)">
-    <!-- Top NCs (esquerda) -->
+  <div class="cards-grid cols-2-1" style="margin-bottom:var(--gap)">
+    <!-- Heatmap conformidade (esquerda) -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-file-certificate" style="color:var(--fg4)"></i> Conformidade LAI/EIV por obra × mês</div>
+        <div class="card-badge" id="heatmap-badge">últimos 12 meses</div>
+      </div>
+      <div class="card-body heatmap-wrap" id="heatmap-container"></div>
+    </div>
+    <!-- Top NCs (direita) -->
     <div style="display:flex; flex-direction:column; gap:var(--gap); height:100%">
       <div class="card" style="flex:1 1 auto; display:flex; flex-direction:column">
         <div class="card-header">
@@ -1103,36 +1124,6 @@ HTML = r"""<!DOCTYPE html>
         </div>
         <ul class="nc-list" id="top-ncs-list" style="flex:1; display:flex; flex-direction:column; justify-content:space-around"></ul>
       </div>
-    </div>
-    <!-- Heatmap conformidade (direita) -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i class="ti ti-file-certificate" style="color:var(--fg4)"></i> Conformidade LAI/EIV por obra × mês</div>
-        <div class="card-badge" id="heatmap-badge">últimos 12 meses</div>
-      </div>
-      <div class="card-body heatmap-wrap" id="heatmap-container"></div>
-    </div>
-  </div>
-
-  <!-- Resíduos gerados: demais obras (meta 36,6) e Senna Tower (meta 50) lado a
-       lado — réguas diferentes, por isso em gráficos separados -->
-  <div class="cards-grid cols-res" style="margin-bottom:var(--gap)">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> <span id="res-barras-titulo">Resíduos Gerados kg/m² por obra</span></div>
-        <span class="card-badge" id="res-barras-badge">—</span>
-      </div>
-      <canvas id="chart-res-barras" style="max-height:320px"></canvas>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i class="ti ti-building-skyscraper" style="color:var(--fg4)"></i> Resíduos Gerados kg/m² — Senna Tower</div>
-        <span style="display:inline-flex; gap:8px; align-items:center">
-          <span class="card-badge" id="res-senna-acum" hidden></span>
-          <span class="card-badge" id="res-senna-badge">—</span>
-        </span>
-      </div>
-      <canvas id="chart-res-senna" style="max-height:320px"></canvas>
     </div>
   </div>
 
@@ -1164,21 +1155,24 @@ HTML = r"""<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- Detalhe das reclamações, dividido em dois -->
-  <div class="cards-grid cols-2" style="margin-bottom:var(--gap)">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--fg4)"></i> Maiores incidências por assunto</div>
-        <span class="card-badge" id="rec-rank-badge">—</span>
-      </div>
-      <canvas id="chart-rec-rank" style="max-height:200px"></canvas>
+  <!-- Detalhe das reclamações — "Assunto e ação por obra" primeiro, depois
+       "Maiores incidências por assunto"; cada um na largura toda e mais alto
+       para mostrar mais linhas sem rolagem -->
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-list-details" style="color:var(--fg4)"></i> Assunto e ação por obra</div>
+      <span class="card-badge" id="rec-detalhe-badge">—</span>
     </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title"><i class="ti ti-list-details" style="color:var(--fg4)"></i> Assunto e ação por obra</div>
-        <span class="card-badge" id="rec-detalhe-badge">—</span>
-      </div>
-      <div id="rec-detalhe" class="rec-detalhe-wrap"></div>
+    <div id="rec-detalhe" class="rec-detalhe-wrap"></div>
+  </div>
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--fg4)"></i> Maiores incidências por assunto</div>
+      <span class="card-badge" id="rec-rank-badge">—</span>
+    </div>
+    <!-- Altura acompanha o número de assuntos (ver renderRecDetalhe) -->
+    <div id="rec-rank-wrap" style="position:relative; height:320px">
+      <canvas id="chart-rec-rank"></canvas>
     </div>
   </div>
 
@@ -1193,16 +1187,33 @@ HTML = r"""<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- Footer KPIs -->
-  <!-- Eventos Ambientais (Dim_Acoes_SGA) — pessoas por ano -->
-  <div class="card" style="margin-bottom:var(--gap)">
-    <div class="card-header">
-      <div class="card-title"><i class="ti ti-users" style="color:var(--fg4)"></i> Eventos Ambientais</div>
-      <span class="card-badge" id="sga-badge">acumulado desde 2021</span>
+  <!-- Resíduos gerados: demais obras (meta 36,6) e Senna Tower (meta 50) lado a
+       lado — réguas diferentes, por isso em gráficos separados -->
+  <div class="cards-grid cols-res" style="margin-bottom:var(--gap)">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> <span id="res-barras-titulo">Resíduos Gerados kg/m² por obra</span></div>
+        <span class="card-badge" id="res-barras-badge">—</span>
+      </div>
+      <canvas id="chart-res-barras" style="max-height:320px"></canvas>
     </div>
-    <canvas id="chart-sga-anual" style="max-height:240px"></canvas>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><i class="ti ti-building-skyscraper" style="color:var(--fg4)"></i> Resíduos Gerados kg/m² — Senna Tower</div>
+        <span style="display:inline-flex; gap:8px; align-items:center">
+          <span class="card-badge" id="res-senna-acum" hidden></span>
+          <span class="card-badge" id="res-senna-badge">—</span>
+        </span>
+      </div>
+      <canvas id="chart-res-senna" style="max-height:320px"></canvas>
+    </div>
   </div>
 
+  <!-- Energia + Água + Impressões. O bloco aparece também na aba Obra Individual:
+       é o MESMO nó, movido entre os slots por showPage() — mantém os IDs, os filtros
+       de setor/período e o estado dos gráficos, sem duplicar código. -->
+  <div id="slot-consumo-consolidado">
+  <div id="bloco-consumo">
   <!-- Consumo de Energia (kWh + intensidade kWh/m²) -->
   <div class="imp-section-header">
     <span class="imp-section-title"><i class="ti ti-bolt"></i> Consumo de energia</span>
@@ -1308,14 +1319,26 @@ HTML = r"""<!DOCTYPE html>
       <div id="imp-setores-table"></div>
     </div>
   </div>
+  </div>
+  </div>
+
+  <!-- Eventos Ambientais (Dim_Acoes_SGA) — pessoas por ano. Último gráfico da aba -->
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-users" style="color:var(--fg4)"></i> Eventos Ambientais</div>
+      <span class="card-badge" id="sga-badge">acumulado desde 2021</span>
+    </div>
+    <canvas id="chart-sga-anual" style="max-height:240px"></canvas>
+  </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
      PAGE 2 — OBRA INDIVIDUAL
 ════════════════════════════════════════════════════════════ -->
 <div id="page-obra" class="page">
-  <!-- 4 KPIs da obra -->
-  <div class="kpi-row cols-3" id="kpis-obra" style="margin-bottom:var(--gap)"></div>
+  <!-- Mesmos 6 KPIs, na mesma ordem, da aba Consolidado (kpiCardsHtml) -->
+  <div class="kpi-row cols-6" id="kpis-obra" style="margin-bottom:var(--gap)"></div>
 
   <!-- Conformidade + IPA -->
   <div class="cards-grid cols-2" style="margin-bottom:var(--gap)">
@@ -1356,15 +1379,6 @@ HTML = r"""<!DOCTYPE html>
     </div>
   </div>
 
-  <!-- Volume por tipo de resíduo — mesmo gráfico da aba Resíduos, no recorte da obra -->
-  <div class="card" style="margin-bottom:var(--gap)">
-    <div class="card-header">
-      <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> Volume por tipo de resíduo</div>
-      <span class="card-badge" id="obra-res-tipo-badge">—</span>
-    </div>
-    <canvas id="chart-obra-res-tipo" style="max-height:340px"></canvas>
-  </div>
-
   <!-- Emergências Ambientais — analítica da obra -->
   <div class="card" style="margin-top:var(--gap)">
     <div class="card-header">
@@ -1401,6 +1415,20 @@ HTML = r"""<!DOCTYPE html>
       <div id="aud-ocorrencias" style="font-size: 11px; color: var(--gz1);"></div>
     </div>
   </div>
+
+  <!-- Energia + Água + Impressões: o bloco da aba Consolidado é movido para cá
+       quando esta aba é aberta (showPage) -->
+  <div id="slot-consumo-obra" style="margin-top:var(--gap)"></div>
+
+  <!-- Volume por tipo de resíduo — mesmo gráfico da aba Resíduos, no recorte da obra -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-trash" style="color:var(--fg4)"></i> Volume por tipo de resíduo</div>
+      <span class="card-badge" id="obra-res-tipo-badge">—</span>
+    </div>
+    <canvas id="chart-obra-res-tipo" style="max-height:340px"></canvas>
+  </div>
+
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
@@ -1408,8 +1436,8 @@ HTML = r"""<!DOCTYPE html>
 ════════════════════════════════════════════════════════════ -->
 <div id="page-residuos" class="page">
 
-  <!-- 3 KPI cards -->
-  <div class="kpi-row cols-3" id="kpis-residuos" style="margin-bottom:var(--gap)"></div>
+  <!-- 4 KPI cards (Volume · Geração Resíduo · Senna Tower consolidado · Classes CONAMA) -->
+  <div class="kpi-row cols-4" id="kpis-residuos" style="margin-bottom:var(--gap)"></div>
 
   <!-- Geração Resíduo: demais obras (meta 36,6) e Senna Tower (meta 50) lado a
        lado — mesmo padrão do card "Resíduos Gerados kg/m² por obra" da aba
@@ -1440,6 +1468,16 @@ HTML = r"""<!DOCTYPE html>
       <div class="card-title"><i class="ti ti-chart-bar" style="color:var(--fg4)"></i> Geração Resíduos (ton)</div>
     </div>
     <canvas id="chart-res-conama" style="max-height:280px"></canvas>
+  </div>
+
+  <!-- Classe A e Classe B: o que compõe cada classe do "Geração Resíduos (ton)" -->
+  <div class="card" style="margin-bottom:var(--gap)">
+    <div class="card-header">
+      <div class="card-title"><i class="ti ti-list-tree" style="color:var(--fg4)"></i> Classe A e Classe B — tipos de resíduo por empreendimento</div>
+      <span class="card-badge" id="res-classe-tipo-badge">—</span>
+    </div>
+    <!-- Painéis montados em renderResiduos() — um por tipo, agrupados pela classe -->
+    <div id="res-classe-tipo-paineis"></div>
   </div>
 
   <!-- Tipo x mes: 6 colunas (meses) por tipo, para os 8 tipos com maior volume -->
@@ -1519,8 +1557,8 @@ HTML = r"""<!DOCTYPE html>
           <tr class="dic-row">
             <td class="dic-nome">IPA — Índice de Performance Ambiental</td>
             <td class="dic-onde">Consolidado · Obra individual</td>
-            <td>Média ponderada de cinco scores de 0 a 1, multiplicada por 100 e arredondada em 1 casa:
-              conformidade 40%, resíduos 20%, ruído 15%, auditoria 15%, plano de ação 10%.
+            <td>Média ponderada de três scores de 0 a 1, multiplicada por 100 e arredondada em 1 casa:
+              conformidade 45%, auditoria 35% e resíduos 20% — fecha 100%.
               Cada score é calculado por obra — ver a seção <em>Composição do IPA</em>.
               <span class="dic-nota">Faixas: ≥ 90 excelente · ≥ 80 bom · ≥ 70 atenção · &lt; 70 crítico.</span></td>
             <td>Todas as tabelas dos cinco componentes</td>
@@ -1537,7 +1575,7 @@ HTML = r"""<!DOCTYPE html>
             <td class="dic-onde">Obra individual</td>
             <td>Mesma fórmula recalculada mês a mês nos últimos 12 meses. Quando falta o dado de um
               componente naquele mês, o score agregado da obra é usado como retaguarda.
-              <span class="dic-nota">O plano de ação fica constante na série: a fonte não tem data histórica confiável.</span></td>
+</td>
             <td>Derivado dos scores mensais</td>
           </tr>
           <tr class="dic-row">
@@ -1676,35 +1714,23 @@ HTML = r"""<!DOCTYPE html>
         <tbody>
           <tr class="dic-row">
             <td class="dic-nome">Conformidade LAI/EIV</td>
-            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:100%"></div></div><span class="dic-peso-num">40%</span></div></td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:100%"></div></div><span class="dic-peso-num">45%</span></div></td>
             <td>Conformidade média da obra ÷ meta da obra, com teto em 1,0.</td>
             <td>Fat_Conformidade_LAI_EIV</td>
           </tr>
           <tr class="dic-row">
             <td class="dic-nome">Resíduos</td>
-            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:50%"></div></div><span class="dic-peso-num">20%</span></div></td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:44.4%"></div></div><span class="dic-peso-num">20%</span></div></td>
             <td>Meta da obra ÷ kg/m² médio da obra, com teto em 1,0 — quanto menor a geração, maior o
               score. Aqui a agregação é <strong>média</strong> das linhas, e não soma.
               <span class="dic-nota">Usa a meta fixa por obra, não a coluna “Meta Kg” do modelo.</span></td>
             <td>Fat_soma_residuos</td>
           </tr>
           <tr class="dic-row">
-            <td class="dic-nome">Ruído</td>
-            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:37.5%"></div></div><span class="dic-peso-num">15%</span></div></td>
-            <td>Medições ≤ 70 dB ÷ medições com valor preenchido.</td>
-            <td>Fat_Ruido</td>
-          </tr>
-          <tr class="dic-row">
             <td class="dic-nome">Auditoria</td>
-            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:37.5%"></div></div><span class="dic-peso-num">15%</span></div></td>
+            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:77.8%"></div></div><span class="dic-peso-num">35%</span></div></td>
             <td>Auditorias com <em>Realizado = Sim</em> ÷ total de auditorias da obra.</td>
             <td>Dim_Auditoria_Ambientais</td>
-          </tr>
-          <tr class="dic-row">
-            <td class="dic-nome">Plano de ação</td>
-            <td><div class="dic-peso-wrap"><div class="dic-peso-bar"><div class="dic-peso-fill" style="width:25%"></div></div><span class="dic-peso-num">10%</span></div></td>
-            <td>Ações <em>Realizado</em> ou <em>Em andamento</em> ÷ total de ações da obra.</td>
-            <td>Dim_Plano_acao</td>
           </tr>
           <tr class="dic-row">
             <td class="dic-nome">Sem dado — retaguarda</td>
@@ -1851,7 +1877,7 @@ HTML = r"""<!DOCTYPE html>
           <tr class="dic-row"><td class="dic-nome">EIV</td><td>Estudo de Impacto de Vizinhança — estudo urbanístico que gera medidas mitigadoras e compensatórias exigidas da obra.</td></tr>
           <tr class="dic-row"><td class="dic-nome">NC — não-conformidade</td><td>Item exigido pela LAI ou pelo EIV que a auditoria encontrou descumprido. Aqui a unidade de contagem é o assunto apontado, não a linha de auditoria.</td></tr>
           <tr class="dic-row"><td class="dic-nome">Conformidade</td><td>Percentual de itens da LAI e do EIV atendidos pela obra no mês.</td></tr>
-          <tr class="dic-row"><td class="dic-nome">IPA</td><td>Índice de Performance Ambiental — nota única de 0 a 100 que resume conformidade, resíduos, ruído, auditoria e plano de ação de uma obra.</td></tr>
+          <tr class="dic-row"><td class="dic-nome">IPA</td><td>Índice de Performance Ambiental — nota única de 0 a 100 que resume conformidade LAI/EIV, auditoria e resíduos de uma obra.</td></tr>
           <tr class="dic-row"><td class="dic-nome">SGA</td><td>Sistema de Gestão Ambiental — conjunto de práticas e ações de conscientização; o indicador aqui é o número de pessoas alcançadas.</td></tr>
           <tr class="dic-row"><td class="dic-nome">CONAMA 307</td><td>Resolução que classifica os resíduos da construção civil em quatro classes.</td></tr>
           <tr class="dic-row"><td class="dic-nome">Classe A</td><td>Resíduos reutilizáveis ou recicláveis como agregado: concreto, argamassa, alvenaria, entulho em geral. É a maior parcela do volume gerado.</td></tr>
@@ -1945,7 +1971,7 @@ HTML = r"""<!DOCTYPE html>
 </div>
 
 <div class="dash-footer">
-  FG Sustentabilidade · Dashboard Indicadores Ambientais · Gerado em __DATA_DATE__
+  FG Viva+ / Sustentabilidade · Dashboard Indicadores Ambientais · Gerado em __DATA_DATE__
 </div>
 
 <script>
@@ -1963,6 +1989,13 @@ function showPage(id) {
     document.getElementById('page-' + p).classList.toggle('active', p === id);
     document.getElementById('tab-' + p).classList.toggle('active', p === id);
   });
+  // Energia + Água + Impressões aparecem no Consolidado e na Obra Individual:
+  // o mesmo bloco é movido para o slot da aba aberta (os gráficos Chart.js
+  // seguem vivos e se redimensionam pelo ResizeObserver).
+  const blocoConsumo = document.getElementById('bloco-consumo');
+  const slotConsumo  = document.getElementById(id === 'obra' ? 'slot-consumo-obra' : 'slot-consumo-consolidado');
+  if (blocoConsumo && slotConsumo && (id === 'obra' || id === 'consolidado')
+      && blocoConsumo.parentNode !== slotConsumo) slotConsumo.appendChild(blocoConsumo);
   if (id === 'obra') renderObra();
   if (id === 'dicionario') renderDicionario();
   // A barra de filtros nao tem efeito sobre o dicionario (conteudo de referencia).
@@ -2154,45 +2187,81 @@ Chart.defaults.font.family = "'Segoe UI', Inter, system-ui, sans-serif";
 Chart.defaults.font.size = 11;
 
 // ═══════════════════════════════════════════════════════════
-//  PAGE 1 — Consolidado
+//  KPIs — os 6 cards, na mesma ordem, no Consolidado e na Obra Individual
 // ═══════════════════════════════════════════════════════════
-function renderConsolidado() {
-  const g = D.global;
+// Ordem definida pela área: IPA → Conformidade LAI/EIV → Plano Ação Auditorias →
+// Emergências Ambientais → Resíduos gerados → Reclamações de Vizinhos.
 
-  // KPI cards
-  const ipaColor = g.ipa >= 90 ? 'green' : g.ipa >= 80 ? 'blue' : g.ipa >= 70 ? 'amber' : 'red';
-  document.getElementById('kpis-global').innerHTML = `
+// Emergências no recorte obra × período — mesmo filtro da tabela (renderEmergencias)
+function emergFiltradas(obraF, anoF) {
+  let data = D.emergencias_lista || [];
+  if (obraF) data = data.filter(r => r.obra === obraF);
+  if (anoF && anoF !== 'all') data = data.filter(r => noPeriodo(r.mes || r.mes_ano, anoF));
+  return data;
+}
+const emergSubDe = anoF => (!anoF || anoF === 'all') ? 'acumulado' : 'acumulado no período';
+
+// % de ações Realizado/Em andamento do plano de ação (uma obra ou todas)
+function paPctDe(obraF) {
+  if (!obraF) return D.global.pa_no_prazo_pct;
+  const pa_o = (D.pa_por_obra || {})[obraF] || {};
+  const total = Object.values(pa_o).reduce((a, b) => a + b, 0);
+  const done  = (pa_o['Realizado'] || 0) + (pa_o['Em Andamento'] || 0);
+  return total > 0 ? Math.round(done / total * 100 * 10) / 10 : 0;
+}
+
+// k = { ipaLabel, ipa, conf, confMeta, pa, emerg, emergSub, kgM2, resMeta, resSub, rec, recLimite }
+function kpiCardsHtml(k) {
+  const ipaColor = k.ipa >= 90 ? 'green' : k.ipa >= 80 ? 'blue' : k.ipa >= 70 ? 'amber' : 'red';
+  const confCor  = k.confMeta == null ? 'green'
+                 : (k.conf || 0) >= k.confMeta ? 'green'
+                 : (k.conf || 0) >= k.confMeta * 0.9 ? 'amber' : 'red';
+  return `
     <div class="kpi ${ipaColor}">
-      <div class="kpi-label"><i class="ti ti-chart-line"></i> IPA global</div>
-      <div class="kpi-value large ${ipaClass(g.ipa)}">${g.ipa}</div>
+      <div class="kpi-label"><i class="ti ti-chart-line"></i> ${k.ipaLabel}</div>
+      <div class="kpi-value large ${ipaClass(k.ipa)}">${k.ipa}</div>
       <div class="kpi-sub">Índice de Performance Ambiental</div>
-      <div style="margin-top:6px">${badgeIpa(g.ipa)}</div>
+      <div style="margin-top:6px">${badgeIpa(k.ipa)}</div>
     </div>
-    <div class="kpi green">
+    <div class="kpi ${confCor}">
       <div class="kpi-label"><i class="ti ti-file-certificate"></i> Conformidade LAI/EIV</div>
-      <div class="kpi-value">${pct(g.conf_media)}</div>
-      <div class="kpi-sub">média LAI/EIV</div>
+      <div class="kpi-value">${pct(k.conf)}</div>
+      <div class="kpi-sub">${k.confMeta == null ? 'média LAI/EIV' : 'meta: ' + pct(k.confMeta)}</div>
       <i class="ti ti-file-certificate kpi-icon"></i>
     </div>
-    <div class="kpi ${resClass(g.media_kg_m2)}">
-      <div class="kpi-label"><i class="ti ti-package"></i> Resíduos gerados</div>
-      <div class="kpi-value">${num(g.media_kg_m2,2)}</div>
-      <div class="kpi-sub">kg/m² médio · Senna 50 · demais 36,6</div>
-      <i class="ti ti-trash kpi-icon"></i>
-    </div>
-    <div class="kpi ${g.total_rec > 5 ? 'amber' : 'green'}">
-      <div class="kpi-label"><i class="ti ti-message-report"></i> Reclamações de Vizinhos</div>
-      <div class="kpi-value">${g.total_rec}</div>
-      <div class="kpi-sub">vizinhos no período</div>
-      <i class="ti ti-message-report kpi-icon"></i>
-    </div>
-    <div class="kpi ${g.pa_no_prazo_pct >= 80 ? 'green' : 'amber'}">
+    <div class="kpi ${k.pa >= 80 ? 'green' : 'amber'}">
       <div class="kpi-label"><i class="ti ti-clipboard-check"></i> Plano Ação Auditorias</div>
-      <div class="kpi-value">${pct(g.pa_no_prazo_pct)}</div>
+      <div class="kpi-value">${pct(k.pa)}</div>
       <div class="kpi-sub">ações em dia</div>
       <i class="ti ti-clipboard-check kpi-icon"></i>
     </div>
+    <div class="kpi ${k.emerg > 0 ? 'amber' : 'green'}">
+      <div class="kpi-label"><i class="ti ti-alert-octagon"></i> Emergências Ambientais</div>
+      <div class="kpi-value">${k.emerg}</div>
+      <div class="kpi-sub">${k.emergSub}</div>
+      <i class="ti ti-alert-octagon kpi-icon"></i>
+    </div>
+    <div class="kpi ${resClass(k.kgM2, k.resMeta)}">
+      <div class="kpi-label"><i class="ti ti-package"></i> Resíduos gerados</div>
+      <div class="kpi-value">${num(k.kgM2, 2)}</div>
+      <div class="kpi-sub">${k.resSub}</div>
+      <i class="ti ti-trash kpi-icon"></i>
+    </div>
+    <div class="kpi ${k.rec > k.recLimite ? 'amber' : 'green'}">
+      <div class="kpi-label"><i class="ti ti-message-report"></i> Reclamações de Vizinhos</div>
+      <div class="kpi-value">${k.rec}</div>
+      <div class="kpi-sub">vizinhos no período</div>
+      <i class="ti ti-message-report kpi-icon"></i>
+    </div>
   `;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PAGE 1 — Consolidado
+// ═══════════════════════════════════════════════════════════
+function renderConsolidado() {
+  // KPI cards — mesma função usada quando os filtros mudam
+  updateKpisFiltered((document.getElementById('filter-obra-global') || {}).value || '', periodoGlobal());
 
   // Bloco SGA + Energia + Água + Impressões
   renderSGAAnual();
@@ -3113,6 +3182,10 @@ function renderRecDetalhe(obraF, anoF) {
 
   if (bRank) bRank.textContent = ranking.length + (ranking.length !== 1 ? ' assuntos' : ' assunto') + (obraF ? ' · ' + obraF : '');
   if (document.getElementById('chart-rec-rank')) {
+    // Card na largura toda: ~30px por assunto, mínimo 320px — mostra todos os
+    // assuntos sem espremer as barras
+    const rankWrap = document.getElementById('rec-rank-wrap');
+    if (rankWrap) rankWrap.style.height = Math.max(320, ranking.length * 30 + 30) + 'px';
     makeChart('chart-rec-rank', {
       type: 'bar',
       data: {
@@ -3127,6 +3200,7 @@ function renderRecDetalhe(obraF, anoF) {
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         indexAxis: 'y',
         layout: { padding: { right: 28 } },
         plugins: {
@@ -4075,7 +4149,9 @@ function renderObra(obraF, anoF) {
   let confPerc, confMeta;
   if (mesesSet && confCells.length) {
     confPerc = +(confCells.reduce((a,v)=>a+v.perc,0)/confCells.length).toFixed(1);
-    confMeta = +(confCells.reduce((a,v)=>a+(v.meta||90),0)/confCells.length).toFixed(1);
+    // Meta 0 = não lançada: fica fora da média (mesma regra do Consolidado)
+    const metasLanc = confCells.filter(v => v.meta > 0);
+    confMeta = metasLanc.length ? +(metasLanc.reduce((a,v)=>a+v.meta,0)/metasLanc.length).toFixed(1) : 90;
   } else if (isAll) {
     confPerc = g.conf_media || 0; confMeta = 90;
   } else {
@@ -4101,24 +4177,21 @@ function renderObra(obraF, anoF) {
   const al = isAll ? {} : (D.al_por_obra[obra] || {});
   const res = isAll ? {} : (D.res_por_obra[obra] || {});
 
-  // 3 KPIs
-  document.getElementById('kpis-obra').innerHTML = `
-    <div class="kpi ${ipaVal >= 90 ? 'green' : ipaVal >= 80 ? 'blue' : ipaVal >= 70 ? 'amber' : 'red'}">
-      <div class="kpi-label"><i class="ti ti-chart-line"></i> IPA da obra</div>
-      <div class="kpi-value large ${ipaClass(ipaVal)}">${ipaVal}</div>
-      <div style="margin-top:6px">${badgeIpa(ipaVal)}</div>
-    </div>
-    <div class="kpi ${confPerc >= 90 ? 'green' : confPerc >= 80 ? 'amber' : 'red'}">
-      <div class="kpi-label"><i class="ti ti-file-certificate"></i> Conformidade LAI/EIV</div>
-      <div class="kpi-value">${pct(confPerc)}</div>
-      <div class="kpi-sub">meta: ${pct(confMeta)}</div>
-    </div>
-    <div class="kpi ${rec > 3 ? 'amber' : 'green'}">
-      <div class="kpi-label"><i class="ti ti-message-report"></i> Reclamações de Vizinhos</div>
-      <div class="kpi-value">${rec}</div>
-      <div class="kpi-sub">vizinhos no período</div>
-    </div>
-  `;
+  // 6 KPIs — mesmos cards e mesma ordem da aba Consolidado
+  const kpObra = kpisDoPeriodo(isAll ? '' : obra, anoF);
+  const kgM2Obra = (kpObra && kpObra.kg_m2 != null) ? kpObra.kg_m2
+                 : (isAll ? g.media_kg_m2 : res.kg_m2);
+  document.getElementById('kpis-obra').innerHTML = kpiCardsHtml({
+    ipaLabel: isAll ? 'IPA global' : 'IPA da obra',
+    ipa: ipaVal,
+    conf: confPerc, confMeta: confMeta,
+    pa: paPctDe(isAll ? '' : obra),
+    emerg: emergFiltradas(isAll ? '' : obra, anoF).length, emergSub: emergSubDe(anoF),
+    kgM2: kgM2Obra,
+    resMeta: isAll ? undefined : res.meta,
+    resSub: isAll ? 'kg/m² médio · Senna 50 · demais 36,6' : `kg/m² · meta: ${res.meta || 36.6} kg/m²`,
+    rec: rec, recLimite: isAll ? 5 : 3,
+  });
 
   // Tabela conformidade (respeita filtro de período)
   // Modo "todas as obras": média das obras por mês
@@ -4132,7 +4205,7 @@ function renderObra(obraF, anoF) {
       obrasList.forEach(o => {
         const cell = (D.conf_heatmap[o] || {})[m];
         if (cell && cell.perc != null) vals.push(cell.perc);
-        if (cell && cell.meta != null) metas.push(cell.meta);
+        if (cell && cell.meta > 0) metas.push(cell.meta);
       });
       if (vals.length) {
         heatmap[m] = {
@@ -4542,7 +4615,24 @@ function renderResiduos(obraF, anoF) {
   const topClasseKg  = topClasse ? topClasse[1] : 0;
   const topClassePct = (topClasse && totalKgF > 0) ? (topClasseKg / totalKgF * 100) : null;
 
-  // 3 KPI cards — refletem o recorte (obra × período)
+  // Senna Tower consolidado: média das intensidades mensais (soma dos tipos no
+  // mês) dentro do recorte — mesmo número do selo "acumulado" do card da Senna.
+  // Com outra obra no filtro global, a Senna sai de cena (mesma regra do gráfico).
+  let sennaKm = null;
+  const sennaFora = !!(obraF && !SENNA_RE.test(obraF));
+  if (!sennaFora) {
+    const porMesSenna = {};
+    rawRes.forEach(r => {
+      if (!SENNA_RE.test(String(r.obra || '')) || !(r.kg_m2 > 0) || !mesesSet.has(r.mes_ano)) return;
+      porMesSenna[r.mes_ano] = (porMesSenna[r.mes_ano] || 0) + r.kg_m2;
+    });
+    const vs = Object.values(porMesSenna);
+    if (vs.length) sennaKm = vs.reduce((a, b) => a + b, 0) / vs.length;
+  }
+  const metaSenna = resMetaDe((D.obras || []).find(o => SENNA_RE.test(o)) || '') || 50;
+  const metaSennaTxt = numBR(metaSenna, Number.isInteger(metaSenna) ? 0 : 1);
+
+  // 4 KPI cards — refletem o recorte (obra × período)
   const periodoLbl = (anoF === '6m') ? 'últ. 6m'
                    : (anoF === '12m') ? 'últ. 12m'
                    : (anoF && anoF !== 'all') ? anoF
@@ -4557,6 +4647,11 @@ function renderResiduos(obraF, anoF) {
       <div class="kpi-label"><i class="ti ti-ruler-measure"></i> Geração Resíduo</div>
       <div class="kpi-value">${numBR(mediaKmF,2)}</div>
       <div class="kpi-sub">kg/m² · ${obraF && obraF.toLowerCase().includes('senna') ? 'meta: 50' : 'meta: 36,6'} kg/m²</div>
+    </div>
+    <div class="kpi ${sennaKm == null ? 'gray' : sennaKm <= metaSenna ? 'green' : 'red'}">
+      <div class="kpi-label"><i class="ti ti-building-skyscraper"></i> Senna Tower — consolidado</div>
+      <div class="kpi-value">${sennaKm == null ? '—' : numBR(sennaKm, 2)}</div>
+      <div class="kpi-sub">${sennaFora ? 'fora do filtro · ' + obraF : sennaKm == null ? 'sem lançamento no recorte' : 'kg/m² · meta: ' + metaSennaTxt + ' kg/m²'}</div>
     </div>
     <div class="kpi blue">
       <div class="kpi-label"><i class="ti ti-recycle"></i> Classes CONAMA</div>
@@ -4813,6 +4908,96 @@ function renderResiduos(obraF, anoF) {
     });
   } else {
     semDados('chart-res-conama');
+  }
+
+  // ─── Classe A e Classe B — tipos de resíduo por empreendimento ───
+  // Um painel por tipo de resíduo, agrupados pela classe (A antes de B). Cada
+  // painel tem ESCALA PRÓPRIA e barras horizontais com o nome do empreendimento
+  // no eixo: num gráfico único o entulho (até ~120 t) achatava os tipos pequenos
+  // (papel, plástico: 0,1–2 t) a ponto de não dar para ver qual obra era qual.
+  // Toneladas, no recorte obra × período.
+  {
+    const badgeCT = document.getElementById('res-classe-tipo-badge');
+    const boxCT   = document.getElementById('res-classe-tipo-paineis');
+    // Painéis da renderização anterior: destrói os gráficos antes de refazer o HTML
+    Object.keys(chartReg).filter(k => k.startsWith('chart-res-ct-')).forEach(k => {
+      chartReg[k].destroy(); delete chartReg[k];
+    });
+    const tipoTon = {}, totCl = {};
+    filtRes.forEach(r => {
+      const cl = classeKey(r);
+      const tp = String(r.tipo == null ? '' : r.tipo).trim();
+      const o  = String(r.obra || '').trim();
+      if (!cl || cl === 'NAN' || !tp || tp.toLowerCase() === 'nan' || !o || !(r.kg > 0)) return;
+      const t = r.kg / 1000;
+      const k = cl + '\u0000' + tp;
+      if (!tipoTon[k]) tipoTon[k] = { cl, tp, total: 0, porObra: {} };
+      tipoTon[k].total += t;
+      tipoTon[k].porObra[o] = (tipoTon[k].porObra[o] || 0) + t;
+      totCl[cl] = (totCl[cl] || 0) + t;
+    });
+    // Tipos: classe A → D; dentro da classe, maior tonelagem primeiro
+    const tiposCT = Object.values(tipoTon).sort((x, y) => x.cl.localeCompare(y.cl) || y.total - x.total);
+    const classesCT = Object.keys(totCl).sort();
+    const escCT = v => String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    // Toneladas pequenas ganham mais casas para não virar "0,0"
+    const fmtTon = v => numBR(v, v < 1 ? 2 : 1) + ' t';
+
+    if (!tiposCT.length) {
+      if (badgeCT) badgeCT.textContent = hasRaw ? 'sem dados no recorte' : 'sem dado por tipo';
+      if (boxCT) boxCT.innerHTML = '<div class="empty-msg">Sem dados no recorte</div>';
+    } else if (boxCT) {
+      if (badgeCT) badgeCT.textContent = classesCT.map(c => `Classe ${c}: ${numBR(totCl[c], 1)} t`).join(' · ');
+      let html = '';
+      classesCT.forEach(cl => {
+        html += `<div class="ct-classe"><span class="ct-dot" style="background:${conamaColors[cl] || '#888780'}"></span>`
+              + `Classe ${escCT(cl)} <span class="ct-tot">· ${numBR(totCl[cl], 1)} t</span></div><div class="ct-grid">`;
+        tiposCT.forEach((x, i) => {
+          if (x.cl !== cl) return;
+          const nObras = Object.keys(x.porObra).length;
+          html += `<div class="ct-painel"><div class="ct-painel-titulo"><span>${escCT(x.tp)}</span><span>${fmtTon(x.total)}</span></div>`
+                + `<div style="position:relative; height:${Math.max(90, nObras * 22 + 24)}px"><canvas id="chart-res-ct-${i}"></canvas></div></div>`;
+        });
+        html += '</div>';
+      });
+      boxCT.innerHTML = html;
+
+      tiposCT.forEach((x, i) => {
+        const obrasX = Object.entries(x.porObra).sort((p, q) => q[1] - p[1]);
+        makeChart('chart-res-ct-' + i, {
+          type: 'bar',
+          data: {
+            labels: obrasX.map(([o]) => o),
+            datasets: [{
+              label: x.tp,
+              data: obrasX.map(([, t]) => t),
+              backgroundColor: conamaColors[x.cl] || '#888780',
+              borderRadius: 3, maxBarThickness: 16,
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            layout: { padding: { right: 52 } },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  title: items => items.length ? `${items[0].label} · ${x.tp}` : '',
+                  label: ctx => ` ${fmtTon(ctx.raw)} (${numBR(x.total > 0 ? ctx.raw / x.total * 100 : 0, 1)}% do tipo)`,
+                }
+              }
+            },
+            scales: {
+              x: { display: false, beginAtZero: true },
+              y: { grid: { display: false }, ticks: { autoSkip: false, font: { size: 11 } } }
+            }
+          },
+          plugins: [barLabels(v => fmtTon(v), { id: 'resct' + i })]
+        });
+      });
+    }
   }
 
   // Volume por tipo de resíduo — função compartilhada com a aba Obra Individual
@@ -5166,7 +5351,7 @@ function kpisDoPeriodo(obraF, anoF) {
     Object.entries(linha).forEach(([m, c]) => {
       if (!mesesConf.has(m) || !c || c.perc == null) return;
       confVals.push(c.perc);
-      if (c.meta != null) metaVals.push(c.meta);
+      if (c.meta > 0) metaVals.push(c.meta);  // meta 0 = não lançada, fica fora
     });
   });
   if (confVals.length) {
@@ -5193,89 +5378,41 @@ function kpisDoPeriodo(obraF, anoF) {
 function updateKpisFiltered(obraF, anoF) {
   if (anoF === undefined) anoF = periodoGlobal();
   const kp = kpisDoPeriodo(obraF, anoF);
+  const g = D.global;
+  const emerg = emergFiltradas(obraF, anoF).length;
   if (!obraF) {
-    // Sem filtro de obra → restaura KPIs globais sem rerenderizar tudo
-    const g = D.global;
-    // Com período selecionado, os KPIs vêm do recorte; sem ele, dos agregados
-    const ipaVal    = (kp && kp.ipa    != null) ? kp.ipa    : g.ipa;
-    const confVal   = (kp && kp.conf   != null) ? kp.conf   : g.conf_media;
-    const kgM2Val   = (kp && kp.kg_m2  != null) ? kp.kg_m2  : g.media_kg_m2;
-    const recVal    = (kp && kp.rec    != null) ? kp.rec    : g.total_rec;
-    const ipaColor = ipaVal >= 90 ? 'green' : ipaVal >= 80 ? 'blue' : ipaVal >= 70 ? 'amber' : 'red';
-    document.getElementById('kpis-global').innerHTML = `
-      <div class="kpi ${ipaColor}">
-        <div class="kpi-label"><i class="ti ti-chart-line"></i> IPA global</div>
-        <div class="kpi-value large ${ipaClass(ipaVal)}">${ipaVal}</div>
-        <div class="kpi-sub">Índice de Performance Ambiental</div>
-        <div style="margin-top:6px">${badgeIpa(ipaVal)}</div>
-      </div>
-      <div class="kpi green">
-        <div class="kpi-label"><i class="ti ti-file-certificate"></i> Conformidade LAI/EIV</div>
-        <div class="kpi-value">${pct(confVal)}</div>
-        <div class="kpi-sub">média LAI/EIV</div><i class="ti ti-file-certificate kpi-icon"></i>
-      </div>
-      <div class="kpi ${resClass(kgM2Val)}">
-        <div class="kpi-label"><i class="ti ti-package"></i> Resíduos gerados</div>
-        <div class="kpi-value">${num(kgM2Val,2)}</div>
-        <div class="kpi-sub">kg/m² médio · Senna 50 · demais 36,6</div><i class="ti ti-trash kpi-icon"></i>
-      </div>
-      <div class="kpi ${recVal > 5 ? 'amber' : 'green'}">
-        <div class="kpi-label"><i class="ti ti-message-report"></i> Reclamações de Vizinhos</div>
-        <div class="kpi-value">${recVal}</div>
-        <div class="kpi-sub">vizinhos no período</div><i class="ti ti-message-report kpi-icon"></i>
-      </div>
-      <div class="kpi ${g.pa_no_prazo_pct >= 80 ? 'green' : 'amber'}">
-        <div class="kpi-label"><i class="ti ti-clipboard-check"></i> Plano Ação Auditorias</div>
-        <div class="kpi-value">${pct(g.pa_no_prazo_pct)}</div>
-        <div class="kpi-sub">ações em dia</div><i class="ti ti-clipboard-check kpi-icon"></i>
-      </div>
-    `;
+    // Sem filtro de obra: com período selecionado os KPIs vêm do recorte; sem ele, dos agregados
+    document.getElementById('kpis-global').innerHTML = kpiCardsHtml({
+      ipaLabel: 'IPA global',
+      ipa:   (kp && kp.ipa   != null) ? kp.ipa   : g.ipa,
+      conf:  (kp && kp.conf  != null) ? kp.conf  : g.conf_media,
+      confMeta: null,
+      pa:    g.pa_no_prazo_pct,
+      emerg, emergSub: emergSubDe(anoF),
+      kgM2:  (kp && kp.kg_m2 != null) ? kp.kg_m2 : g.media_kg_m2,
+      resMeta: undefined, resSub: 'kg/m² médio · Senna 50 · demais 36,6',
+      rec:   (kp && kp.rec   != null) ? kp.rec   : g.total_rec, recLimite: 5,
+    });
     return;
   }
 
-  // Com filtro de obra
-  const ipa_d = D.ipa[obraF] || {};
+  // Com filtro de obra — período selecionado troca os agregados da obra pelo recorte
+  const ipa_d  = D.ipa[obraF] || {};
   const conf_d = D.conf_atual[obraF] || {};
-  // Com período selecionado, troca os agregados da obra pelo recorte
-  const rec   = (kp && kp.rec != null) ? kp.rec : (D.rec_por_obra[obraF] || 0);
-  const resAg = D.res_por_obra[obraF] || {};
-  const res   = (kp && kp.kg_m2 != null) ? { ...resAg, kg_m2: kp.kg_m2 } : resAg;
-  const pa_o  = D.pa_por_obra[obraF] || {};
-  const total_pa = Object.values(pa_o).reduce((a,b) => a+b, 0);
-  const done_pa  = (pa_o['Realizado']||0) + (pa_o['Em Andamento']||0);
-  const pa_pct   = total_pa > 0 ? Math.round(done_pa/total_pa*100*10)/10 : 0;
-  const ipaVal   = (kp && kp.ipa != null) ? kp.ipa : (ipa_d.ipa || 0);
-  const confPerc = (kp && kp.conf != null) ? kp.conf : conf_d.perc;
-  const confMeta = (kp && kp.conf_meta != null) ? kp.conf_meta : conf_d.meta;
-  const ipaColor = ipaVal >= 90 ? 'green' : ipaVal >= 80 ? 'blue' : ipaVal >= 70 ? 'amber' : 'red';
-
-  document.getElementById('kpis-global').innerHTML = `
-    <div class="kpi ${ipaColor}">
-      <div class="kpi-label"><i class="ti ti-chart-line"></i> IPA — ${obraF}</div>
-      <div class="kpi-value large ${ipaClass(ipaVal)}">${ipaVal}</div>
-      <div style="margin-top:6px">${badgeIpa(ipaVal)}</div>
-    </div>
-    <div class="kpi ${(confPerc||0)>=(confMeta||90) ? 'green' : (confPerc||0)>=(confMeta||90)*0.9 ? 'amber' : 'red'}">
-      <div class="kpi-label"><i class="ti ti-file-certificate"></i> Conformidade LAI/EIV</div>
-      <div class="kpi-value">${pct(confPerc)}</div>
-      <div class="kpi-sub">meta: ${pct(confMeta)}</div><i class="ti ti-file-certificate kpi-icon"></i>
-    </div>
-    <div class="kpi ${resClass(res.kg_m2, res.meta)}">
-      <div class="kpi-label"><i class="ti ti-package"></i> Resíduos gerados</div>
-      <div class="kpi-value">${num(res.kg_m2,2)}</div>
-      <div class="kpi-sub">kg/m² · meta: ${res.meta||36.6} kg/m²</div><i class="ti ti-trash kpi-icon"></i>
-    </div>
-    <div class="kpi ${rec > 3 ? 'amber' : 'green'}">
-      <div class="kpi-label"><i class="ti ti-message-report"></i> Reclamações de Vizinhos</div>
-      <div class="kpi-value">${rec}</div>
-      <div class="kpi-sub">vizinhos</div><i class="ti ti-message-report kpi-icon"></i>
-    </div>
-    <div class="kpi ${pa_pct >= 80 ? 'green' : 'amber'}">
-      <div class="kpi-label"><i class="ti ti-clipboard-check"></i> Plano Ação Auditorias</div>
-      <div class="kpi-value">${pct(pa_pct)}</div>
-      <div class="kpi-sub">ações em dia</div><i class="ti ti-clipboard-check kpi-icon"></i>
-    </div>
-  `;
+  const resAg  = D.res_por_obra[obraF] || {};
+  document.getElementById('kpis-global').innerHTML = kpiCardsHtml({
+    ipaLabel: 'IPA — ' + obraF,
+    ipa:   (kp && kp.ipa != null) ? kp.ipa : (ipa_d.ipa || 0),
+    conf:  (kp && kp.conf != null) ? kp.conf : conf_d.perc,
+    // Com período selecionado e nenhuma meta lançada nele, vale a regra padrão
+    // de 90% (igual à Obra Individual), e não a meta do histórico completo
+    confMeta: (kp ? kp.conf_meta : conf_d.meta) || 90,
+    pa:    paPctDe(obraF),
+    emerg, emergSub: emergSubDe(anoF),
+    kgM2:  (kp && kp.kg_m2 != null) ? kp.kg_m2 : resAg.kg_m2,
+    resMeta: resAg.meta, resSub: `kg/m² · meta: ${resAg.meta || 36.6} kg/m²`,
+    rec:   (kp && kp.rec != null) ? kp.rec : (D.rec_por_obra[obraF] || 0), recLimite: 3,
+  });
 }
 
 // ═══════════════════════════════════════════════════════════

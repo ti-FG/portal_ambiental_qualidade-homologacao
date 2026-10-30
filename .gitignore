@@ -18,3 +18,6 @@ etl/logs/
 # Banco local de conferência (SQLite), gerado a cada carga — não é o destino
 # real (PostgreSQL) nem precisa ser versionado.
 etl/banco/
+
+# Credenciais do ETL (usuario/senha do PostgreSQL) - nunca versionar
+.env

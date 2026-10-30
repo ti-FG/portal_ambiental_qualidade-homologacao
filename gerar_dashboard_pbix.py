@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Dashboard FG Sustentabilidade — Gerador HTML a partir do .pbix
+Dashboard FG Viva+ / Sustentabilidade — Gerador HTML a partir do .pbix
 Lê o modelo semântico do Power BI (Fat_* e Dim_*) e gera dashboard_fg.html
 """
 import pandas as pd
@@ -254,7 +254,7 @@ print("Processando KPIs...")
 def score_conf(o):
     d = fat_conf[fat_conf['obra'] == o] if 'obra' in fat_conf.columns else pd.DataFrame()
     if d.empty or 'perc' not in d.columns: return 0.5
-    p = d['perc'].mean(); mt = d['meta'].mean() if 'meta' in d.columns else 0.9
+    p = d['perc'].mean(); mt = d['meta'].replace(0, np.nan).mean() if 'meta' in d.columns else 0.9
     if pd.isna(mt) or mt == 0: mt = 0.9
     return float(min(p/mt, 1.0)) if not pd.isna(p) else 0.5
 
@@ -286,8 +286,13 @@ def score_pa(o):
     t = len(d); np_ = d['status'].str.lower().isin(['realizado', 'em andamento']).sum()
     return float(np_/t) if t > 0 else 0.5
 
+# Pesos do IPA definidos pela área (out/2026): conformidade 45%, auditoria 35%,
+# resíduos 20% — fecha 100%. Ruído e plano de ação saíram da composição (os
+# scores continuam calculados e publicados em D.ipa, só não pesam mais).
+IPA_PESOS = {'conf': 0.45, 'aud': 0.35, 'res': 0.20}
+
 def calc_ipa(o):
-    return round((score_conf(o)*0.40 + score_res(o)*0.20 + score_ruido(o)*0.15 + score_aud(o)*0.15 + score_pa(o)*0.10)*100, 1)
+    return round((score_conf(o)*IPA_PESOS['conf'] + score_aud(o)*IPA_PESOS['aud'] + score_res(o)*IPA_PESOS['res'])*100, 1)
 
 def ipa_class(v):
     if v >= 90: return 'excelente'
@@ -318,7 +323,7 @@ if 'mes_ano' in fat_conf.columns and 'perc' in fat_conf.columns:
         for p in meses:
             md = dd[dd['mes_ano'].dt.to_period('M') == p]
             pv = md['perc'].mean() if not md.empty else None
-            mv = md['meta'].mean() if not md.empty and 'meta' in md.columns else None
+            mv = md['meta'].replace(0, np.nan).mean() if not md.empty and 'meta' in md.columns else None
             row[str(p)] = {
                 'perc': round(float(pv)*100,1) if pv is not None and not pd.isna(pv) else None,
                 'meta': round(float(mv)*100,1) if mv is not None and not pd.isna(mv) else None,
@@ -329,7 +334,7 @@ conf_atual = {}
 for o in OBRAS:
     d = fat_conf[fat_conf['obra'] == o] if 'obra' in fat_conf.columns else pd.DataFrame()
     if not d.empty and 'perc' in d.columns:
-        p = d['perc'].mean(); mt = d['meta'].mean() if 'meta' in d.columns else 0.9
+        p = d['perc'].mean(); mt = d['meta'].replace(0, np.nan).mean() if 'meta' in d.columns else 0.9
         conf_atual[o] = {
             'perc': round(float(p)*100,1) if not pd.isna(p) else None,
             'meta': round(float(mt if not pd.isna(mt) else 0.9)*100,1),
@@ -401,11 +406,9 @@ for o in OBRAS:
         sru = _score_ruido_mes(o, mp)
         sa  = _score_aud_mes(o, mp)
         val = round((
-            (sc if sc is not None else sc_agg) * 0.40 +
-            (sr if sr is not None else sr_agg) * 0.20 +
-            (sru if sru is not None else sru_agg) * 0.15 +
-            (sa if sa is not None else sa_agg) * 0.15 +
-            spa_agg * 0.10
+            (sc if sc is not None else sc_agg) * IPA_PESOS['conf'] +
+            (sa if sa is not None else sa_agg) * IPA_PESOS['aud'] +
+            (sr if sr is not None else sr_agg) * IPA_PESOS['res']
         ) * 100, 1)
         serie.append({'mes': mp_str, 'mes_label': _mes_label_ipa(mp_str), 'ipa': val})
     ipa_mensal[o] = serie
@@ -1323,7 +1326,7 @@ conf_barras = []
 for o in OBRAS:
     d = fat_conf[fat_conf['obra'] == o] if 'obra' in fat_conf.columns else pd.DataFrame()
     if not d.empty and 'perc' in d.columns:
-        p = d['perc'].mean(); mt = d['meta'].mean() if 'meta' in d.columns else 0.9
+        p = d['perc'].mean(); mt = d['meta'].replace(0, np.nan).mean() if 'meta' in d.columns else 0.9
         if not pd.isna(p):
             conf_barras.append({'obra': o, 'perc': round(float(p)*100,1), 'meta': round(float(mt if not pd.isna(mt) else 0.9)*100,1)})
 conf_barras.sort(key=lambda x: x['perc'], reverse=True)

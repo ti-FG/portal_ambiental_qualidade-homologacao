@@ -15,8 +15,18 @@ Uso tipico
     # so gerar o DDL, sem tocar em banco nenhum
     py -3.12 etl_excel_para_db.py --somente-ddl --ddl ddl\modelo_postgresql.sql
 
-    # carga, em um schema proprio
-    py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usr:senha@servidor/base" --schema ambiental
+    # carga: destino e schema vem do .env da raiz do projeto
+    py -3.12 etl_excel_para_db.py --se-mudou
+
+    # carga apontando para outro destino, sem mexer no .env
+    py -3.12 etl_excel_para_db.py --db-url "postgresql+psycopg2://usr:senha@servidor/base" --schema bi_ambiental_qualidade
+
+Destino padrao
+--------------
+`DATABASE_URL` e `DASHFG_DB_SCHEMA` sao lidos do arquivo `.env` na raiz do
+projeto. Hoje apontam para 10.1.1.152/fg_apps, schema `bi_ambiental_qualidade`
+(nome conforme o Guia de Nomenclatura de Schemas). `--db-url` e `--schema` na
+linha de comando continuam valendo e tem precedencia sobre o .env.
 
 A carga e SEMPRE full refresh: apaga e regrava todas as linhas dentro de uma
 unica transacao. Se qualquer tabela falhar, nada e commitado.
@@ -664,16 +674,43 @@ def registrar_falha(db_url, schema, arquivo, mensagem, iniciado_em):
         print('Nao deu para registrar a falha no banco (%s).' % e)
 
 
+def carregar_env():
+    """Le o .env da raiz do projeto para o ambiente do processo.
+
+    So preenche o que ainda nao existe no ambiente (override=False): uma
+    variavel exportada pela tarefa agendada ou pelo servico continua ganhando
+    do arquivo. Sem o .env o programa nao para -- so segue exigindo --db-url
+    na linha de comando, como antes.
+    """
+    caminho = os.path.join(os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))), '.env')
+    if not os.path.exists(caminho):
+        return None
+    try:
+        from dotenv import load_dotenv
+    except ImportError:
+        print('AVISO: python-dotenv ausente; .env ignorado. '
+              'Instale com: py -3.12 -m pip install -r requirements.txt')
+        return None
+    load_dotenv(caminho, override=False)
+    return caminho
+
+
 def main(argv=None):
+    env = carregar_env()
+
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('--excel', help='caminho do .xlsx de origem')
     p.add_argument('--db-url',
                    help='URL SQLAlchemy do destino PostgreSQL, ex.: '
                         '"postgresql+psycopg2://usuario@servidor/base". '
-                        'Obrigatorio para carregar; --somente-validar e '
-                        '--somente-ddl nao precisam')
-    p.add_argument('--schema', default=None, help='schema do banco (ex: ambiental)')
+                        'Padrao: DATABASE_URL do .env. Obrigatorio para '
+                        'carregar; --somente-validar e --somente-ddl nao '
+                        'precisam')
+    p.add_argument('--schema', default=None,
+                   help='schema do banco. Padrao: DASHFG_DB_SCHEMA do .env '
+                        '(hoje: bi_ambiental_qualidade)')
     p.add_argument('--parquet', help='diretorio para exportar .parquet tambem')
     p.add_argument('--csv', help='diretorio para exportar .csv tambem')
     p.add_argument('--ddl', help='arquivo onde gravar o DDL gerado')
@@ -696,6 +733,16 @@ def main(argv=None):
                         'sendo salva no Excel (padrao: 3)')
     p.add_argument('--log', help='arquivo de log (append) alem da saida padrao')
     a = p.parse_args(argv)
+
+    # Destino padrao vem do .env; o que veio na linha de comando tem
+    # precedencia. Imprime de onde saiu, porque carregar no banco errado em
+    # silencio e o tipo de engano que so aparece semanas depois.
+    if not a.db_url and os.environ.get('DATABASE_URL'):
+        a.db_url = os.environ['DATABASE_URL']
+        print('destino: DATABASE_URL do %s' % (env or '.env'))
+    if not a.schema and os.environ.get('DASHFG_DB_SCHEMA'):
+        a.schema = os.environ['DASHFG_DB_SCHEMA']
+        print('schema : %s (DASHFG_DB_SCHEMA do .env)' % a.schema)
 
     if a.log:
         _ligar_log(a.log)
@@ -790,9 +837,10 @@ def main(argv=None):
     # que gravava em silencio e deixava quem preparava o banco achando que
     # tinha carregado o PostgreSQL.
     if not a.db_url:
-        print('\nERRO: --db-url e obrigatorio para carregar o banco.')
-        print('      ex.: --db-url "postgresql+psycopg2://usuario@servidor/base"'
-              ' --schema ambiental')
+        print('\nERRO: sem destino. Defina DATABASE_URL no .env da raiz do '
+              'projeto ou passe --db-url.')
+        print('      ex.: --db-url "postgresql+psycopg2://app_ambiental@10.1.1.152:5432/fg_apps"'
+              ' --schema bi_ambiental_qualidade')
         print('      Para so conferir a planilha, use --somente-validar.')
         return 2
 
