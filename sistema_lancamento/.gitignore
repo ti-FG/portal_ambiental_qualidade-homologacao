@@ -1,0 +1,13 @@
+# segredo
+www/.env
+.env
+# banco da homologação (gerado por hml/memdb.mjs)
+hml/dados/
+node_modules/
+logs/
+__pycache__/
+www/painel/
+
+# gerados / conferencias
+carga/conferencia_planilha*.xlsx
+*.bak*

@@ -1,0 +1,12 @@
+{
+  "name": "fg-ambiental-qualidade",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Lancamentos Ambientais - Qualidade FG. Substitui a planilha Controle Ambiental; grava no PostgreSQL (schema portal_ambiental_qualidade).",
+  "main": "server.js",
+  "dependencies": {
+    "ldapts": "8.1.8",
+    "pg": "8.23.0"
+  }
+}
+

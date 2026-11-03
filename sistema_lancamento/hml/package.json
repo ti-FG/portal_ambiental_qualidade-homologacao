@@ -1,0 +1,1 @@
+{"name":"fg-ambiental-qualidade-hml","private":true,"type":"module","description":"Homologacao dos Lancamentos Ambientais: PostgreSQL embutido (PGlite) persistido em hml/dados","dependencies":{"@electric-sql/pglite":"0.5.8","@electric-sql/pglite-socket":"0.2.11","pg":"8.23.0"}}

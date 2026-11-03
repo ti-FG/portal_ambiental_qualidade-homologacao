@@ -1,0 +1,67 @@
+/* Tema do Painel no layout dos dashboards do Sistema Jurídico (painel_trabalhista.html /
+   painel-pbi.css): faixa de título #336B87, cards com borda #B8860B e cantos de 10 px,
+   título dos cards #135869 com ícone #336B87, valores dos KPIs #336B87, fundo #f0f4f8.
+   Injetado por gerar_painel.py só na saída do sistema de lançamento; o gerador oficial
+   (e o dashboard de produção) não são alterados.
+   As cores das séries dos gráficos NÃO mudam: elas diferenciam classe A/B, metas, etc. */
+:root {
+  --header-bg: #336B87;
+  --header-accent: #135869;
+  --tab-active-bg: #FFFFFF;
+  --tab-active-fg: #135869;
+  --bg: #F0F4F8;
+  --radius: 10px;
+  --jur-borda: #B8860B;
+  --jur-titulo: #135869;
+  --jur-primaria: #336B87;
+}
+body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: #252423; }
+
+/* faixa do título (como o .pt-header do Jurídico) */
+.top-nav { background: #336B87; border-bottom: 0; box-shadow: 0 2px 8px rgba(19, 88, 105, .2); }
+.brand-name { color: #fff; font-weight: 800; font-size: 19px; letter-spacing: .2px; }
+.brand-sub { color: #D3E9F1; font-size: 12.5px; }
+.nav-tab { color: #DBEAFE; border-radius: 7px; font-size: 14px; font-weight: 600; }
+.nav-tab:hover { background: rgba(255, 255, 255, .18); color: #fff; }
+.nav-tab.active { background: #fff; color: #135869; font-weight: 700; }
+.nav-right { color: #D3E9F1; }
+
+/* barra de filtros */
+.filter-bar { background: #fff; border-bottom: 1px solid #D8E0E5; }
+.filter-group { color: #135869; }
+.filter-group label { font-weight: 700; }
+.filter-group select { height: 30px; border: 1px solid #C9D6DD; border-radius: 7px; background: #fff; color: #1E293B; font-weight: 600; }
+.filter-group select:focus { outline: 2px solid #336B87; }
+
+/* cards e KPIs: borda dourada, cabeçalho com título #135869 */
+.card, .kpi { border: 1px solid var(--jur-borda); border-radius: 10px; box-shadow: 0 1px 3px rgba(0, 0, 0, .05); }
+.kpi { border-left: 3px solid var(--fg4); }
+.kpi.green { border-left-color: var(--fg4); }
+.kpi.blue { border-left-color: var(--az3); }
+.kpi.amber { border-left-color: var(--am4); }
+.kpi.red { border-left-color: var(--vr4); }
+.kpi.gray { border-left-color: var(--gz4); }
+.card-header { border-bottom: 1px solid #F1F5F9; }
+.card-title { color: #135869; font-weight: 700; font-size: 13px; }
+.card-title i, .card-title .ti { color: #336B87; }
+.card-badge { background: rgba(51, 107, 135, .10); color: #135869; font-weight: 600; }
+.kpi-label { color: #64748B; font-weight: 600; }
+.kpi-value { color: #336B87; font-weight: 800; }
+.kpi-sub { color: #64748B; }
+.ct-painel { border: 1px solid #D8E0E5; }
+.ct-painel-titulo { color: #135869; }
+h1, h2 { color: #135869; }
+
+/* ── Embutido no sistema (iframe do 8095): sem moldura própria, como no painel do CDJ ──
+   Uma faixa só, flutuante e arredondada, com título e abas; filtros num cartão logo abaixo;
+   fundo transparente (usa o do sistema) e sem rolagem interna: o sistema ajusta a altura. */
+html.embutido { overflow: hidden; }
+html.embutido body { background: transparent; }
+html.embutido .brand-logo { display: none; }
+html.embutido .top-nav { position: static; height: auto; min-height: 66px; margin: 4px 4px 0; padding: 12px 22px; border: 0; border-radius: 12px; box-shadow: 0 2px 8px rgba(19, 88, 105, .18); gap: 20px; flex-wrap: wrap; }
+html.embutido .brand-name { font-size: 18px; text-transform: none; }
+html.embutido .nav-right { display: none; }
+html.embutido #filter-bar-sentinela { display: none; }
+html.embutido .filter-bar { position: static; margin: 12px 4px 0; padding: 8px 16px; border: 1px solid #D8E0E5; border-radius: 10px; box-shadow: none; }
+html.embutido .filter-bar.is-stuck { box-shadow: none; }
+html.embutido .page { padding: 14px 4px 8px; max-width: none; }

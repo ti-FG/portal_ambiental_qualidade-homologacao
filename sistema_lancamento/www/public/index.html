@@ -1,0 +1,1927 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lançamentos Ambientais · FG</title>
+<link rel="icon" href="logo-fg.png">
+<style>
+/* Archivo servida pelo próprio sistema (não depende de acesso à internet) */
+@font-face{font-family:'Archivo';font-weight:400;font-display:swap;src:url(fontes/archivo-400.ttf) format('truetype')}
+@font-face{font-family:'Archivo';font-weight:500;font-display:swap;src:url(fontes/archivo-500.ttf) format('truetype')}
+@font-face{font-family:'Archivo';font-weight:600;font-display:swap;src:url(fontes/archivo-600.ttf) format('truetype')}
+@font-face{font-family:'Archivo';font-weight:700;font-display:swap;src:url(fontes/archivo-700.ttf) format('truetype')}
+@font-face{font-family:'Montserrat';font-weight:100 900;font-display:swap;src:url(fontes/montserrat.ttf) format('truetype')}
+:root{
+  --brand:#006071;--brand-d:#003C47;--brand-l:#007E95;--accent:#00849B;
+  --bg:#EAEDED;--panel:#FFFFFF;--wash:#F3F6F6;--line:#D5DFDB;--hair:#C4CFCC;
+  --txt:#2E3435;--txt2:#4E5555;--txt3:#676767;
+  --ok:#52B2BB;--ok-ink:#14707A;--ok-soft:#E4F4F3;
+  --warn:#DAD793;--warn-ink:#6E6819;--warn-soft:#F8F5DE;
+  --bad:#C93C2F;--bad-ink:#B82A22;--bad-soft:#F9E4E2;
+  --hml:#C2571F;--dirty:#FFF4D6;
+  --ff:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font-family:var(--ff);font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand)}
+[hidden]{display:none!important}
+
+/* faixa de homologação */
+.hml{background:var(--hml);color:#fff;font-size:12px;letter-spacing:.04em;text-align:center;padding:5px 12px}
+
+/* login */
+#login{min-height:calc(100vh - 26px);display:flex;align-items:center;justify-content:center;gap:80px;padding:40px 48px;background:#DCEFF1;position:relative;overflow:hidden}
+#login::before,#login::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+#login::before{width:520px;height:520px;left:-160px;bottom:-220px;background:#B5DCE1}
+#login::after{width:300px;height:300px;left:28%;top:-130px;background:#C6E5E9}
+.lg-marca{position:relative;z-index:1;color:var(--brand-d);flex:0 1 460px}
+.lg-eyebrow{font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--ok-ink);margin:0 0 14px}
+.lg-titulo{font-family:'Montserrat','Segoe UI',sans-serif;font-size:44px;line-height:1.1;font-weight:900;text-transform:uppercase;margin:0}
+.lg-desc{font-size:16px;line-height:1.6;color:var(--ok-ink);max-width:40ch;margin:16px 0 0}
+.lg-rodape{position:absolute;left:0;right:0;bottom:20px;text-align:center;z-index:1;font-size:12px;color:var(--ok-ink);margin:0}
+.lg-lado{position:relative;z-index:1;flex:0 1 400px;display:flex}
+#form-login{width:100%;max-width:400px;background:#fff;border-radius:14px;padding:32px 36px 30px;box-shadow:0 12px 40px rgba(0,60,71,.12)}
+.lg-nome{font-size:15px;font-weight:600;letter-spacing:.04em;color:var(--brand);margin:0 0 14px;text-align:center}
+#form-login h2{font-size:24px;font-weight:500;color:var(--brand-d);margin:0 0 4px;text-align:center}
+#form-login .sub{color:var(--txt3);font-size:13.5px;margin:0 0 14px;text-align:center}
+#form-login label{display:block;font-size:12.5px;font-weight:500;color:var(--txt2);margin:14px 0 6px}
+#form-login input{width:100%;font-size:14px;padding:11px 14px;background:#fff;color:var(--txt);border:1px solid var(--hair);border-radius:8px}
+#form-login input:focus{outline:2px solid var(--brand);outline-offset:0;border-color:var(--brand)}
+.lg-senha{position:relative}
+.lg-senha input{padding-right:70px}
+.lg-olho{position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;color:var(--txt3);cursor:pointer;padding:6px 8px;font-size:12px;border-radius:6px}
+.lg-olho:hover{color:var(--brand-d)}
+#lg-entrar{width:100%;padding:12px;margin-top:6px;border-radius:8px;background:var(--ok-ink);border:0;color:#fff;font-weight:500;cursor:pointer}
+#lg-entrar:hover{background:var(--brand)}
+#lg-entrar:disabled{opacity:.6;cursor:default}
+#login-msg{min-height:18px;margin:12px 0 0;font-size:12.5px;color:var(--bad-ink)}
+@media (max-width:900px){.lg-marca{display:none}#login{padding:24px 16px}}
+
+/* app */
+header.topo{background:var(--brand-d);color:#fff;display:flex;align-items:center;gap:20px;padding:0 20px;height:56px;position:sticky;top:0;z-index:20}
+header.topo img{height:26px;filter:brightness(0) invert(1)}
+header.topo .sist{font-size:15px;font-weight:500;white-space:nowrap}
+header.topo .sist small{display:block;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.7;font-weight:400}
+nav.menu{display:flex;gap:2px;flex:1;overflow-x:auto}
+nav.menu a{color:rgba(255,255,255,.78);text-decoration:none;padding:8px 12px;border-radius:3px;white-space:nowrap;font-size:13px}
+nav.menu a:hover{background:rgba(255,255,255,.08);color:#fff}
+nav.menu a.ativo{background:rgba(255,255,255,.14);color:#fff}
+.quem{font-size:12px;text-align:right;white-space:nowrap}
+.quem b{display:block;font-weight:500;font-size:13px}
+.quem button{background:none;border:0;color:rgba(255,255,255,.75);cursor:pointer;padding:0;font-size:12px;text-decoration:underline}
+main{max-width:1280px;margin:0 auto;padding:24px 20px 80px}
+h1{font-size:24px;font-weight:500;color:var(--brand-d);margin:0}
+.cab{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.cab p{margin:4px 0 0;color:var(--txt3);max-width:80ch}
+.ferr{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:15px;font-weight:600;color:var(--brand-d);margin:0 0 12px}
+.card h2 small{font-weight:400;color:var(--txt3);font-size:12px;margin-left:6px}
+.btn{border:1px solid var(--brand);background:var(--brand);color:#fff;padding:8px 14px;border-radius:2px;cursor:pointer;font-size:12px;letter-spacing:.06em;text-transform:uppercase;font-weight:500}
+.btn:hover{background:var(--brand-d)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.sec{background:var(--panel);color:var(--brand)}
+.btn.sec:hover{background:var(--wash)}
+.btn.perigo{background:var(--bad);border-color:var(--bad)}
+.btn.peq{padding:4px 8px;font-size:11px}
+select,.campo{border:1px solid var(--hair);border-radius:2px;padding:7px 9px;background:var(--panel)}
+.comp{display:flex;align-items:center;gap:4px}
+.comp button{border:1px solid var(--hair);background:var(--panel);padding:6px 10px;cursor:pointer;border-radius:2px}
+.comp input{border:1px solid var(--hair);border-radius:2px;padding:6px 8px;width:150px}
+.selo{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 8px;border-radius:10px;font-weight:500;white-space:nowrap}
+.selo.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.selo.warn{background:var(--warn-soft);color:var(--warn-ink)}
+.selo.bad{background:var(--bad-soft);color:var(--bad-ink)}
+.selo.na{background:var(--wash);color:var(--txt3)}
+.selo.fech{background:var(--brand-d);color:#fff}
+
+/* grades */
+/* cabeçalho fixo: a grade rola por dentro e o nome das colunas fica à vista */
+.grade-wrap{overflow:auto;max-height:calc(100vh - 230px)}
+table.grade thead th{position:sticky;top:0;z-index:2;box-shadow:inset 0 -2px 0 var(--line)}
+table.grade thead th{border-bottom:0!important}
+table.grade{width:100%;border-collapse:collapse;font-size:13px}
+table.grade th{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--txt2);font-weight:600;text-align:left;padding:8px 10px;border-bottom:2px solid var(--line);background:var(--wash);white-space:nowrap}
+table.grade td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:middle;white-space:nowrap}
+table.grade tr:hover td{background:#FAFCFC}
+table.grade .n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.grade .calc{color:var(--txt2);background:var(--wash)}
+table.grade tfoot td{font-weight:600;border-top:2px solid var(--line);background:var(--wash)}
+table.grade input.c{width:92px;text-align:right;border:1px solid var(--hair);border-radius:2px;padding:5px 7px;font-variant-numeric:tabular-nums;background:#fff}
+table.grade input.c.t{text-align:left;width:100%;min-width:160px}
+table.grade input.c.h{width:80px;text-align:center}
+table.grade input.c:focus{outline:2px solid var(--brand);outline-offset:-1px}
+table.grade input.c.sujo{background:var(--dirty);border-color:#D9A400}
+table.grade input.c.erro{background:var(--bad-soft);border-color:var(--bad)}
+table.grade input:disabled{background:var(--wash);color:var(--txt3)}
+.chip-mes{padding:6px 16px;font-weight:600;white-space:nowrap}
+.barra-lanc{display:flex;gap:10px;align-items:center;margin-bottom:14px;flex-wrap:wrap}.barra-lanc label{font-size:12.5px;color:var(--txt3)}.barra-lanc select{min-width:200px}.barra-lanc .espaco{flex:1}
+table.grade tr.gm td{background:var(--wash);font-weight:700;color:var(--brand-d);font-size:12.5px;letter-spacing:.03em;padding:8px 10px;border-top:2px solid var(--hair)}
+table.grade tr.grupo td{background:var(--wash);font-weight:600;color:var(--brand-d);font-size:12px;letter-spacing:.04em}
+.cad-uso{margin:0 0 12px}.cad-uso summary{cursor:pointer;font-size:12.5px;color:var(--brand-d);font-weight:600}.cad-uso table td{white-space:normal}
+table.grade tr.filho td:nth-child(2){padding-left:26px}
+.dica{font-size:11.5px;color:var(--txt3)}
+.ant{font-size:11px;color:var(--txt3);display:block}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:11px;background:var(--wash);border:1px solid var(--line);border-radius:10px;padding:1px 8px;white-space:nowrap}
+.chip.lai{border-color:#9FC9D1}
+.chip.eiv{border-color:#D8BC9F}
+.pills{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:14px}
+.pill{border:1px solid var(--hair);background:var(--panel);border-radius:14px;padding:5px 12px;cursor:pointer;font-size:12.5px;display:inline-flex;gap:6px;align-items:center}
+.pill.ativo{background:var(--brand);border-color:var(--brand);color:#fff}
+.pill .pt{width:7px;height:7px;border-radius:50%;background:var(--hair)}
+.pill .pt.ok{background:var(--ok)}
+.barra-salvar{position:fixed;left:0;right:0;bottom:0;background:var(--brand-d);color:#fff;display:flex;align-items:center;justify-content:center;gap:14px;padding:10px 16px;z-index:30;box-shadow:0 -4px 20px rgba(0,0,0,.15)}
+.barra-salvar .btn{background:#fff;color:var(--brand-d);border-color:#fff}
+.barra-salvar .btn.sec{background:transparent;color:#fff;border-color:rgba(255,255,255,.6)}
+
+/* início */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:14px 16px}
+.kpi .r{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3)}
+.kpi .v{font-size:26px;font-weight:500;color:var(--brand-d);font-variant-numeric:tabular-nums}
+.kpi .s{font-size:12px;color:var(--txt3)}
+.matriz td.st{text-align:center}
+.matriz a.st{text-decoration:none}
+.pano{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px}
+.pano button{border:1px solid var(--line);background:var(--panel);border-radius:3px;padding:8px 4px;cursor:pointer;text-align:center;font-size:11px;color:var(--txt2)}
+.pano button.ativo{outline:2px solid var(--brand)}
+.pano .bar{height:5px;background:var(--wash);border-radius:3px;overflow:hidden;margin:6px 4px 4px}
+.pano .bar i{display:block;height:100%;background:var(--ok)}
+.pano .pc{font-size:13px;font-weight:600;color:var(--brand-d)}
+@media (max-width:800px){.pano{grid-template-columns:repeat(6,minmax(0,1fr))}}
+
+/* diferenças para a planilha (modo demonstração) */
+.antes-depois{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.antes-depois div{border-radius:3px;padding:10px 12px;font-size:12.5px}
+.antes-depois .a{background:var(--bad-soft);color:var(--bad-ink)}
+.antes-depois .d{background:var(--ok-soft);color:var(--ok-ink)}
+.antes-depois b{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:3px}
+@media (max-width:800px){.antes-depois{grid-template-columns:1fr}}
+details.planilha{margin-bottom:16px}
+details.planilha summary{cursor:pointer;color:var(--brand);font-size:13px;margin-bottom:8px}
+
+/* modal */
+.fundo{position:fixed;inset:0;background:rgba(0,42,51,.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal{background:var(--panel);border-radius:4px;max-width:560px;width:100%;max-height:90vh;overflow:auto;padding:22px 24px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+.modal h3{margin:0 0 10px;font-size:17px;font-weight:600;color:var(--brand-d)}
+.modal .acoes{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.modal textarea{width:100%;min-height:80px;border:1px solid var(--hair);border-radius:2px;padding:8px}
+.modal label.ck{display:flex;gap:8px;align-items:flex-start;padding:4px 0;cursor:pointer}
+.form-cad{display:grid;grid-template-columns:1fr 1fr;gap:10px 14px}
+.form-cad label{font-size:11px;color:var(--txt2);display:flex;flex-direction:column;gap:4px}
+.form-cad label.cheio{grid-column:1/-1}
+.form-cad input,.form-cad select{border:1px solid var(--hair);border-radius:2px;padding:7px 9px}
+.toast{position:fixed;right:20px;bottom:70px;background:var(--brand-d);color:#fff;padding:10px 16px;border-radius:3px;z-index:60;box-shadow:0 6px 20px rgba(0,0,0,.2);max-width:420px}
+.toast.erro{background:var(--bad)}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--line);margin-bottom:14px;overflow-x:auto}
+.tabs button{border:0;background:none;padding:9px 14px;cursor:pointer;color:var(--txt2);border-bottom:2px solid transparent;margin-bottom:-2px;white-space:nowrap}
+.tabs button.ativo{color:var(--brand-d);border-bottom-color:var(--brand);font-weight:600}
+.diff del{color:var(--bad-ink);background:var(--bad-soft);text-decoration:line-through;padding:0 3px}
+.diff ins{color:var(--ok-ink);background:var(--ok-soft);text-decoration:none;padding:0 3px}
+main.largo{max-width:none;padding:12px 16px 16px}
+.painel-barra{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 4px 8px;justify-content:flex-end}
+.painel-barra .info{color:var(--txt3);font-size:12.5px;flex:1}
+iframe.painel{display:block;width:100%;height:900px;border:0;background:transparent}
+.painel-barra .btn{padding:4px 10px;font-size:12px}
+.eyebrow{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);margin:0 0 2px!important}
+nav.abas{display:flex;align-items:flex-end;gap:2px;padding:6px 16px 0;background:#D7DFDE;border-bottom:1px solid var(--hair);overflow-x:auto;position:sticky;top:56px;z-index:19}
+nav.abas .abas-rot{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt3);padding:0 10px 8px 0;white-space:nowrap}
+nav.abas a,nav.abas span.off{padding:6px 12px;font-size:12.5px;border:1px solid var(--hair);border-bottom:0;border-radius:4px 4px 0 0;white-space:nowrap;text-decoration:none;color:var(--txt);background:#EEF2F1}
+nav.abas a:hover{background:#fff}
+nav.abas a.ativo{background:#fff;color:var(--brand-d);font-weight:600;border-top:2px solid var(--brand);margin-bottom:-1px}
+nav.abas span.off{color:#9AA3A4;background:transparent;border-style:dashed;cursor:help}
+.fx{font-family:Georgia,serif;font-style:italic;font-weight:700;color:var(--brand-l);font-size:12px;text-transform:none}
+.tag-novo{font-size:9px;letter-spacing:.06em;text-transform:uppercase;background:var(--brand-l);color:#fff;border-radius:3px;padding:1px 4px;font-weight:600}
+table.grade th.novo{background:#E7F1F3}
+table.grade .novo1{border-left:2px dashed #9FC9D1}
+.legenda{margin-top:8px}
+table.metas input.c.m{width:58px}
+table.metas input.c.m::placeholder{color:#A9B3B4;font-style:italic}
+table.metas td:first-child,#tab-res td:nth-child(4){white-space:nowrap}
+table.grade th.atual{color:var(--brand);border-bottom-color:var(--brand)}
+.drop{position:relative}
+.drop-btn{background:none;border:0;color:rgba(255,255,255,.78);padding:8px 12px;border-radius:3px;cursor:pointer;font-size:13px;white-space:nowrap}
+.drop-btn:hover,.drop-btn.ativo{background:rgba(255,255,255,.14);color:#fff}
+.drop-btn b{font-weight:600}
+.drop-menu{position:absolute;top:calc(100% + 8px);left:0;background:#fff;color:var(--txt);border-radius:4px;box-shadow:0 14px 40px rgba(0,42,51,.25);padding:16px 18px 10px;display:grid;grid-template-columns:repeat(5,minmax(150px,auto));gap:6px 22px;z-index:40}
+.drop-menu[hidden]{display:none}
+.drop-grupo p{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt3);margin:0 0 6px;font-weight:600}
+nav.menu .drop-grupo a{display:block;color:var(--brand-d);text-decoration:none;padding:5px 8px;border-radius:3px;font-size:13.5px;white-space:nowrap}
+nav.menu .drop-grupo a:hover{background:var(--wash);color:var(--brand-d)}
+nav.menu .drop-grupo a.ativo{background:var(--ok-soft);color:var(--brand-d);font-weight:600}
+.drop-rod{grid-column:1/-1;font-size:11px;color:var(--txt3);border-top:1px solid var(--line);padding-top:8px;margin:6px 0 0}
+@media (max-width:900px){.drop-menu{grid-template-columns:1fr 1fr;position:fixed;left:8px;right:8px;top:60px}}
+nav.menu{overflow:visible}
+body.sem-extras .col-extra,body.sem-ocultas .col-oculta{display:none}
+.legenda ul{margin:4px 0 8px;padding-left:18px}
+.legenda li{margin:2px 0}
+.fx.cad{font-family:inherit;font-style:normal;font-size:11px}
+table.planilha{font-size:12px}
+table.planilha th,table.planilha td.lin{background:#EEF2F1;color:var(--txt3);text-align:center;font-weight:500;font-size:11px;padding:4px 6px}
+table.planilha td{padding:4px 8px;border:1px solid var(--line);white-space:nowrap}
+table.planilha td.erro{background:var(--bad-soft);color:var(--bad-ink)}
+.drop-grupo span.off{display:block;padding:5px 8px;font-size:13px;color:#9AA3A4;cursor:help}
+footer.rod{text-align:center;color:var(--txt3);padding:28px 20px 24px;line-height:1.9}
+footer.rod .ft{font-size:10px;letter-spacing:.18em;text-transform:uppercase}
+footer.rod .ft2{font-size:11px}
+.vazio{color:var(--txt3);text-align:center;padding:24px}
+
+/* foco visível no teclado */
+a:focus-visible,button:focus-visible,select:focus-visible,summary:focus-visible,.pano button:focus-visible{outline:2px solid var(--brand-l);outline-offset:2px}
+header.topo a:focus-visible,header.topo button:focus-visible{outline-color:#fff}
+.barra-salvar button:focus-visible{outline-color:#fff}
+
+/* carregando */
+.carregando{display:grid;gap:12px}
+.esq{border-radius:4px;background:linear-gradient(90deg,#E3E8E7 25%,#F0F3F3 50%,#E3E8E7 75%);background-size:200% 100%;animation:esq 1.2s linear infinite}
+.esq.t{height:30px;width:320px;max-width:60%}
+.esq.k{height:76px}
+.esq.b{height:220px}
+.kpis.esqk{margin-bottom:0}
+@keyframes esq{to{background-position:-200% 0}}
+@media (prefers-reduced-motion:reduce){.esq{animation:none}}
+.erro-carga{text-align:center;padding:28px}
+.erro-carga p{margin:0 0 12px;color:var(--bad-ink)}
+
+/* início: pendências */
+.card.destaque{border-top:3px solid var(--brand)}
+.matriz td.st .selo{min-width:84px;justify-content:center}
+.matriz tr.completa td:first-child{color:var(--txt3)}
+.faltam{font-size:12px;color:var(--warn-ink);font-weight:600}
+.kpi .v.menor{font-size:20px;padding-top:4px}
+details.ferramenta{margin-bottom:16px}
+details.ferramenta>summary{cursor:pointer;background:var(--panel);border:1px solid var(--line);border-radius:4px;padding:12px 20px;color:var(--brand-d);font-weight:600;font-size:14px}
+details.ferramenta[open]>summary{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom-color:transparent}
+details.ferramenta>summary small{font-weight:400;color:var(--txt3);margin-left:6px}
+details.ferramenta>.card{border-top:0;border-top-left-radius:0;border-top-right-radius:0;margin-bottom:0}
+@media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+/* grades e cadastros */
+.contador{margin:8px 0 0}.contador.completo{color:var(--ok-ink)}
+details.legenda>summary{list-style-position:inside}
+a.selo{text-decoration:none}a.selo:hover{filter:brightness(.95);text-decoration:underline}
+.cad-info{margin:0 0 12px;padding:10px 12px;background:var(--wash);border-left:3px solid var(--brand);border-radius:2px;color:var(--txt2);font-size:13px;max-width:100ch}
+.cad-barra{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.cad-barra input.campo,#f-busca{min-width:200px}
+tr.inativa td{color:var(--txt3)}
+.msg-erro{margin:12px 0 0;padding:8px 10px;background:var(--bad-soft);color:var(--bad-ink);border-radius:2px;font-size:13px}
+.form-cad label .dica{font-weight:400}
+th.ord{cursor:pointer;user-select:none}
+th.ord::after{content:' \2195';opacity:.35}
+th.ord[aria-sort=ascending]::after{content:' \25B2';opacity:1}
+th.ord[aria-sort=descending]::after{content:' \25BC';opacity:1}
+#cad-corpo{max-height:calc(100vh - 360px)}
+</style>
+</head>
+<body>
+<div class="hml" id="faixa-hml" hidden>HOMOLOGAÇÃO · ambiente de demonstração com o histórico carregado da planilha · o que for lançado aqui não vai para os painéis oficiais</div>
+
+<section id="login" hidden>
+  <div class="lg-marca">
+    <div>
+      <p class="lg-eyebrow">Qualidade · Sustentabilidade</p>
+      <h1 class="lg-titulo">Lançamentos<br>Ambientais</h1>
+      <p class="lg-desc">Lance, acompanhe e feche o mês em um só lugar. Os painéis são atualizados a cada lançamento.</p>
+    </div>
+  </div>
+  <div class="lg-lado">
+    <form id="form-login" autocomplete="on">
+      <p class="lg-nome">FG Empreendimentos</p>
+      <h2>Entrar</h2>
+      <p class="sub">Use o mesmo usuário e senha do computador</p>
+      <label for="lg-user">Usuário</label>
+      <input id="lg-user" name="username" autocomplete="username" placeholder="nome.sobrenome" required>
+      <label for="lg-senha">Senha</label>
+      <div class="lg-senha">
+        <input id="lg-senha" name="password" type="password" autocomplete="current-password" placeholder="••••••••" required>
+        <button type="button" class="lg-olho" id="lg-olho" aria-label="Mostrar senha">mostrar</button>
+      </div>
+      <p id="login-msg" role="alert"></p>
+      <button class="btn" id="lg-entrar">Entrar</button>
+    </form>
+  </div>
+    <p class="lg-rodape">© 2026 FG Empreendimentos. Todos os direitos reservados.</p>
+</section>
+
+<div id="app" hidden>
+  <header class="topo">
+    <img src="logo-fg.png" alt="FG">
+    <div class="sist">Lançamentos Ambientais<small>Qualidade</small></div>
+    <nav class="menu" id="menu"></nav>
+    <div class="quem"><b id="quem-nome"></b><span id="quem-nivel"></span> · <button id="sair">sair</button></div>
+  </header>
+  <main id="tela"></main>
+  <footer class="rod">
+    <div class="ft">Qualidade · Sustentabilidade · Lançamentos Ambientais</div>
+    <div class="ft2">Fonte: lançamentos da equipe da Qualidade · reclamações de vizinhos do Salesforce e avanço físico do Prevision, atualizados às 09:00, 13:00 e 17:00 · todas as alterações ficam no Histórico</div>
+    <div class="ft2">© 2026 FG Empreendimentos · uso interno · versão __VERSAO__</div>
+  </footer>
+</div>
+
+<div class="barra-salvar" id="barra-salvar" hidden>
+  <span id="barra-txt"></span>
+  <button class="btn sec" id="barra-descartar">Descartar</button>
+  <button class="btn" id="barra-salvar-btn">Salvar alterações</button>
+</div>
+
+<script>
+'use strict';
+const AMBIENTE = '__AMBIENTE__';
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const MESES = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+const MESES_LONGO = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+// ── formatação pt-BR ───────────────────────────────────────────────────────
+const nf = (d) => new Intl.NumberFormat('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const fmt = (v, d = 2) => (v === null || v === undefined || v === '' || Number.isNaN(v)) ? '' : nf(d).format(v);
+const fmtPct = (v, d = 1) => (v === null || v === undefined) ? '' : nf(d).format(v * 100) + '%';
+function lerNum(s) {
+  s = String(s ?? '').trim().replace(/\s|%/g, '');
+  if (!s) return null;
+  if (s.includes(',')) s = s.replace(/\./g, '').replace(',', '.');
+  const n = Number(s);
+  return Number.isFinite(n) ? n : NaN;
+}
+const compTxt = c => { const [a, m] = c.split('-'); return MESES_LONGO[+m - 1] + ' de ' + a; };
+const compCurta = c => { const [a, m] = c.split('-'); return MESES[+m - 1] + '/' + a.slice(2); };
+function somarMes(c, n) { const [a, m] = c.split('-').map(Number); const d = new Date(a, m - 1 + n, 1); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); }
+
+// ── estado ─────────────────────────────────────────────────────────────────
+const E = { token: null, usuario: null, cad: null, comp: null, mes: null, tela: 'painel', sujo: new Map(), salvar: null, obraRes: null,
+  extras: false, ocultas: false, incluirObras: new Set(), incluirTipos: new Set(), incluirUcs: new Set(), inclusoes: [] };
+try { E.token = sessionStorage.getItem('amb_token'); } catch (e) {}
+const compAtual = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'); };
+E.comp = E.compInicio = compAtual(); // ao abrir o sistema, o mês atual (dá para navegar para outros)
+
+
+
+async function api(metodo, url, corpo) {
+  const r = await fetch(url, { method: metodo, headers: { 'Content-Type': 'application/json', 'x-sessao': E.token || '' }, body: corpo ? JSON.stringify(corpo) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 401 && !url.includes('/auth/login')) { sairLocal(); throw new Error(j.erro || 'sessão expirada'); }
+  if (!r.ok) { const e = new Error(j.erro || j.motivo || ('erro ' + r.status)); e.status = r.status; e.corpo = j; throw e; }
+  return j;
+}
+function toast(msg, erro) {
+  const t = document.createElement('div'); t.className = 'toast' + (erro ? ' erro' : ''); t.textContent = msg;
+  t.setAttribute('role', erro ? 'alert' : 'status'); // leitor de tela anuncia sozinho
+  document.body.appendChild(t); setTimeout(() => t.remove(), erro ? 6000 : 3000);
+}
+function modal(html, { largura, validar } = {}) {
+  return new Promise(resolve => {
+    const antes = document.activeElement; // devolve o foco para quem abriu o modal
+    const f = document.createElement('div'); f.className = 'fundo';
+    f.innerHTML = `<div class="modal" role="dialog" aria-modal="true" style="${largura ? 'max-width:' + largura + 'px' : ''}">${html}</div>`;
+    const caixa = $('.modal', f), tit = $('h3', caixa);
+    if (tit) { tit.id = 'modal-tit'; caixa.setAttribute('aria-labelledby', 'modal-tit'); }
+    document.body.appendChild(f);
+    const fechar = v => { f.remove(); try { antes && antes.isConnected && antes.focus(); } catch (e) {} resolve(v); };
+    f.addEventListener('click', e => {
+      if (e.target === f) return fechar(null);
+      const b = e.target.closest('[data-r]'); if (!b) return;
+      if (b.dataset.r === 'ok' && validar) { // mostra o erro no próprio modal e não fecha
+        const msg = validar(f); let m = $('.msg-erro', caixa);
+        if (msg) { if (!m) { m = document.createElement('p'); m.className = 'msg-erro'; m.setAttribute('role', 'alert'); $('.acoes', caixa).before(m); } m.textContent = msg; return; }
+      }
+      fechar(b.dataset.r === 'ok' ? f : null);
+    });
+    f.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('.form-cad input:not([type=checkbox])')) { e.preventDefault(); $('[data-r=ok]', caixa).click(); } });
+    f.addEventListener('keydown', e => {
+      if (e.key === 'Escape') return fechar(null);
+      if (e.key !== 'Tab') return; // o foco não escapa do modal
+      const fs = $$('a[href],button:not(:disabled),input:not(:disabled),select,textarea', caixa);
+      if (!fs.length) return;
+      const a = fs[0], z = fs[fs.length - 1];
+      if (e.shiftKey && document.activeElement === a) { e.preventDefault(); z.focus(); }
+      else if (!e.shiftKey && document.activeElement === z) { e.preventDefault(); a.focus(); }
+    });
+    const foco = $('textarea,input,select', f) || $('[data-r=ok]', f); foco && foco.focus();
+  });
+}
+async function confirmar(titulo, texto, rotulo = 'Confirmar', perigo) {
+  const f = await modal(`<h3>${esc(titulo)}</h3><p>${texto}</p><div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn ${perigo ? 'perigo' : ''}" data-r="ok">${esc(rotulo)}</button></div>`);
+  return !!f;
+}
+async function pedirMotivo() {
+  const f = await modal(`<h3>Mês fechado</h3><p>${compTxt(E.comp)} já foi fechado. A correção fica registrada no histórico com o seu nome e o motivo.</p>
+    <textarea id="motivo" placeholder="Motivo da correção (obrigatório)"></textarea>
+    <div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn" data-r="ok">Gravar correção</button></div>`);
+  if (!f) return null;
+  const m = $('#motivo', f).value.trim();
+  if (!m) { toast('Informe o motivo.', true); return null; }
+  return m;
+}
+
+// Exclusão de uma linha já gravada: pergunta antes, grava na hora e fica no Histórico (quem, quando e o valor que existia).
+// Mês fechado exige o motivo; nos outros, o motivo é opcional.
+async function excluirLinha(descricao, gravar) {
+  if (E.sujo.size) { toast('Salve ou descarte as alterações pendentes antes de excluir uma linha.', true); return; }
+  let motivo;
+  for (let tentativa = 0; ; tentativa++) {
+    const fechado = tentativa > 0 || (E.mes && E.mes.fechado);
+    const f = await modal(`<h3>Excluir linha?</h3><p>${descricao}</p>
+      <p class="dica">A exclusão fica registrada no Histórico, com o seu nome e o valor que existia.${fechado ? ' Este mês está fechado: informe o motivo.' : ''}</p>
+      <textarea id="motivo" placeholder="${fechado ? 'Motivo (obrigatório)' : 'Motivo (opcional)'}">${esc(motivo || '')}</textarea>
+      <div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn perigo" data-r="ok">Excluir</button></div>`,
+      { validar: f => fechado && !$('#motivo', f).value.trim() ? 'Informe o motivo da exclusão.' : '' });
+    if (!f) return;
+    motivo = $('#motivo', f).value.trim() || undefined;
+    try { await gravar(motivo); toast('Linha excluída. Ela fica registrada no Histórico.'); await render(); return; }
+    catch (e) { if (!motivo && /informe o motivo/.test(e.message)) continue; toast(e.message, true); return; }
+  }
+}
+// ✕ das telas em grade (uma linha por obra, resíduo ou unidade): excluir = apagar o lançamento daquela linha no mês
+function ligarExclusaoGrade(el, fonte, chave, descricao) {
+  $$('[data-excluir]', el).forEach(b => b.onclick = () => {
+    const tr = b.closest('tr');
+    excluirLinha(`Vai excluir ${descricao(tr)}.`, motivo => api('PUT', '/api/lancamentos/' + fonte, { competencia: E.comp, motivo, linhas: [chave(tr)] }));
+  });
+}
+// botão ✕ das linhas já gravadas das telas de lançamento
+const btnExcluir = (ed, titulo = 'Excluir esta linha') => ed ? `<button class="btn sec peq" data-excluir title="${titulo}" aria-label="${titulo}">✕</button>` : '';
+
+// ── login ──────────────────────────────────────────────────────────────────
+const MOTIVOS = {
+  credenciais_invalidas: 'Usuário ou senha incorretos.',
+  aguardando: 'Seu pedido de acesso foi registrado. Um administrador da Qualidade precisa aprovar: tente de novo depois.',
+  rejeitado: 'Seu acesso a este sistema não foi aprovado. Fale com a Qualidade.',
+  ad_indisponivel: 'O servidor da rede não respondeu. Tente de novo em instantes.',
+  ad_nao_configurado: 'O login pela rede ainda não foi configurado neste ambiente. Avise a TI.',
+  muitas_tentativas: 'Muitas tentativas erradas. Aguarde alguns minutos para não bloquear sua conta da rede.',
+};
+$('#form-login').addEventListener('submit', async e => {
+  e.preventDefault();
+  const b = $('#lg-entrar'); b.disabled = true; b.textContent = 'Entrando…'; $('#login-msg').textContent = '';
+  try {
+    const r = await api('POST', '/api/auth/login', { login: $('#lg-user').value, senha: $('#lg-senha').value });
+    E.token = r.token; try { sessionStorage.setItem('amb_token', r.token); } catch (e) {}
+    E.usuario = r.usuario; await entrar();
+  } catch (err) {
+    const mot = err.corpo && err.corpo.motivo;
+    $('#login-msg').textContent = (MOTIVOS[mot] || err.message) + (mot === 'muitas_tentativas' && err.corpo.minutos ? ` (${err.corpo.minutos} min)` : '');
+  } finally { b.disabled = false; b.textContent = 'Entrar'; }
+});
+$('#lg-olho').addEventListener('click', () => {
+  const i = $('#lg-senha'), ver = i.type === 'password';
+  i.type = ver ? 'text' : 'password'; $('#lg-olho').textContent = ver ? 'ocultar' : 'mostrar';
+});
+function sairLocal() {
+  E.telaPintada = null;
+  E.token = null; E.usuario = null; try { sessionStorage.removeItem('amb_token'); } catch (e) {}
+  $('#app').hidden = true; $('#barra-salvar').hidden = true; $('#login').hidden = false;
+}
+$('#sair').addEventListener('click', async () => { try { await api('POST', '/api/auth/logout'); } catch (e) {} sairLocal(); });
+
+// ── navegação ──────────────────────────────────────────────────────────────
+const TELAS = [
+  { id: 'painel', nome: 'Painel' },
+  { id: 'lancamentos', nome: 'Lançamentos', menu: true },
+  // Início saiu do menu (27/10/2026) e a tela de entrada é o Painel; continua acessível em #inicio
+  // porque é lá que ficam Fechar/Reabrir mês, a conferência com a planilha e a recarga (HML).
+  { id: 'inicio', nome: 'Início', oculta: true },
+  { id: 'cadastros', nome: 'Cadastros' },
+  { id: 'historico', nome: 'Histórico' },
+  { id: 'integracoes', nome: 'Integrações' },
+  { id: 'usuarios', nome: 'Usuários', admin: true },
+  // abas da planilha (nome exato), agrupadas no menu Lançamentos
+  { id: 'residuos', aba: 'SOMA RESÍDUOS', grupo: 'Resíduos' },
+  { id: 'residuos_m3', aba: 'Resíduos m³m²', grupo: 'Resíduos' },
+  { id: 'conformidade', aba: 'Conformidade LAI.EIV', grupo: 'Conformidade LAI/EIV' },
+  { id: 'metas', aba: 'Metas LAI EIV', grupo: 'Conformidade LAI/EIV' },
+  { id: 'nc', aba: 'NC LAI e EIV', grupo: 'Conformidade LAI/EIV' },
+  { id: 'ruido', aba: 'Ruído', grupo: 'Conformidade LAI/EIV' },
+  { id: 'eco_urbana', aba: 'Eco urbana', grupo: 'Conformidade LAI/EIV' },
+  { id: 'avanco', aba: 'Avanço físico', grupo: 'Obra' },
+  { id: 'consumo', aba: 'Água e luz', grupo: 'Consumo' },
+  { id: 'impressoes', aba: 'Impressões', grupo: 'Consumo' },
+  { id: 'impressoes_setor', aba: 'Impressões por setor', grupo: 'Consumo' },
+  { id: 'impressoes_pessoa', aba: 'Impressões por pessoa', grupo: 'Consumo' },
+  { id: 'auditoria', aba: 'Auditoria Ambientais', grupo: 'Gestão ambiental' },
+  { id: 'plano_acao', aba: 'Plano de Ação', grupo: 'Gestão ambiental' },
+  { id: 'emergencia', aba: 'Emergências Ambientais', grupo: 'Gestão ambiental' },
+  { id: 'reclamacao', aba: 'Reclamações vizinhos', grupo: 'Gestão ambiental' },
+  { id: 'acoes_sga', aba: 'Ações SGA', grupo: 'Gestão ambiental' },
+];
+const nomeTela = id => { const t = TELAS.find(x => x.id === id); return t ? (t.aba || t.nome) : id; };
+const pode = () => E.usuario && ['editor', 'admin'].includes(E.usuario.nivel);
+const ehAdmin = () => E.usuario && E.usuario.nivel === 'admin';
+function montarMenu() {
+  const naAba = !!(TELAS.find(t => t.id === E.tela) || {}).aba;
+  $('#menu').innerHTML = TELAS.filter(t => !t.aba && !t.oculta && (!t.admin || ehAdmin())).map(t => t.menu
+    ? `<div class="drop"><button class="drop-btn ${naAba ? 'ativo' : ''}" aria-haspopup="true" aria-expanded="false">${t.nome}${naAba ? ': <b>' + esc(nomeTela(E.tela)) + '</b>' : ''} ▾</button><div class="drop-menu" hidden>${
+      [...new Set(TELAS.filter(x => x.grupo).map(x => x.grupo))].map(g => `<div class="drop-grupo"><p>${g}</p>${TELAS.filter(x => x.grupo === g).map(x => x.id ? `<a href="#${x.id}" class="${x.id === E.tela ? 'ativo' : ''}">${esc(x.aba)}</a>` : `<span class="off" title="${esc(x.vazia)}">${esc(x.aba)} <small>(vazia na planilha)</small></span>`).join('')}</div>`).join('')
+    }<p class="drop-rod">Mesmos nomes das abas da planilha Controle Ambiental</p></div></div>`
+    : `<a href="#${t.id}" data-t="${t.id}" class="${t.id === E.tela ? 'ativo' : ''}">${t.nome}</a>`).join('');
+  const btn = $('.drop-btn'), menu = $('.drop-menu');
+  if (btn) {
+    btn.onclick = e => { e.stopPropagation(); menu.hidden = !menu.hidden; btn.setAttribute('aria-expanded', String(!menu.hidden)); };
+    menu.onclick = e => { if (e.target.closest('a')) menu.hidden = true; };
+  }
+}
+document.addEventListener('click', () => { const m = $('.drop-menu'); if (m) m.hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { const m = $('.drop-menu'); if (m) m.hidden = true; } });
+// sem login, trocar o # não carrega tela (senão a chamada sem sessão derruba o token guardado)
+window.addEventListener('hashchange', () => { if (E.usuario) irPara(location.hash.slice(1) || 'painel'); });
+window.addEventListener('beforeunload', e => { if (E.sujo.size) { e.preventDefault(); e.returnValue = ''; } });
+async function irPara(t) {
+  if (!TELAS.some(x => x.id && x.id === t && !x.menu)) t = 'painel';
+  if (t !== E.tela && E.sujo.size) {
+    if (!(await confirmar('Alterações não salvas', `Há ${E.sujo.size} alteração(ões) não salvas nesta tela. Sair e descartar?`, 'Descartar', true))) { history.replaceState(null, '', '#' + E.tela); return; }
+    limparSujo();
+  }
+  if (t !== E.tela && E.inclusoes.length) { desfazerInclusoes(); limparSujo(); }
+  E.tela = t; montarMenu(); await render();
+}
+async function entrar() {
+  $('#login').hidden = true; $('#app').hidden = false;
+  $('#quem-nome').textContent = E.usuario.nome || E.usuario.login;
+  $('#quem-nivel').textContent = { leitor: 'consulta', editor: 'lançamento', admin: 'administrador' }[E.usuario.nivel] || E.usuario.nivel;
+  E.cad = await api('GET', '/api/cadastros');
+  irPara(location.hash.slice(1) || 'painel');
+}
+async function carregarMes() { E.mes = await api('GET', '/api/mes?competencia=' + E.comp); }
+function trocarComp(c) {
+  if (E.sujo.size) { toast('Salve ou descarte as alterações antes de trocar de mês.', true); return; }
+  if (E.inclusoes.length) { desfazerInclusoes(); limparSujo(); }
+  E.comp = E.compInicio = c; try { sessionStorage.setItem('amb_comp', c); } catch (e) {} render();
+}
+function seletorComp() {
+  return `<div class="comp"><button data-comp="-1" title="mês anterior">‹</button><input type="month" id="comp" value="${E.comp}"><button data-comp="1" title="próximo mês">›</button></div>`;
+}
+function ligarComp(raiz) {
+  $$('[data-comp]', raiz).forEach(b => b.onclick = () => trocarComp(somarMes(E.comp, +b.dataset.comp)));
+  const i = $('#comp', raiz); if (i) i.onchange = () => i.value && trocarComp(i.value);
+}
+const cap1 = x => x.charAt(0).toUpperCase() + x.slice(1);
+const chipMes = () => seletorComp();
+function seloFechado() { return E.mes && E.mes.fechado ? `<span class="selo fech" title="fechado por ${esc(E.mes.fechado.fechado_por)} em ${esc(E.mes.fechado.fechado_em)}">🔒 mês fechado</span>` : ''; }
+// leitor nunca edita; mês fechado só admin (com motivo)
+const editavel = () => pode() && (!E.mes || !E.mes.fechado || ehAdmin());
+
+// ── alterações pendentes (células amarelas + barra de salvar) ──────────────
+function limparSujo() { E.sujo.clear(); E.inclusoes = []; E.salvar = null; $('#barra-salvar').hidden = true; }
+function marcarSujo(chave, valor) { E.sujo.set(chave, valor); atualizarBarra(); }
+function desmarcarSujo(chave) { E.sujo.delete(chave); atualizarBarra(); }
+function atualizarBarra() {
+  const semValor = E.sujo.size === 0;
+  $('#barra-salvar').hidden = semValor && !E.inclusoes.length;
+  $('#barra-txt').textContent = semValor ? 'Linha incluída: preencha os valores · ' + compTxt(E.comp) : E.sujo.size + ' alteração(ões) não salvas · ' + compTxt(E.comp);
+}
+// linhas incluídas com "+ Linha" (grades por obra/resíduo/UC): somem de novo ao descartar ou sair da tela
+function desfazerInclusoes() { E.inclusoes.forEach(i => i.alvo.delete(i.v)); E.inclusoes = []; }
+$('#barra-descartar').onclick = () => { desfazerInclusoes(); limparSujo(); render(); };
+$('#barra-salvar-btn').onclick = async () => {
+  if (!E.salvar) return;
+  if (!E.sujo.size) { toast('Preencha os valores da linha incluída antes de salvar, ou descarte.', true); return; }
+  if ($$('input.c.erro').length) { toast('Corrija os campos em vermelho antes de salvar.', true); return; }
+  let motivo;
+  if (E.mes && E.mes.fechado) { motivo = await pedirMotivo(); if (!motivo) return; }
+  const b = $('#barra-salvar-btn'); b.disabled = true; b.textContent = 'Salvando…';
+  try {
+    const r = await E.salvar(motivo);
+    limparSujo();
+    toast('Salvo. ' + resumoTxt(r) + '. O painel é atualizado em instantes.');
+    await render();
+  } catch (e) { toast(e.message, true); }
+  finally { b.disabled = false; b.textContent = 'Salvar alterações'; }
+};
+function resumoTxt(rs) {
+  const t = { incluidas: 0, alteradas: 0, excluidas: 0 };
+  [].concat(rs).forEach(r => r && r.resumo && Object.keys(t).forEach(k => t[k] += r.resumo[k] || 0));
+  return [t.incluidas && t.incluidas + ' incluído(s)', t.alteradas && t.alteradas + ' alterado(s)', t.excluidas && t.excluidas + ' excluído(s)'].filter(Boolean).join(', ') || 'nada mudou';
+}
+// liga os inputs .c da tela: valida, pinta de amarelo e guarda no E.sujo
+function ligarCelulas(raiz, aoMudar) {
+  $$('input.c', raiz).forEach(inp => {
+    inp.dataset.orig = inp.value;
+    inp.addEventListener('input', () => {
+      const tipo = inp.dataset.tipo || 'num';
+      let ok = true;
+      if (tipo === 'num' || tipo === 'pct' || tipo === 'int') {
+        const n = lerNum(inp.value);
+        ok = n === null || (!Number.isNaN(n) && n >= 0 && (tipo !== 'pct' || n <= 100) && (tipo !== 'int' || Number.isInteger(n)));
+      } else if (tipo === 'hora') ok = !inp.value.trim() || /^\d{1,2}:\d{2}$/.test(inp.value.trim());
+      inp.classList.toggle('erro', !ok);
+      const mudou = inp.value !== inp.dataset.orig;
+      inp.classList.toggle('sujo', mudou && ok);
+      if (mudou) marcarSujo(inp.dataset.k, inp.value); else desmarcarSujo(inp.dataset.k);
+      aoMudar && aoMudar(inp);
+    });
+    inp.addEventListener('keydown', e => {
+      const tab = inp.closest('table') || raiz, td = inp.closest('td');
+      if (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        // mesma coluna, linhas visíveis (a busca das listas esconde linhas)
+        const todos = $$('input.c:not(:disabled)', tab).filter(x => x.closest('td').cellIndex === td.cellIndex && x.closest('tr').style.display !== 'none');
+        const i = todos.indexOf(inp) + (e.key === 'ArrowUp' || (e.key === 'Enter' && e.shiftKey) ? -1 : 1);
+        if (todos[i]) { e.preventDefault(); todos[i].focus(); todos[i].select(); }
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        // só muda de campo quando o cursor já está na ponta do texto
+        const fim = e.key === 'ArrowRight' ? inp.selectionStart === inp.value.length && inp.selectionEnd === inp.value.length : inp.selectionStart === 0 && inp.selectionEnd === 0;
+        if (!fim && !(inp.selectionStart === 0 && inp.selectionEnd === inp.value.length)) return;
+        const linha = $$('input.c:not(:disabled)', inp.closest('tr'));
+        const j = linha.indexOf(inp) + (e.key === 'ArrowLeft' ? -1 : 1);
+        if (linha[j]) { e.preventDefault(); linha[j].focus(); linha[j].select(); }
+      }
+    });
+  });
+}
+const caixaPlanilha = () => '';
+const obrasAtivas = () => E.cad.obras.filter(o => o.ativa);
+const obraNome = id => (E.cad.obras.find(o => o.id === id) || {}).nome || id;
+
+// ── render ─────────────────────────────────────────────────────────────────
+async function render() {
+  const el = $('#tela');
+  el.classList.toggle('largo', ['painel', 'avanco', 'conformidade', 'ruido', 'nc', 'residuos', 'residuos_m3', 'consumo', 'metas'].includes(E.tela) || !!LISTAS_UI[E.tela]);
+  clearTimeout(E.pollPainel);
+  INFO_COLS.length = 0;
+  el.setAttribute('aria-busy', 'true');
+  // esqueleto só ao trocar de tela; ao salvar/atualizar a mesma tela não pisca nem perde a rolagem
+  if (E.tela !== 'painel' && E.telaPintada !== E.tela) el.innerHTML = esqueleto(E.tela);
+  E.telaPintada = E.tela;
+  try {
+    if (['inicio', 'avanco', 'conformidade', 'ruido', 'nc', 'residuos', 'residuos_m3', 'consumo'].includes(E.tela) || (LISTAS_UI[E.tela] && LISTAS_UI[E.tela].filtro === 'mes')) await carregarMes(); else E.mes = null;
+    if (LISTAS_UI[E.tela]) { await telaLista(el, E.tela); ligarComp(el); aplicarColunas(el); aprimorarGrades(el); return; }
+    await ({ inicio: telaInicio, avanco: telaAvanco, conformidade: telaConformidade, residuos: telaResiduos, consumo: telaConsumo,
+      cadastros: telaCadastros, historico: telaHistorico, usuarios: telaUsuarios, integracoes: telaIntegracoes, painel: telaPainel,
+      ruido: telaRuido, nc: telaNc, residuos_m3: telaResiduosM3, metas: telaMetas }[E.tela])(el);
+    ligarComp(el);
+    aplicarColunas(el);
+    aprimorarGrades(el);
+  } catch (e) {
+    el.innerHTML = `<div class="card erro-carga" role="alert"><p>Não foi possível carregar: ${esc(e.message)}</p><button class="btn sec" id="de-novo">Tentar de novo</button></div>`;
+    const b = $('#de-novo', el); if (b) b.onclick = () => render();
+  } finally { el.removeAttribute('aria-busy'); }
+}
+// colar várias células do Excel (valores separados por tab, linhas por quebra de linha)
+// a partir da célula em foco: desce pelas linhas visíveis e avança pelas colunas editáveis
+function ligarColar() {
+  if (E.colarLigado) return; E.colarLigado = true;
+  const campos = tr => $$('input.c:not(:disabled):not([type=date])', tr);
+  $('#tela').addEventListener('paste', e => {
+    const inp = e.target.closest && e.target.closest('input.c'); if (!inp || inp.disabled || inp.type === 'date') return;
+    const txt = ((e.clipboardData || window.clipboardData).getData('text') || '').replace(/\r?\n$/, '');
+    if (!/[\t\n]/.test(txt)) return; // valor único: colagem normal
+    e.preventDefault();
+    const trs = $$('tbody tr:not(.gm)', inp.closest('table')).filter(tr => tr.style.display !== 'none' && !tr.classList.contains('del'));
+    const r0 = trs.indexOf(inp.closest('tr')), c0 = campos(inp.closest('tr')).indexOf(inp);
+    let n = 0, fora = 0;
+    txt.split(/\r?\n/).forEach((l, i) => {
+      const tr = trs[r0 + i]; if (!tr) { fora++; return; }
+      const cs = campos(tr);
+      l.split('\t').forEach((v, j) => { const c = cs[c0 + j]; if (!c) return; c.value = v.trim(); c.dispatchEvent(new Event('input', { bubbles: true })); n++; });
+    });
+    toast(n + ' célula(s) coladas. Confira e salve.' + (fora ? ' ' + fora + ' linha(s) a mais ficaram de fora (não há linha para elas).' : ''), !n);
+  });
+  // avisos "sem Total m² / sem densidade" levam à aba certa do cadastro
+  $('#tela').addEventListener('click', e => { const a = e.target.closest('[data-cad]'); if (a) { cadTab = a.dataset.cad; cadBusca = ''; cadEstado = 'ativos'; } });
+}
+// "N de M linhas preenchidas" embaixo das grades de lançamento
+function contadorGrades(el) {
+  $$('table.grade', el).forEach(t => {
+    const linhas = () => $$('tbody tr', t).filter(tr => tr.querySelector('input.c:not([type=date])') && tr.style.display !== 'none');
+    if (t.id === 'tab-lista' || t.id === 'tab-nc' || !linhas().length) return;
+    const wrap = t.closest('.grade-wrap'); if (!wrap) return;
+    const p = document.createElement('p'); p.className = 'dica contador'; p.setAttribute('aria-live', 'polite'); wrap.after(p);
+    const atualizar = () => { const L = linhas(); const ok = L.filter(tr => $$('input.c', tr).some(i => i.value.trim() !== '')).length; p.textContent = ok + ' de ' + L.length + ' linha(s) preenchidas'; p.classList.toggle('completo', ok === L.length); };
+    atualizar(); t.addEventListener('input', atualizar);
+  });
+}
+function aprimorarGrades(el) { ligarColar(); contadorGrades(el); }
+// o que aparece enquanto a API responde (a tela real substitui tudo)
+function esqueleto(t) {
+  const titulo = '<div class="esq t"></div>';
+  if (t === 'inicio') return `<div class="carregando" aria-label="Carregando">${titulo}<div class="kpis esqk">${'<div class="esq k"></div>'.repeat(4)}</div><div class="esq b"></div></div>`;
+  return `<div class="carregando" aria-label="Carregando">${titulo}<div class="esq b"></div></div>`;
+}
+
+// ── Início ─────────────────────────────────────────────────────────────────
+// lançamentos esperados num mês: 4 por obra ativa (avanço, conformidade, ruído,
+// resíduos) + 1 por unidade consumidora digitável (a que agrupa outras é soma)
+function esperadoMes() {
+  const grupos = new Set(E.cad.ucs.map(u => u.agrupa_em_id).filter(Boolean));
+  return obrasAtivas().length * 4 + E.cad.ucs.filter(u => u.ativa && !grupos.has(u.id)).length;
+}
+async function telaInicio(el) {
+  const M = E.mes, obras = obrasAtivas();
+  const pano = await api('GET', '/api/panorama?meses=12');
+  const ucObra = Object.fromEntries(E.cad.ucs.filter(u => u.obra_id).map(u => [u.obra_id, u.id]));
+  const tem = {
+    avanco: new Set(M.avanco.map(x => x.obra_id)),
+    conformidade: new Set(M.conformidade.map(x => x.obra_id)),
+    ruido: new Set(M.ruido.map(x => x.obra_id)),
+    residuos: new Set(M.residuo.map(x => x.obra_id)),
+    consumo: new Set(M.consumo.filter(x => x.luz_kwh != null || x.agua_m3 != null).map(x => x.uc_id)), // linha em branco da planilha não conta como lançada
+  };
+  const COLS = [['ruido', 'Ruído', 'ruido'], ['conformidade', 'Conformidade LAI.EIV', 'conformidade'], ['avanco', 'Avanço físico', 'avanco'], ['residuos', 'SOMA RESÍDUOS', 'residuos'], ['consumo', 'Água e luz', 'consumo']];
+  let feitos = 0, total = 0;
+  // quem tem mais pendência vem primeiro: é onde a área precisa agir
+  const porObra = obras.map(o => {
+    let falta = 0;
+    const cels = COLS.map(([k, , tela]) => {
+      const ok = k === 'consumo' ? (ucObra[o.id] ? tem.consumo.has(ucObra[o.id]) : null) : tem[k].has(o.id);
+      if (ok === null) return '<td class="st"><span class="selo na">sem UC</span></td>';
+      total++; if (ok) feitos++; else falta++;
+      return `<td class="st"><a class="st" href="#${tela}" ${k === 'residuos' ? `data-obra="${o.id}"` : ''} aria-label="${esc(o.nome)}: ${esc(COLS.find(c => c[0] === k)[1])} ${ok ? 'lançado' : 'pendente'}">${ok ? '<span class="selo ok">✓ lançado</span>' : '<span class="selo warn">pendente</span>'}</a></td>`;
+    }).join('');
+    return { o, falta, cels };
+  }).sort((a, b) => b.falta - a.falta);
+  const linhas = porObra.map(({ o, falta, cels }) => `<tr class="${falta ? '' : 'completa'}"><td>${esc(o.nome)}</td>${cels}<td class="st">${falta ? `<span class="faltam">${falta} falta${falta > 1 ? 'm' : ''}</span>` : '<span class="selo ok">completa</span>'}</td></tr>`).join('');
+  const obrasCompletas = porObra.filter(p => !p.falta).length;
+  const maxObras = obras.length;
+  el.innerHTML = `
+    <div class="cab"><div><h1>Lançamentos de ${compTxt(E.comp)}</h1><p>O que já foi lançado no mês, obra por obra. Clique numa pendência para lançar.</p></div>
+      <div class="ferr">${seloFechado()}${seletorComp()}${ehAdmin() ? `<button class="btn sec" id="fechar">${M.fechado ? 'Reabrir mês' : 'Fechar mês'}</button>` : ''}</div></div>
+    <div class="kpis">
+      <div class="kpi"><div class="r">Lançamentos do mês</div><div class="v">${feitos} / ${total}</div><div class="s">${total ? Math.round(feitos / total * 100) : 0}% completo · faltam ${total - feitos}</div></div>
+      <div class="kpi"><div class="r">Obras com tudo lançado</div><div class="v">${obrasCompletas}</div><div class="s">de ${maxObras} obras ativas · ${tem.residuos.size} com resíduos</div></div>
+      <div class="kpi"><div class="r">Conformidade média</div><div class="v">${M.conformidade.length ? fmtPct(M.conformidade.reduce((s, c) => s + c.percentual, 0) / M.conformidade.length) : '–'}</div><div class="s">${M.conformidade.filter(c => M.metas[c.obra_id] != null && c.percentual < M.metas[c.obra_id]).length} obra(s) abaixo da meta</div></div>
+      <div class="kpi"><div class="r">Situação</div><div class="v menor">${M.fechado ? '🔒 Fechado' : 'Aberto'}</div><div class="s">${M.fechado ? 'por ' + esc(M.fechado.fechado_por) + ' em ' + esc(M.fechado.fechado_em) : 'lançamentos liberados'}</div></div>
+    </div>
+    <div class="card destaque"><h2>Pendências por obra <small>${compTxt(E.comp)} · quem tem mais pendência vem primeiro</small></h2>
+      <div class="grade-wrap"><table class="grade matriz"><thead><tr><th>Obra</th>${COLS.map(c => `<th style="text-align:center">${c[1]}</th>`).join('')}<th style="text-align:center">Situação</th></tr></thead><tbody>${linhas}</tbody></table></div></div>
+    <div class="card"><h2>Últimos 12 meses <small>% dos lançamentos esperados que já existem</small></h2>
+      <div class="pano">${pano.slice().reverse().map(p => {
+        const n = p.avanco + p.conformidade + p.residuo + p.ruido + p.consumo;
+        const pc = Math.min(100, Math.round(n / esperadoMes() * 100));
+        const c = p.competencia.slice(0, 7);
+        return `<button data-ir="${c}" class="${c === E.comp ? 'ativo' : ''}">${compCurta(c)}${p.fechado ? ' 🔒' : ''}<div class="bar"><i style="width:${pc}%"></i></div><span class="pc">${pc}%</span></button>`;
+      }).join('')}</div></div>
+    <details class="ferramenta"><summary>Validação com a planilha <small>ferramenta de migração · Controle Ambiental 2025_oficial_db</small></summary><div class="card">
+      <p class="dica" style="margin:0 0 10px">A conferência traz, para cada linha da planilha, a aba e a linha do Excel, o nome como está escrito lá, o nome no sistema, os dois valores e se batem. A aba "De-Para nomes" mostra cada grafia de obra/setor e o nome usado no sistema.</p>
+      <div class="ferr"><button class="btn sec" id="conf-baixar">Baixar conferência (.xlsx)</button>${AMBIENTE === 'homologacao' && ehAdmin() ? '<button class="btn sec" id="recarga">Recarregar da planilha</button>' : ''}</div></div></details>`;
+  $$('[data-ir]', el).forEach(b => b.onclick = () => trocarComp(b.dataset.ir));
+  $$('a[data-obra]', el).forEach(a => a.addEventListener('click', () => { E.obraRes = +a.dataset.obra; }));
+  $('#conf-baixar', el).onclick = async e => {
+    const b = e.target; b.disabled = true; b.textContent = 'Gerando conferência…';
+    try {
+      const r = await fetch('/api/conferencia', { headers: { 'x-sessao': E.token } });
+      if (!r.ok) throw new Error((await r.json().catch(() => ({}))).erro || 'falhou');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(await r.blob());
+      a.download = 'conferencia_planilha_' + new Date().toISOString().slice(0, 10) + '.xlsx'; a.click();
+    } catch (err) { toast(err.message, true); }
+    finally { b.disabled = false; b.textContent = 'Baixar conferência (.xlsx)'; }
+  };
+  const rc = $('#recarga', el);
+  if (rc) rc.onclick = async () => {
+    const f0 = await api('GET', '/api/recarga');
+    const perde = f0.alteracoes ? `<p><b style="color:var(--bad-ink)">Atenção: ${f0.alteracoes} alteração(ões) feitas no sistema por ${f0.pessoas} pessoa(s) serão apagadas${f0.meses_fechados ? ', e ' + f0.meses_fechados + ' mês(es) fechado(s) reabertos' : ''}.</b> Para confirmar, digite APAGAR.</p><input class="campo" id="rc-conf" style="width:100%">` : '<p>Nada foi lançado no sistema ainda: só a carga da planilha será refeita.</p>';
+    const f = await modal(`<h3>Recarregar da planilha</h3><p>Lê de novo a planilha <b>Controle Ambiental 2025_oficial_db</b> como está agora e refaz cadastros e lançamentos do sistema. Usuários e acessos continuam.</p>${perde}
+      <div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn ${f0.alteracoes ? 'perigo' : ''}" data-r="ok">Recarregar</button></div>`);
+    if (!f) return;
+    rc.disabled = true; rc.textContent = 'Recarregando… (cerca de 1 minuto)';
+    try {
+      const r = await api('POST', '/api/recarga', { confirmo: f0.alteracoes ? ($('#rc-conf', f) || {}).value : undefined });
+      E.cad = await api('GET', '/api/cadastros');
+      await modal(`<h3>Planilha recarregada</h3><p class="dica">Relatório da carga (o que foi ajustado e por quê):</p><pre style="white-space:pre-wrap;font-size:12px;background:var(--wash);padding:10px;max-height:50vh;overflow:auto">${esc(r.relatorio)}</pre><div class="acoes"><button class="btn" data-r="ok">Fechar</button></div>`, { largura: 820 });
+      render();
+    } catch (err) { toast(err.message, true); rc.disabled = false; rc.textContent = 'Recarregar da planilha'; }
+  };
+  const f = $('#fechar', el);
+  if (f) f.onclick = async () => {
+    const fechar = !M.fechado;
+    const ok = await confirmar(fechar ? 'Fechar ' + compTxt(E.comp) : 'Reabrir ' + compTxt(E.comp),
+      fechar ? 'Depois de fechado, só administradores alteram os lançamentos deste mês, e cada correção exige motivo. Pendências: ' + (total - feitos) + '.' : 'Os lançadores voltam a poder alterar este mês.',
+      fechar ? 'Fechar mês' : 'Reabrir');
+    if (!ok) return;
+    try { await api('POST', '/api/fechamento', { competencia: E.comp, fechar }); toast(fechar ? 'Mês fechado.' : 'Mês reaberto.'); E.cad = await api('GET', '/api/cadastros'); render(); }
+    catch (e) { toast(e.message, true); }
+  };
+}
+
+// ── Painel ─────────────────────────────────────────────────────────────────
+// O dashboard de sempre, gerado deste banco (painel/gerar_painel.py). Depois de
+// cada gravação o servidor regera; aqui só mostramos e recarregamos quando fica pronto.
+async function telaPainel(el) {
+  // sem data de geração nem botões: o painel é parte do sistema; só um erro de geração aparece
+  const desenhar = info => info.erro ? `<div class="painel-barra"><span class="selo bad">${esc(info.erro)}</span></div>` : '';
+  let info = await api('GET', '/api/painel');
+  el.innerHTML = '<div id="p-cab">' + desenhar(info) + '</div>' + (info.existe ? '<iframe class="painel" id="p-frame" scrolling="no" title="Painel ambiental" src="/painel?v=' + encodeURIComponent(info.gerado_em || '') + '"></iframe>' : '<div class="card vazio">O painel está sendo gerado pela primeira vez…</div>');
+  const ligar = () => {};
+  const acompanhar = antes => {
+    E.pollPainel = setTimeout(async () => {
+      if (E.tela !== 'painel') return;
+      const novo = await api('GET', '/api/painel').catch(() => null);
+      if (!novo) return;
+      $('#p-cab', el).innerHTML = desenhar(novo); ligar();
+      if (novo.gerando) return acompanhar(antes);
+      if (novo.gerado_em !== antes) {
+        const f = $('#p-frame', el);
+        if (f) f.src = '/painel?v=' + encodeURIComponent(novo.gerado_em); else telaPainel(el);
+        toast('Painel atualizado com os últimos lançamentos.');
+      }
+    }, 2500);
+  };
+  // o painel não rola por dentro: a altura do iframe acompanha o conteúdo (troca de aba, filtro, recarga)
+  const ajustar = f => {
+    try {
+      const d = f.contentDocument, w = f.contentWindow; if (!d || !d.body) return;
+      const alt = () => { const h = Math.ceil(d.body.getBoundingClientRect().height) + 16; if (Math.abs(h - f.offsetHeight) > 2) f.style.height = h + 'px'; };
+      alt(); new w.ResizeObserver(alt).observe(d.body);
+    } catch (e) { f.style.height = 'calc(100vh - 120px)'; f.scrolling = 'yes'; }
+  };
+  const fr = $('#p-frame', el); if (fr) { fr.addEventListener('load', () => ajustar(fr)); if (fr.contentDocument && fr.contentDocument.readyState === 'complete') ajustar(fr); }
+  ligar();
+  if (info.gerando || !info.existe) acompanhar(info.gerado_em);
+}
+
+// ── Abas da planilha ──────────────────────────────────────────────────────
+// Cada aba da "Controle Ambiental 2025_oficial_db" é uma tela com o MESMO nome
+// e as MESMAS colunas, na mesma ordem: quem sai da planilha reconhece tudo.
+// Coluna que era fórmula: marcada ƒ (o sistema calcula). Coluna que não existia:
+// marcada "novo" e sempre depois das colunas da planilha.
+const MES_NOME = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+function mesCols(c = E.comp) { const [a, m] = c.split('-'); return { ano: a, mes: MES_NOME[+m - 1], mesAno: MESES[+m - 1] + '-' + a.slice(2) }; }
+const thMes = () => '<th>Mês/Ano</th>';
+const tdMes = () => { const x = mesCols(); return `<td class="calc">${x.mesAno}</td>`; };
+// colunas que não se digitam: cada tela lista no rodapé de onde vem cada uma
+const INFO_COLS = [];
+const thCalc = (nome, cls = '', dica = 'Na planilha era fórmula: o sistema calcula') => { INFO_COLS.push([nome, dica]); return `<th class="${cls}" title="${esc(dica)}">${nome} <span class="fx">ƒ</span></th>`; };
+const thCad = (nome, cls, de) => { INFO_COLS.push([nome, de]); return `<th class="${cls}" title="${esc(de)}">${nome} <span class="fx cad">↗</span></th>`; };
+// sempre = coluna nova que fica visível (ex.: Canal, Situação do Plano de Ação); as outras se escondem
+const thNovo = (nome, cls = '', primeiro, sempre) => `<th class="${cls} novo${primeiro ? ' novo1' : ''}${sempre ? '' : ' extra'}" title="Não existia na planilha">${nome} <span class="tag-novo">novo</span></th>`;
+function cabAba(aba, desc, comMes = true, extra = '') {
+  return `<div class="cab"><div><p class="eyebrow">Lançamentos</p><h1>${esc(aba)}</h1><p>${desc}</p></div>
+    <div class="ferr">${comMes ? seloFechado() + chipMes() : extra}</div></div>`;
+}
+function legenda() {
+  const vistos = new Set(), itens = INFO_COLS.splice(0).filter(([n]) => !vistos.has(n) && vistos.add(n));
+  return `<details class="legenda"><summary class="dica" style="cursor:pointer;margin-top:10px">Legenda e colunas que não se digitam</summary>${itens.length ? `<p class="dica" style="margin:10px 0 0"><b>Colunas que não se digitam</b> (o sistema calcula ou busca o valor):</p>
+    <ul class="dica">${itens.map(([n, d]) => `<li><b>${esc(n)}</b> — ${esc(d)}</li>`).join('')}</ul>` : ''}
+    <p class="dica"><span class="fx">ƒ</span> era fórmula na planilha · <span class="fx cad">↗</span> vem de outra aba ou do cadastro · <span class="tag-novo">novo</span> não existia na planilha</p></details>`;
+}
+// marca as colunas escondíveis da tabela (thead .extra/.oculta -> células da mesma posição)
+function marcarTabela(t) {
+  const ths = $$('thead th', t), marca = ths.map(th => th.classList.contains('extra') ? 'col-extra' : th.classList.contains('oculta') ? 'col-oculta' : '');
+  if (!marca.some(Boolean)) return;
+  ths.forEach((th, i) => marca[i] && th.classList.add(marca[i]));
+  for (const tr of $$('tbody tr, tfoot tr', t)) if (tr.cells.length === ths.length) [...tr.cells].forEach((td, i) => marca[i] && td.classList.add(marca[i]));
+}
+function aplicarColunas(el) { $$('table.grade', el).forEach(marcarTabela); }
+function aplicarPrefs() { document.body.classList.add('sem-extras', 'sem-ocultas'); }
+// obras de uma grade mensal: ativas + as que têm dado no mês + as incluídas com "+ Linha"
+const obrasDaTela = ids => { const c = new Set(ids); return E.cad.obras.filter(o => o.ativa || c.has(o.id) || E.incluirObras.has(o.id)); };
+// "+ Linha" das grades: escolhe o que ainda não está na tela e redesenha
+function ligarIncluir(el, rotulo, opcoes, alvo, id = 'incluir') {
+  const b = $('#' + id, el); if (!b) return;
+  b.onclick = async () => {
+    if (E.sujo.size) return toast('Salve ou descarte as alterações antes de incluir uma linha.', true);
+    if (!opcoes.length) return toast('Todas as opções já estão na tela.');    const f = await modal(`<h3>+ ${esc(rotulo)}</h3><p class="dica">${esc(rotulo)} que ainda não aparece nesta tela (inativo ou sem lançamento no mês).</p>
+      <select id="inc" style="width:100%">${opcoes.map(([v, n]) => `<option value="${v}">${esc(n)}</option>`).join('')}</select>
+      <div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn" data-r="ok">Incluir</button></div>`);
+    if (!f) return;
+    const v = +$('#inc', f).value; alvo.add(v); E.inclusoes.push({ alvo, v });
+    render().then(atualizarBarra);
+  };
+}
+// o botão só aparece quando há algo a incluir (senão o clique não levaria a lugar nenhum)
+// o botão só aparece quando há algo a incluir (senão o clique não levaria a lugar nenhum)
+const botaoIncluir = (rotulo, n, id = 'incluir', texto = '+ Linha') => editavel() && n > 0 ? `<button class="btn" id="${id}" title="Incluir ${rotulo.toLowerCase()} que ainda não tem linha neste mês">${texto}</button>` : '';
+// barra padrão das telas de lançamento: filtros à esquerda, "+ Linha" à direita
+const barra = (esq = '', dir = '') => esq || dir ? `<div class="barra-lanc">${esq}<span class="espaco"></span>${dir}</div>` : '';
+
+// ── Avanço físico ──────────────────────────────────────────────────────────
+// Vem do Prevision (Integrações): ninguém digita nem altera, só exclui a linha que não faça sentido.
+async function telaAvanco(el) {
+  const M = E.mes, ed = editavel();
+  const ant = Object.fromEntries(M.anterior.filter(a => a.f === 'avanco').map(a => [a.id, a.a]));
+  const obras = E.cad.obras.filter(o => M.avanco.some(a => a.obra_id === o.id));
+  const por = Object.fromEntries(M.avanco.map(a => [a.obra_id, a]));
+  const origem = a => a.origem === 'prevision' ? '<span class="selo ok">Prevision</span>' : a.origem === 'planilha' ? '<span class="selo na">planilha</span>' : '<span class="selo na">lançado no sistema</span>';
+  el.innerHTML = `${cabAba('Avanço físico', 'Avanço realizado no mês de cada obra, trazido do Prevision. O Avanço m² é a área do mês usada em SOMA RESÍDUOS e em Água e luz.')}
+    <p class="dica" style="margin:0 0 12px">Os valores vêm do Prevision e não podem ser digitados nem alterados aqui${pode() ? '. Se uma linha não fizer sentido, use o ✕ para excluí-la; se o valor estiver errado, corrija no Prevision' : ''}. Veja o que chegou e as diferenças em <a href="#integracoes">Integrações</a>.</p>
+    <div class="card"><div class="grade-wrap"><table class="grade"><thead><tr><th>Obra</th>${thMes()}<th class="n">Avanço %</th>${thCalc('Avanço m²', 'n', 'Total m² × Avanço %')}${thCad('Total m²', 'n', 'vem do cadastro da obra (Cadastros → Obras)')}<th>Origem</th>${thNovo('Avanço % do mês anterior', 'n', true)}<th></th></tr></thead><tbody>
+    ${obras.map(o => { const a = por[o.id]; return `<tr data-obra="${o.id}"><td>${esc(o.nome)}</td>${tdMes()}
+      <td class="n">${fmt(a.avanco_pct * 100, 2)}%</td>
+      <td class="n calc">${a.area_mes_m2 != null ? fmt(a.area_mes_m2) : ''}</td>
+      <td class="n calc">${o.area_total_m2 ? fmt(o.area_total_m2) : '<a href="#cadastros" data-cad="obras" class="selo warn" title="Abrir Cadastros → Obras para informar o Total m²">sem Total m² · cadastrar</a>'}</td>
+      <td>${origem(a)}</td>
+      <td class="n dica novo1">${ant[o.id] != null ? fmt(ant[o.id] * 100, 2) + '%' : ''}</td><td>${btnExcluir(ed)}</td></tr>`; }).join('')}
+    </tbody></table></div>${obras.length ? '' : `<p class="vazio">Nenhum avanço em ${compTxt(E.comp)}. Os valores chegam do Prevision na sincronização (veja Integrações) ou o mês ainda não terminou.</p>`}${legenda()}</div>`;
+  $$('[data-excluir]', el).forEach(b => b.onclick = () => {
+    const o = E.cad.obras.find(x => x.id === +b.closest('tr').dataset.obra);
+    excluirLinha(`O avanço físico de <b>${esc(o.nome)}</b> em ${compTxt(E.comp)} será excluído e <b>não volta</b> na próxima sincronização com o Prevision.`,
+      motivo => api('PUT', '/api/lancamentos/avanco', { competencia: E.comp, motivo, linhas: [{ obra_id: o.id, avanco_pct: null }] }));
+  });
+}
+// ── Conformidade LAI.EIV ───────────────────────────────────────────────────
+async function telaConformidade(el) {
+  const M = E.mes, ed = editavel();
+  const por = Object.fromEntries(M.conformidade.map(c => [c.obra_id, c]));
+  const obras = obrasDaTela(M.conformidade.map(c => c.obra_id)).sort((a, b) => E.incluirObras.has(b.id) - E.incluirObras.has(a.id)); // obra incluída agora fica no topo
+  const situ = (p, meta) => p == null ? '' : meta == null ? '<span class="selo na">sem META</span>' : p >= meta ? '<span class="selo ok">na meta</span>' : '<span class="selo bad">abaixo</span>';
+  el.innerHTML = `${cabAba('Conformidade LAI.EIV', 'Checklist mensal (Alameda). A META vem da aba Metas LAI EIV, do próprio mês.')}
+    ${caixaPlanilha('PERCENTUAL digitado, às vezes como fórmula (<code>=53/57</code>). A META vinha de um PROCV que <b>sempre lia a coluna de ago/25</b> (Senna ficou com META 0 em 11 meses), e a META2 era a meta digitada de novo.', 'PERCENTUAL igual ao da planilha (ou calculado, se você informar os itens). META é a do mês na aba Metas LAI EIV — por isso existe uma só; a META2 deixou de existir.')}
+    ${barra('', botaoIncluir('Obra', E.cad.obras.filter(o => !obras.includes(o)).length))}
+    <div class="card"><div class="grade-wrap"><table class="grade"><thead><tr>
+      <th>OBRA</th>${thMes('MÊS')}<th class="n">PERCENTUAL</th>${thCalc('META', 'n', 'Vem da aba Metas LAI EIV, do mês (era PROCV)')}
+      ${thNovo('Itens conformes', 'n', true)}${thNovo('Itens avaliados', 'n')}${thNovo('Situação')}<th></th></tr></thead><tbody>
+    ${obras.map(o => { const c = por[o.id] || {}; const meta = M.metas[o.id];
+      return `<tr data-obra="${o.id}"><td>${esc(o.nome)}</td>${tdMes()}
+      <td class="n"><input class="c" data-k="${o.id}|percentual" data-col="pc" data-tipo="pct" inputmode="decimal" value="${c.percentual != null ? fmt(c.percentual * 100, 2) : ''}" ${ed ? '' : 'disabled'}></td>
+      <td class="n calc">${meta != null ? fmtPct(meta, 0) : '<span class="selo warn">sem META</span>'}</td>
+      <td class="n novo1"><input class="c" data-k="${o.id}|itens_conformes" data-col="ic" data-tipo="int" inputmode="numeric" value="${c.itens_conformes ?? ''}" ${ed ? '' : 'disabled'}></td>
+      <td class="n"><input class="c" data-k="${o.id}|itens_avaliados" data-col="ia" data-tipo="int" inputmode="numeric" value="${c.itens_avaliados ?? ''}" ${ed ? '' : 'disabled'}></td>
+      <td data-situ="${o.id}">${situ(c.percentual, meta)}</td><td>${por[o.id] ? btnExcluir(ed) : ''}</td></tr>`; }).join('')}
+    </tbody></table></div>${legenda()}<p class="dica">Pode digitar o PERCENTUAL como sempre. Se preencher itens conformes e avaliados, o PERCENTUAL é calculado (substitui o <code>=53/57</code>).</p></div>`;
+  ligarIncluir(el, 'Obra', E.cad.obras.filter(o => !obras.includes(o)).map(o => [o.id, o.nome + (o.ativa ? '' : ' (inativa)')]), E.incluirObras);
+  ligarExclusaoGrade(el, 'conformidade', tr => ({ obra_id: +tr.dataset.obra }), tr => `a conformidade LAI.EIV de <b>${esc(obraNome(+tr.dataset.obra))}</b> em ${compTxt(E.comp)}`);
+  ligarCelulas(el, inp => {
+    const [oid, campo] = inp.dataset.k.split('|');
+    if (campo === 'itens_conformes' || campo === 'itens_avaliados') {
+      const ic = lerNum($(`[data-k="${oid}|itens_conformes"]`, el).value), ia = lerNum($(`[data-k="${oid}|itens_avaliados"]`, el).value);
+      if (ic != null && ia) { const p = $(`[data-k="${oid}|percentual"]`, el); p.value = fmt(ic / ia * 100, 2); p.dispatchEvent(new Event('input')); }
+    }
+    const p = lerNum($(`[data-k="${oid}|percentual"]`, el).value);
+    $(`[data-situ="${oid}"]`, el).innerHTML = situ(p == null ? null : p / 100, M.metas[oid]);
+  });
+  E.salvar = motivo => {
+    const ids = [...new Set([...E.sujo.keys()].map(k => k.split('|')[0]))];
+    return api('PUT', '/api/lancamentos/conformidade', { competencia: E.comp, motivo, linhas: ids.map(oid => {
+      const v = c => $(`[data-k="${oid}|${c}"]`, el).value, p = lerNum(v('percentual'));
+      return { obra_id: +oid, itens_conformes: lerNum(v('itens_conformes')), itens_avaliados: lerNum(v('itens_avaliados')), percentual: p == null ? null : p / 100, observacao: (por[oid] || {}).observacao || null };
+    }) });
+  };
+}
+
+// ── Ruído ──────────────────────────────────────────────────────────────────
+async function telaRuido(el) {
+  const M = E.mes, ed = editavel();
+  const limite = E.cad.parametros.limite_ruido_db ? E.cad.parametros.limite_ruido_db.valor : 70;
+  el.innerHTML = `${cabAba('Ruído', `Medições do checklist (Alameda). Limite: ${fmt(limite, 0)} dB.`)}
+    ${caixaPlanilha('Obra sem medição no mês entrava com <b>dB 0</b> (e puxava a média para baixo). Horário às vezes gravado como data.', 'Obra sem medição simplesmente não tem linha. Horário só aceita HH:MM. A situação em relação ao limite aparece na hora.')}
+    ${barra('', ed ? '<button class="btn" id="add-ruido">+ Linha</button>' : '')}
+    <div class="card"><div class="grade-wrap"><table class="grade" id="tab-ruido"><thead><tr>${thMes()}<th>Obra</th><th>Ponto</th><th>Horário</th><th class="n">dB</th>${thNovo('Situação', '', true)}<th></th></tr></thead><tbody>
+    ${M.ruido.map(r => linhaRuido(r, ed, limite)).join('')}
+    </tbody></table></div>${legenda()}</div>`;
+  let novas = 0;
+  const ligarLinha = tr => {
+    const s = $('select', tr); if (s) s.onchange = () => marcarSujo('r:' + tr.dataset.id + '|obra_id', s.value);
+    const x = $('[data-del]', tr); if (x) x.onclick = () => {
+      if (/^n/.test(tr.dataset.id)) { [...E.sujo.keys()].filter(k => k.startsWith('r:' + tr.dataset.id + '|')).forEach(desmarcarSujo); tr.remove(); return; } // linha nova, ainda não gravada
+      const o = +$('select', tr).value;
+      excluirLinha(`Vai excluir a medição de ruído de <b>${esc(obraNome(o))}</b> (ponto ${esc($('[data-col=ponto]', tr).value)}, ${esc($('[data-col=db]', tr).value)} dB) em ${compTxt(E.comp)}.`,
+        motivo => api('PUT', '/api/ruido', { competencia: E.comp, motivo, linhas: [{ id: +tr.dataset.id, obra_id: o, excluir: true }] }));
+    };
+  };
+  const situRuido = tr => { const db = lerNum($('[data-col=db]', tr).value); $('[data-st]', tr).innerHTML = db ? (db > limite ? '<span class="selo bad">acima do limite</span>' : '<span class="selo ok">dentro</span>') : ''; };
+  ligarCelulas(el, inp => situRuido(inp.closest('tr')));
+  $$('#tab-ruido tbody tr', el).forEach(ligarLinha);
+  const add = $('#add-ruido', el);
+  if (add) add.onclick = () => {
+    const id = 'n' + (++novas), tb = $('#tab-ruido tbody', el);
+    tb.insertAdjacentHTML('afterbegin', linhaRuido({ id, obra_id: '', ponto: 'P1', horario: '', db: null, empresa: 'Alameda' }, true, limite, true));
+    const tr = tb.firstElementChild; marcarTabela($('#tab-ruido', el)); ligarCelulas(tr, () => situRuido(tr)); ligarLinha(tr);
+    $('select', tr).focus(); marcarSujo('r:' + id + '|obra_id', '');
+  };
+  E.salvar = motivo => {
+    const ids = [...new Set([...E.sujo.keys()].map(k => k.slice(2).split('|')[0]))];
+    const linhas = ids.map(id => {
+      const tr = $(`#tab-ruido tr[data-id="${id}"]`, el);
+      return { id: /^n/.test(id) ? null : +id, obra_id: +$('select', tr).value || null, ponto: $('[data-col=ponto]', tr).value, horario: $('[data-col=hora]', tr).value, db: lerNum($('[data-col=db]', tr).value), excluir: tr.classList.contains('del') };
+    }).filter(l => !(l.id === null && l.excluir));
+    if (linhas.some(l => !l.obra_id)) return Promise.reject(new Error('Escolha a Obra de cada linha.'));
+    return api('PUT', '/api/ruido', { competencia: E.comp, linhas, motivo });
+  };
+}
+function linhaRuido(r, ed, limite, nova) {
+  const opts = obrasAtivas().map(o => `<option value="${o.id}" ${o.id === r.obra_id ? 'selected' : ''}>${esc(o.nome)}</option>`).join('');
+  const d = ed ? '' : 'disabled';
+  return `<tr data-id="${r.id}">${tdMes()}<td><select ${d} style="min-width:140px">${nova ? '<option value="">— Obra —</option>' : ''}${opts}</select></td>
+    <td><input class="c h" data-k="r:${r.id}|ponto" data-col="ponto" data-tipo="txt" value="${esc(r.ponto || 'P1')}" ${d}></td>
+    <td><input class="c h" data-k="r:${r.id}|horario" data-col="hora" data-tipo="hora" placeholder="HH:MM" value="${esc(r.horario || '')}" ${d}></td>
+    <td class="n"><input class="c" data-k="r:${r.id}|db" data-col="db" data-tipo="num" inputmode="decimal" value="${r.db != null ? fmt(r.db) : ''}" ${d}></td>
+    <td data-st class="novo1">${r.db ? (r.db > limite ? '<span class="selo bad">acima do limite</span>' : '<span class="selo ok">dentro</span>') : ''}</td>
+    <td>${ed ? '<button class="btn sec peq" data-del title="excluir linha">✕</button>' : ''}</td></tr>`;
+}
+
+// ── NC LAI e EIV ───────────────────────────────────────────────────────────
+// Uma linha por não conformidade, como na planilha: Obra, NC LAI/EIV, Mês/Ano.
+async function telaNc(el) {
+  const M = E.mes, ed = editavel();
+  const ass = E.cad.assuntos;
+  const linhas = M.ncs.map((n, i) => ({ id: 'e' + i, obra_id: n.obra_id, assunto_id: n.assunto_id }))
+    .sort((a, b) => obraNome(a.obra_id).localeCompare(obraNome(b.obra_id)));
+  const opcObra = v => obrasAtivas().concat(E.cad.obras.filter(o => !o.ativa && o.id === v)).map(o => `<option value="${o.id}" ${o.id === v ? 'selected' : ''}>${esc(o.nome)}</option>`).join('');
+  const opcNc = v => ass.filter(a => a.ativo || a.id === v).map(a => `<option value="${a.id}" ${a.id === v ? 'selected' : ''}>${esc((a.tipo === 'LAI/EIV' ? '' : a.tipo + ': ') + a.nome)}</option>`).join('');
+  const linha = (l, nova) => `<tr data-id="${l.id}" data-obra0="${l.obra_id || ''}"><td><select data-c="obra" ${ed ? '' : 'disabled'} style="min-width:150px">${nova ? '<option value="">— Obra —</option>' : ''}${opcObra(l.obra_id)}</select></td>
+    <td><select data-c="nc" ${ed ? '' : 'disabled'} style="min-width:280px">${nova ? '<option value="">— NC LAI/EIV —</option>' : ''}${opcNc(l.assunto_id)}</select></td>
+    <td class="calc">${mesCols().mesAno}</td><td>${ed ? '<button class="btn sec peq" data-del title="excluir linha">✕</button>' : ''}</td></tr>`;
+  const obrasNc = E.cad.obras.filter(o => o.ativa || linhas.some(l => l.obra_id === o.id));
+  el.innerHTML = `${cabAba('NC LAI e EIV', 'Não conformidades do checklist: uma linha por NC, escolhida da lista "Tipo de Não Conformidades LAI/EIV".')}
+    ${caixaPlanilha('NC digitada como texto livre (a lista de tipos ficava ao lado, na coluna E, só para consulta).', 'A NC LAI/EIV é escolhida da mesma lista (Cadastros → Tipo de Não Conformidades LAI/EIV): sem erro de digitação, e o "Top NCs" do painel conta certo.')}
+    ${barra(`<label for="f-nc-obra">Empreendimento</label><select id="f-nc-obra"><option value="">Todas as obras</option>${obrasNc.map(o => `<option value="${o.id}">${esc(o.nome)}</option>`).join('')}</select>`, ed ? '<button class="btn" id="add-nc">+ Linha</button>' : '')}
+    <div class="card"><div class="grade-wrap"><table class="grade" id="tab-nc"><thead><tr><th>Obra</th><th>NC LAI/EIV</th><th>Mês/Ano</th><th></th></tr></thead><tbody>
+    ${linhas.map(l => linha(l)).join('') || ''}
+    </tbody></table></div>${linhas.length ? '' : '<p class="vazio" id="nc-vazio">Nenhuma NC lançada neste mês.</p>'}</div>`;
+  const tb = $('#tab-nc tbody', el);
+  const fnc = $('#f-nc-obra', el);
+  const filtrarNc = () => $$('tr', tb).forEach(tr => { tr.style.display = !fnc.value || /^n/.test(tr.dataset.id) || $('[data-c=obra]', tr).value === fnc.value ? '' : 'none'; });
+  fnc.onchange = filtrarNc;
+  let novas = 0;
+  const ligar = tr => {
+    $$('select', tr).forEach(s => s.onchange = () => marcarSujo('nc:' + tr.dataset.id + '|' + s.dataset.c, s.value));
+    const x = $('[data-del]', tr); if (x) x.onclick = () => {
+      if (/^n/.test(tr.dataset.id)) { [...E.sujo.keys()].filter(k => k.startsWith('nc:' + tr.dataset.id + '|')).forEach(desmarcarSujo); tr.remove(); return; } // linha nova, ainda não gravada
+      const o = +tr.dataset.obra0, a = +$('[data-c=nc]', tr).value;
+      // o conjunto de NCs da obra no mês sem esta
+      const resto = $$('tr', tb).filter(t => t !== tr && +t.dataset.obra0 === o).map(t => +$('[data-c=nc]', t).value).filter(Boolean);
+      excluirLinha(`Vai excluir a NC <b>${esc((ass.find(z => z.id === a) || {}).nome)}</b> de <b>${esc(obraNome(o))}</b> em ${compTxt(E.comp)}.`,
+        motivo => api('PUT', '/api/ncs', { competencia: E.comp, obra_id: o, assuntos: resto, motivo }));
+    };
+  };
+  $$('tr', tb).forEach(ligar);
+  const add = $('#add-nc', el);
+  if (add) add.onclick = () => {
+    const v = $('#nc-vazio', el); if (v) v.remove();
+    tb.insertAdjacentHTML('afterbegin', linha({ id: 'n' + (++novas), obra_id: null, assunto_id: null }, true));
+    const tr = tb.firstElementChild; ligar(tr); $('select', tr).focus(); marcarSujo('nc:' + tr.dataset.id + '|obra', '');
+  };
+  // grava por obra: o conjunto de NCs de cada obra afetada no mês
+  E.salvar = async motivo => {
+    const trs = $$('tr', tb);
+    const afetadas = new Set();
+    for (const k of E.sujo.keys()) {
+      const tr = $(`tr[data-id="${k.slice(3).split('|')[0]}"]`, tb); if (!tr) continue;
+      if (tr.dataset.obra0) afetadas.add(+tr.dataset.obra0);
+      const o = +$('[data-c=obra]', tr).value; if (o) afetadas.add(o);
+    }
+    const porObra = {};
+    for (const tr of trs) {
+      if (tr.classList.contains('del')) continue;
+      const o = +$('[data-c=obra]', tr).value, a = +$('[data-c=nc]', tr).value;
+      if (!o || !a) throw new Error('Preencha Obra e NC LAI/EIV em todas as linhas (ou exclua a linha).');
+      (porObra[o] = porObra[o] || new Set()).add(a);
+    }
+    const rs = [];
+    for (const o of afetadas) rs.push(await api('PUT', '/api/ncs', { competencia: E.comp, obra_id: o, assuntos: [...(porObra[o] || [])], motivo }));
+    return rs;
+  };
+}
+
+// ── SOMA RESÍDUOS ──────────────────────────────────────────────────────────
+function resumoResiduos(M) {
+  const area = Object.fromEntries(M.avanco.map(a => [a.obra_id, a.area_mes_m2]));
+  const metaPadrao = E.cad.parametros.meta_residuo_kg_m2_padrao ? E.cad.parametros.meta_residuo_kg_m2_padrao.valor : 36.6;
+  const tipos = Object.fromEntries(E.cad.tipos.map(t => [t.id, t]));
+  const por = {};
+  M.residuo.forEach(r => { const t = tipos[r.tipo_residuo_id] || {}; const x = por[r.obra_id] = por[r.obra_id] || { m3: 0, kg: 0, semDens: 0 }; x.m3 += r.volume_m3; if (t.densidade_kg_m3) x.kg += r.volume_m3 * t.densidade_kg_m3; else if (r.volume_m3 > 0) x.semDens++; });
+  return { area, metaPadrao, por };
+}
+async function telaResiduos(el) {
+  const M = E.mes, ed = editavel(), obras = obrasDaTela(M.residuo.map(r => r.obra_id));
+  if (!E.obraRes || !obras.some(o => o.id === E.obraRes)) E.obraRes = (obras.find(o => M.residuo.some(r => r.obra_id === o.id)) || obras[0]).id;
+  const obra = E.cad.obras.find(o => o.id === E.obraRes);
+  const { area, metaPadrao } = resumoResiduos(M);
+  const meta = obra.meta_residuo_kg_m2 ?? metaPadrao, a = area[obra.id];
+  const vol = {}; M.residuo.forEach(r => { vol[r.obra_id + '|' + r.tipo_residuo_id] = r; });
+  const tiposObra = E.cad.tipos.filter(t => vol[obra.id + '|' + t.id] || E.incluirTipos.has(obra.id + '|' + t.id))
+    .sort((a, b) => E.incluirTipos.has(obra.id + '|' + b.id) - E.incluirTipos.has(obra.id + '|' + a.id)); // linha incluída agora fica no topo
+  const foraTipos = E.cad.tipos.filter(t => !t.legado && !tiposObra.includes(t));
+  const obrasCom = new Set(M.residuo.map(r => r.obra_id));
+  el.innerHTML = `${cabAba('SOMA RESÍDUOS', 'Volume destinado no mês por resíduo (CTR/MTR). Você digita só o m³; o resto vem do cadastro e da aba Avanço físico.')}
+    ${caixaPlanilha('Obra, Classe e Resíduos Detalhados digitados em cada linha. Densidade fixa numa fórmula SE(): <b>5 resíduos davam Kg = 0</b>. m² digitado à mão, quase sempre 1.', 'Classe e Densidade vêm do cadastro (Cadastros → Resíduos Detalhados). m² é o Avanço m² da aba Avanço físico. Resíduo sem densidade aparece sinalizado em vez de virar 0.')}
+    ${barra(`<label for="sel-obra">Empreendimento</label><select id="sel-obra">${obras.map(o => `<option value="${o.id}" ${o.id === obra.id ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>`,
+      `${ed && foraTipos.length ? '<button class="btn" id="incluir" title="Incluir neste mês um resíduo que ainda não tem linha">+ Linha</button>' : ''}${ed && E.cad.obras.some(o => !obras.includes(o)) ? '<button class="btn sec" id="mais-obra" title="Mostrar uma obra inativa ou sem lançamento no mês">+ Obra inativa</button>' : ''}`)}
+    <div class="card"><div class="grade-wrap"><table class="grade" id="tab-res"><thead><tr>${thMes()}<th>Obra</th>${thCad('Classe', '', 'vem do cadastro do resíduo (Cadastros → Resíduos Detalhados)')}<th>Resíduos Detalhados</th><th class="n">m³</th>${thCalc('Kg', 'n', 'm³ × Densidade')}${thCad('Densidade', 'n', 'vem do cadastro do resíduo; na planilha era fixa dentro da fórmula')}${thCalc('m²', 'n', 'Avanço m² da obra no mês (aba Avanço físico). Na planilha era digitado e ficava 1 em 1.176 linhas, o que fazia o Kg/m² ficar igual ao Kg')}${thCalc('Kg/m²', 'n', 'Kg ÷ m²')}${thCad('Meta Kg', 'n', 'vem do cadastro da obra (Cadastros → Obras): 36,6, ou 50 na Senna; na planilha era digitado em cada linha')}<th></th></tr></thead><tbody>
+      ${tiposObra.map(t => { const r = vol[obra.id + '|' + t.id]; return `<tr data-tipo="${t.id}">${tdMes()}<td>${esc(obra.nome)}</td><td><b>${t.classe}</b></td><td>${esc(t.nome)}${t.perigoso ? ' <span class="selo bad">perigoso</span>' : ''}${t.legado ? ' <span class="selo na">histórico</span>' : ''}</td>
+        <td class="n"><input class="c" data-k="${t.id}" data-col="m3" data-tipo="num" inputmode="decimal" value="${r ? fmt(r.volume_m3, 2) : ''}" ${ed ? '' : 'disabled'}></td>
+        <td class="n calc" data-kg="${t.id}"></td>
+        <td class="n calc">${t.densidade_kg_m3 ? fmt(t.densidade_kg_m3) : '<a href="#cadastros" data-cad="tipos" class="selo warn" title="Abrir Cadastros → Resíduos Detalhados para informar a densidade">sem densidade · cadastrar</a>'}</td>
+        <td class="n calc">${a ? fmt(a) : '–'}</td><td class="n calc" data-kgm2="${t.id}"></td><td class="n calc">${fmt(meta, 1)}</td><td>${r ? btnExcluir(ed) : ''}</td></tr>`; }).join('')}
+      </tbody><tfoot><tr><td colspan="4">Total de ${esc(obra.nome)} em ${mesCols().mesAno}</td><td class="n" id="tot-m3"></td><td class="n" id="tot-kg"></td><td></td><td class="n">${a ? fmt(a) : '–'}</td><td class="n" id="tot-kgm2"></td><td class="n" id="tot-st"></td><td></td></tr></tfoot></table></div>
+      ${a ? '' : '<p class="dica"><span class="selo warn">sem Avanço m²</span> lance o Avanço % desta obra na aba Avanço físico para ter o Kg/m².</p>'}
+      <p class="dica">${tiposObra.length ? '' : 'Nenhum resíduo lançado nesta obra em ' + mesCols().mesAno + '. '}Use "+ Linha" para incluir o resíduo que teve destinação neste mês.</p>${legenda()}</div>`;
+    ligarIncluir(el, 'Linha', foraTipos.map(t => [t.id, t.classe + ' · ' + t.nome + (t.ativo ? '' : ' (inativo)')]), { add: v => E.incluirTipos.add(obra.id + '|' + v), delete: v => E.incluirTipos.delete(obra.id + '|' + v) });
+  ligarExclusaoGrade(el, 'residuo', tr => ({ obra_id: obra.id, tipo_residuo_id: +tr.dataset.tipo }),
+    tr => `o lançamento de <b>${esc((E.cad.tipos.find(t => t.id === +tr.dataset.tipo) || {}).nome)}</b> de ${esc(obra.nome)} em ${compTxt(E.comp)}`);
+  const totais = () => {
+    let m3 = 0, kg = 0;
+    tiposObra.forEach(t => {
+      const v = lerNum($(`[data-k="${t.id}"]`, el).value) || 0, k = t.densidade_kg_m3 ? v * t.densidade_kg_m3 : null;
+      m3 += v; if (k) kg += k;
+      $(`[data-kg="${t.id}"]`, el).textContent = v && k != null ? fmt(k) : '';
+      $(`[data-kgm2="${t.id}"]`, el).textContent = v && k != null && a ? fmt(k / a, 1) : '';
+    });
+    const kgm2 = a ? kg / a : null;
+    $('#tot-m3', el).textContent = fmt(m3); $('#tot-kg', el).textContent = fmt(kg); $('#tot-kgm2', el).textContent = kgm2 != null ? fmt(kgm2, 1) : '–';
+    $('#tot-st', el).innerHTML = kgm2 == null ? '' : kgm2 <= meta ? '<span class="selo ok">na meta</span>' : '<span class="selo bad">acima</span>';
+  };
+  const mo = $('#mais-obra', el);
+  if (mo) mo.onclick = async () => {
+    if (E.sujo.size) return toast('Salve ou descarte as alterações antes.', true);
+    const f = await modal(`<h3>+ Obra</h3><p class="dica">Obra que não aparece (inativa ou sem lançamento no mês).</p><select id="inc" style="width:100%">${E.cad.obras.filter(o => !obras.includes(o)).map(o => `<option value="${o.id}">${esc(o.nome)}${o.ativa ? '' : ' (inativa)'}</option>`).join('')}</select><div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn" data-r="ok">Incluir</button></div>`);
+    if (!f) return; const v = +$('#inc', f).value; E.incluirObras.add(v); E.inclusoes.push({ alvo: E.incluirObras, v }); E.obraRes = v; render().then(atualizarBarra);
+  };
+  ligarCelulas(el, totais); totais();
+  $('#sel-obra', el).onchange = e => {
+    if (E.sujo.size) { toast('Salve ou descarte as alterações desta obra antes de trocar.', true); e.target.value = obra.id; return; }
+    E.obraRes = +e.target.value; render(); window.scrollTo(0, 0);
+  };
+  E.salvar = motivo => api('PUT', '/api/lancamentos/residuo', { competencia: E.comp, motivo,
+    linhas: [...E.sujo.keys()].map(k => ({ obra_id: obra.id, tipo_residuo_id: +k, volume_m3: lerNum(E.sujo.get(k)) })) });
+}
+
+// ── Resíduos m³m² (só leitura: na planilha a aba era 100% fórmula) ─────────
+async function telaResiduosM3(el) {
+  const M = E.mes, obras = obrasDaTela(M.residuo.map(r => r.obra_id));
+  const { area, metaPadrao, por } = resumoResiduos(M);
+  el.innerHTML = `${cabAba('Resíduos m³m²', 'Na planilha esta aba era só fórmula (SOMASES nas abas SOMA RESÍDUOS e Avanço físico): nunca se digitou nada nela. Aqui também — para mudar um valor, lance em SOMA RESÍDUOS ou em Avanço físico. Por isso não tem "+ Linha": uma obra aparece aqui assim que tem resíduo lançado no mês.')}
+    <div class="card"><div class="grade-wrap"><table class="grade"><thead><tr>${thMes()}<th>Obra</th>${thCalc('Resíduos m³', 'n', 'Soma do m³ da obra no mês (SOMA RESÍDUOS)')}${thCalc('Avanço Físico m²', 'n', 'Avanço m² (aba Avanço físico)')}${thCalc('Resíduos m³/m²', 'n')}
+      ${thNovo('Kg', 'n', true)}${thNovo('Kg/m²', 'n')}${thNovo('Meta Kg', 'n')}${thNovo('Situação')}</tr></thead><tbody>
+    ${obras.map(o => { const x = por[o.id], a = area[o.id], meta = o.meta_residuo_kg_m2 ?? metaPadrao;
+      if (!x) return `<tr>${tdMes()}<td><a href="#residuos" data-obra="${o.id}">${esc(o.nome)}</a></td><td colspan="7"><span class="selo warn">sem lançamento em SOMA RESÍDUOS</span></td></tr>`;
+      const kgm2 = a ? x.kg / a : null;
+      return `<tr>${tdMes()}<td><a href="#residuos" data-obra="${o.id}">${esc(o.nome)}</a></td><td class="n">${fmt(x.m3)}</td><td class="n">${a ? fmt(a, 0) : '–'}</td><td class="n">${a ? fmt(x.m3 / a, 3) : '–'}</td>
+        <td class="n novo1">${fmt(x.kg)}${x.semDens ? ` <span class="selo warn" title="${x.semDens} resíduo(s) com m³ e sem densidade">+${x.semDens} s/ dens.</span>` : ''}</td><td class="n">${kgm2 != null ? fmt(kgm2, 1) : '–'}</td><td class="n">${fmt(meta, 1)}</td>
+        <td>${kgm2 == null ? '<span class="selo na">sem m²</span>' : kgm2 <= meta ? '<span class="selo ok">na meta</span>' : '<span class="selo bad">acima</span>'}</td></tr>`; }).join('')}
+    </tbody></table></div>${legenda()}</div>`;
+  $$('[data-obra]', el).forEach(b => b.addEventListener('click', () => { E.obraRes = +b.dataset.obra; }));
+}
+
+// ── Água e luz ─────────────────────────────────────────────────────────────
+async function telaConsumo(el) {
+  const M = E.mes, ed = editavel();
+  const por = Object.fromEntries(M.consumo.filter(c => (c.linha || 1) === 1).map(c => [c.uc_id, c]));
+  const extras = M.consumo.filter(c => (c.linha || 1) > 1); // histórico: 2ª linha da Assistência técnica em mar/25 (só leitura)
+  const linhaExtra = (u, x) => `<tr class="filho" data-extra="${u.id}">${tdMes()}<td>${esc(u.nome)} <span class="dica">(${x.linha}ª linha da planilha neste mês, histórico)</span></td><td class="n">${x.luz_kwh != null ? fmt(x.luz_kwh, 0) : ''}</td><td></td><td></td><td class="n">${x.agua_m3 != null ? fmt(x.agua_m3, 1) : ''}</td><td></td><td></td><td class="dica novo1">${x.atualizado_por ? esc(x.atualizado_por === 'carga_planilha' ? 'carga da planilha' : x.atualizado_por) + '<br>' + esc(x.atualizado_em) : ''}</td><td></td></tr>`;
+  const ant = Object.fromEntries(M.anterior.filter(a => a.f === 'consumo').map(a => [a.id, a]));
+  const area = Object.fromEntries(M.avanco.map(a => [a.obra_id, a.area_mes_m2]));
+  const ucs = E.cad.ucs.filter(u => u.ativa || por[u.id] || E.incluirUcs.has(u.id));
+  const filhos = id => ucs.filter(u => u.agrupa_em_id === id);
+  const varia = (v, a) => { if (v == null || a == null || !a) return ''; const p = (v - a) / a; return Math.abs(p) >= .5 ? `<span class="selo warn" title="variação grande em relação ao mês anterior: confira a conta">${p > 0 ? '+' : ''}${fmt(p * 100, 0)}%</span>` : ''; };
+  const linha = (u, filho) => {
+    if (filhos(u.id).length) {
+      const f = filhos(u.id), sl = f.reduce((s, x) => s + ((por[x.id] || {}).luz_kwh || 0), 0), sa = f.reduce((s, x) => s + ((por[x.id] || {}).agua_m3 || 0), 0);
+      // g: a Sede tem valor próprio vindo da planilha (digitado lá); sem ele, é a soma das salas
+      const g = por[u.id], dif = (a, b, d) => g && (a || 0) !== (b || 0) ? `<span class="ant">soma das salas: ${fmt(b, d)}</span>` : '';
+      return `<tr class="grupo">${tdMes()}<td>${esc(u.nome)} <span class="dica">(${g ? 'valor da planilha' : `soma de ${f.length} salas, calculada`})</span></td><td class="n" ${g ? '' : `data-soma-luz="${u.id}"`}>${g ? (g.luz_kwh != null ? fmt(g.luz_kwh, 0) : '') : fmt(sl, 0)}${dif(g && g.luz_kwh, sl, 0)}</td><td></td><td></td><td class="n" ${g ? '' : `data-soma-agua="${u.id}"`}>${g ? (g.agua_m3 != null ? fmt(g.agua_m3, 1) : '') : fmt(sa, 1)}${dif(g && g.agua_m3, sa, 1)}</td><td></td><td></td><td class="novo1"></td><td></td></tr>` + f.map(x => linha(x, true)).join('');
+    }
+    const c = por[u.id] || {}, a = ant[u.id] || {}, ar = u.obra_id ? area[u.obra_id] : null;
+    return `<tr class="${filho ? 'filho' : ''}" data-uc="${u.id}">${tdMes()}<td>${esc(u.nome)}</td>
+      <td class="n"><input class="c" data-k="${u.id}|luz_kwh" data-col="luz" data-tipo="num" inputmode="decimal" value="${c.luz_kwh != null ? fmt(c.luz_kwh, 0) : ''}" ${ed ? '' : 'disabled'}><span class="ant">ant.: ${a.a != null ? fmt(a.a, 0) : '–'} ${varia(c.luz_kwh, a.a)}</span></td>
+      <td class="n calc">${ar ? fmt(ar, 0) : ''}</td><td class="n calc">${ar && c.luz_kwh != null ? fmt(c.luz_kwh / ar, 2) : ''}</td>
+      <td class="n"><input class="c" data-k="${u.id}|agua_m3" data-col="agua" data-tipo="num" inputmode="decimal" value="${c.agua_m3 != null ? fmt(c.agua_m3, 1) : ''}" ${ed ? '' : 'disabled'}><span class="ant">ant.: ${a.b != null ? fmt(a.b, 1) : '–'} ${varia(c.agua_m3, a.b)}</span></td>
+      <td class="n calc">${ar ? fmt(ar, 0) : ''}</td><td class="n calc">${ar && c.agua_m3 != null ? fmt(c.agua_m3 / ar, 4) : ''}</td>
+      <td class="dica novo1">${c.atualizado_por ? esc(c.atualizado_por === 'carga_planilha' ? 'carga da planilha' : c.atualizado_por) + '<br>' + esc(c.atualizado_em) : ''}</td><td>${por[u.id] ? btnExcluir(ed) : ''}</td></tr>` + extras.filter(x => x.uc_id === u.id).map(x => linhaExtra(u, x)).join('');
+  };
+  const raiz = ucs.filter(u => !u.agrupa_em_id).sort((a, b) => E.incluirUcs.has(b.id) - E.incluirUcs.has(a.id)); // linha incluída agora fica no topo
+  const fora = E.cad.ucs.filter(u => !ucs.includes(u)), foraObras = fora.filter(u => u.tipo === 'obra'), foraSetores = fora.filter(u => u.tipo !== 'obra');
+  const dicaM2 = 'Avanço m² da obra no mês (aba Avanço físico); vazio para setores. Na planilha era digitado e ficava 1 em 562 linhas';
+  const cab = `<thead><tr>${thMes()}<th>Obra</th><th class="n">Luz (kwh)</th>${thCalc('Luz m²', 'n', dicaM2)}${thCalc('Luz Kwh m³/m²', 'n', 'Luz (kwh) ÷ Luz m²')}<th class="n">Água (m³)</th>${thCalc('Água m²', 'n', dicaM2)}${thCalc('Água m³/m²', 'n', 'Água (m³) ÷ Água m²')}${thNovo('Última alteração', '', true)}<th></th></tr></thead>`;
+  el.innerHTML = `${cabAba('Água e luz', 'Consumo do mês (contas Celesc e EMASA). A coluna Obra traz as obras e os setores, como na planilha.')}
+    ${caixaPlanilha('Luz m² e Água m² digitados (1 em 562 linhas). A linha "Sede" era <code>=SOMA</code> das salas: <b>somando tudo, a sede contava em dobro</b>. Contas digitadas como <code>=11776+763</code>.', 'Luz m² e Água m² são o Avanço m² da obra. A Sede é calculada a partir das salas e não se digita. O valor do mês anterior aparece embaixo, e variação acima de 50% é sinalizada.')}
+    ${barra('', botaoIncluir('Obra', foraObras.length, 'incluir-obra', '+ Linha de obra') + botaoIncluir('Setor', foraSetores.length, 'incluir-setor', '+ Linha de setor'))}
+    <div class="card"><h2>Obras</h2><div class="grade-wrap"><table class="grade">${cab}<tbody>${raiz.filter(u => u.tipo === 'obra').map(u => linha(u)).join('')}</tbody></table></div></div>
+    <div class="card"><h2>Setores (Sede, salas, plantões, depósito…)</h2><div class="grade-wrap"><table class="grade">${cab}<tbody>${raiz.filter(u => u.tipo !== 'obra').map(u => linha(u)).join('')}</tbody></table></div>${legenda()}</div>`;
+  const opcUc = l => l.map(u => [u.id, u.nome + (u.ativa ? '' : ' (inativa)')]);
+  ligarIncluir(el, 'Obra', opcUc(foraObras), E.incluirUcs, 'incluir-obra');
+  ligarIncluir(el, 'Setor', opcUc(foraSetores), E.incluirUcs, 'incluir-setor');
+  ligarExclusaoGrade(el, 'consumo', tr => ({ uc_id: +tr.dataset.uc }), tr => `o consumo de água e luz de <b>${esc((E.cad.ucs.find(u => u.id === +tr.dataset.uc) || {}).nome)}</b> em ${compTxt(E.comp)}`);
+  ligarCelulas(el, inp => {
+    const u = ucs.find(x => x.id === +inp.dataset.k.split('|')[0]);
+    if (u && u.agrupa_em_id) {
+      const f = filhos(u.agrupa_em_id);
+      const soma = c => f.reduce((s, x) => s + (lerNum($(`[data-k="${x.id}|${c}"]`, el).value) || 0), 0);
+      const sl = $(`[data-soma-luz="${u.agrupa_em_id}"]`, el), sa = $(`[data-soma-agua="${u.agrupa_em_id}"]`, el); // ausentes quando a Sede tem valor da planilha
+      if (sl) sl.textContent = fmt(soma('luz_kwh'), 0);
+      if (sa) sa.textContent = fmt(soma('agua_m3'), 1);
+    }
+  });
+  E.salvar = motivo => {
+    const ids = [...new Set([...E.sujo.keys()].map(k => k.split('|')[0]))];
+    return api('PUT', '/api/lancamentos/consumo', { competencia: E.comp, motivo,
+      linhas: ids.map(id => ({ uc_id: +id, luz_kwh: lerNum($(`[data-k="${id}|luz_kwh"]`, el).value), agua_m3: lerNum($(`[data-k="${id}|agua_m3"]`, el).value) })) });
+  };
+}
+
+// ── Metas LAI EIV (formato largo, como na planilha) ─────────────────────────
+// Célula preenchida = meta daquele mês. Célula vazia = vale a do mês anterior
+// (mostrada em cinza). Na planilha o vazio virava "sem meta" (ou 0).
+async function telaMetas(el) {
+  E.cad = await api('GET', '/api/cadastros');
+  const ed = ehAdmin();
+  const hoje = new Date().toISOString().slice(0, 7);
+  const anoM = E.anoMetas || hoje.slice(0, 4);
+  const meses = []; for (let m = 1; m <= 12; m++) meses.push(`${anoM}-${String(m).padStart(2, '0')}`);
+  const vig = {}; E.cad.metas.forEach(m => (vig[m.obra_id] = vig[m.obra_id] || []).push({ c: m.vigente_desde.slice(0, 7), meta: m.meta }));
+  const vigente = (oid, c) => { const v = (vig[oid] || []).filter(x => x.c <= c); return v.length ? v[v.length - 1].meta : null; };
+  const explicita = (oid, c) => (vig[oid] || []).find(x => x.c === c);
+  const rotulo = c => MESES[+c.slice(5) - 1] + '/' + c.slice(2, 4);
+  el.innerHTML = `${cabAba('Metas LAI EIV', 'META de conformidade por obra e mês. É a META que aparece em Conformidade LAI.EIV. Um ano por vez.', false, `<div class="comp"><button data-am="-1" title="ano anterior">‹</button><span class="campo" style="padding:6px 16px;font-weight:600">${anoM}</span><button data-am="1" title="próximo ano">›</button></div>`)}
+    ${caixaPlanilha('Uma coluna por mês. Mês vazio ficava <b>sem meta</b> (e o PROCV da Conformidade lia sempre a coluna ago/25).', 'Mesma grade. Mês vazio <b>mantém a meta do mês anterior</b> (mostrada em cinza), e a Conformidade usa a META do próprio mês.')}
+    <div class="card"><div class="grade-wrap"><table class="grade metas"><thead><tr><th>Obra</th>${meses.map(c => `<th class="n${c === hoje ? ' atual' : ''}">${rotulo(c)}</th>`).join('')}</tr></thead><tbody>
+    ${E.cad.obras.filter(o => o.ativa || vig[o.id]).map(o => `<tr><td>${esc(o.nome)}${o.ativa ? '' : ' <span class="selo na">inativa</span>'}</td>${meses.map(c => {
+      const ex = explicita(o.id, c), her = vigente(o.id, c);
+      return `<td class="n"><input class="c m" data-k="${o.id}|${c}" data-col="${c}" data-tipo="pct" inputmode="decimal" value="${ex ? fmt(ex.meta * 100, 0) : ''}" ${ed ? '' : 'disabled'}></td>`; }).join('')}</tr>`).join('')}
+    </tbody></table></div><p class="dica">Valores em %. Célula vazia: vale a meta do mês anterior. ${ed ? 'Apagar uma célula volta a valer a meta anterior.' : 'Só administradores alteram metas.'}</p></div>`;
+  $$('[data-am]', el).forEach(b => b.onclick = () => { if (E.sujo.size) return toast('Salve ou descarte as alterações antes de trocar de ano.', true); E.anoMetas = String(+anoM + +b.dataset.am); telaMetas(el).then(() => aplicarColunas(el)); });
+  ligarCelulas(el);
+  E.salvar = async () => {
+    let n = 0;
+    for (const k of E.sujo.keys()) {
+      const [oid, c] = k.split('|'), v = lerNum($(`[data-k="${k}"]`, el).value);
+      await api('PUT', '/api/metas', { obra_id: +oid, vigente_desde: c, meta: v == null ? null : v / 100 }); n++;
+    }
+    E.cad = await api('GET', '/api/cadastros');
+    return [{ resumo: { alteradas: n } }];
+  };
+}
+
+// ── Abas que são listas (motor genérico) ──────────────────────────────────
+// Cada aba é só uma configuração: colunas com o nome da planilha (h), o campo
+// do banco (f) e o tipo. Tipos: obra, ano, mesnome, mesano (derivados do mês),
+// mes (select de mês da linha), texto, num, int, pct, data, simnao, lista
+// (texto com sugestões), opcoes (select fixo), calc (fórmula: fn(linha)).
+const SUG = {};  // sugestões das colunas "lista", montadas com o que já existe
+const pctTxt = v => v == null || v === '' || Number.isNaN(v) ? '' : fmt(v * 100, 2) + '%';
+const LISTAS_UI = {
+  auditoria: {
+    aba: 'Auditoria Ambientais', filtro: 'todos', desc: 'Todas as auditorias, como na planilha (filtre por obra).',
+    antes: 'Obra e Mês digitados em maiúsculas; o Mês/Ano tinha um dia falso para diferenciar as obras (01, 02, 03…). Uma linha dizia OUTUBRO/2026 com data de 04/09/2025.',
+    depois: 'Obra da lista de obras; Ano, Mês e Mês/Ano saem do mês selecionado. Realizado é Sim/Não.',
+    cols: [{ h: 'Obra', f: 'obra_id', t: 'obra' }, { h: 'Ano', f: 'ano', t: 'anosel' }, { h: 'Mês', f: 'mes', t: 'mes' }, { h: 'Mês/Ano', t: 'mesano' },
+      { h: 'Meta', f: 'meta', t: 'pct' }, { h: 'Realizado', f: 'realizado', t: 'simnao' }, { h: 'Principais ocorrências da última auditoria', f: 'ocorrencias', t: 'texto', larg: 380 }],
+  },
+  plano_acao: {
+    aba: 'Plano de Ação', filtro: 'todos', desc: 'Ações abertas a partir das auditorias. Lista única (não é por mês): filtre por obra ou status.',
+    antes: 'Status digitado ("Realizado ", "Em Andamento ", "Em andamento"); obra com grafias diferentes ("Garden", "Senna ").',
+    depois: 'Status e Obra de lista. A coluna Situação mostra o que está com prazo vencido.',
+    cols: [{ h: 'Obra', f: 'obra_id', t: 'obra' }, { h: 'Indicador', f: 'indicador', t: 'lista', larg: 120 }, { h: 'Análise', f: 'analise', t: 'texto', larg: 210 },
+      { h: 'Ação', f: 'acao', t: 'texto', larg: 180 }, { h: 'Responsável', f: 'responsavel', t: 'lista', larg: 110 }, { h: 'Prazo', f: 'prazo', t: 'data' },
+      { h: 'Status', f: 'status', t: 'opcoes', opcoes: ['A iniciar', 'Em andamento', 'Realizado'] },
+      { h: 'Situação', t: 'calc', novo: true, sempre: true, dica: 'Pelo Status e pelo Prazo: Concluída, No prazo, Vence em até 7 dias, Prazo vencido ou Sem prazo', fn: l => { const x = situacaoPlano(l); return `<span class="selo ${x[1]}">${x[0]}</span>`; } }],
+  },
+  emergencia: {
+    aba: 'Emergências Ambientais', filtro: 'todos', desc: 'Todas as emergências e ocorrências, como na planilha (filtre por obra).',
+    antes: 'Obra em maiúsculas ("GARDEN", "ICONIC"); categoria "Emegência" com erro de digitação; 3 linhas só com obra e data.',
+    depois: 'Obra e Categoria de lista. Mês/Ano é a data do evento.',
+    cols: [{ h: 'Obra', f: 'obra_id', t: 'obra' }, { h: 'Mês/Ano', f: 'data', t: 'data', dica: 'data do evento' }, { h: 'Fonte', f: 'fonte', t: 'lista', larg: 110, padrao: 'Qualidade' },
+      { h: 'N° FMC', f: 'n_fmc', t: 'int' }, { h: 'Ocorrência', f: 'ocorrencia', t: 'lista', larg: 240, dica: 'Na planilha: "Ocorerência"' }, { h: 'Status/Ações', f: 'status_acoes', t: 'texto', larg: 280 },
+      { h: 'Categoria', f: 'categoria', t: 'opcoes', opcoes: ['Emergência', 'Ocorrência'] }],
+  },
+  reclamacao: {
+    aba: 'Reclamações vizinhos', filtro: 'todos', soExcluir: true,
+    desc: 'Chamados de vizinhos trazidos do Salesforce (filtre por obra). Não se digita nem se altera nada aqui: se uma linha não fizer sentido, use o ✕ para excluí-la; se uma informação estiver errada, corrija no Salesforce. Veja o que chegou em Integrações.',
+    antes: 'Obra e canal no mesmo texto ("Imperium Tower – 02 - Ouvidoria"); Fonte e Categoria sempre vazias.',
+    depois: 'Obra da lista e Canal em coluna própria. Os chamados novos vêm do Salesforce, sozinhos.',
+    cols: [{ h: 'Mês/Ano', f: 'data', t: 'data', dica: 'data do chamado' }, { h: 'Obra', f: 'obra_id', t: 'obra' }, { h: 'Fonte', f: 'fonte', t: 'lista', larg: 110 },
+      { h: 'Cod. Chamado', f: 'cod_chamado', t: 'texto', larg: 100 }, { h: 'Ocorrência', f: 'ocorrencia', t: 'texto', larg: 300 }, { h: 'Status/Ações', f: 'status_acoes', t: 'texto', larg: 280 },
+      { h: 'Categoria', f: 'categoria', t: 'lista', larg: 120 }, { h: 'Canal', f: 'canal', t: 'opcoes', opcoes: ['Ouvidoria', 'Relacionamento'], novo: true, sempre: true, dica: 'Na planilha vinha junto no texto da Obra ("Imperium Tower – 02 - Ouvidoria")' }],
+  },
+  eco_urbana: {
+    aba: 'Eco urbana', filtro: 'todos', desc: 'Medições de ruído de terceiros (Ecourbana/Eliz): dois pontos por linha, como na planilha.',
+    antes: 'Obra digitada ("Gran Place").', depois: 'Obra da lista.',
+    cols: [{ h: 'Ano', f: 'ano', t: 'anosel' }, { h: 'Mês', f: 'mes', t: 'mes' }, { h: 'Mês/Ano', t: 'mesano' }, { h: 'Obra', f: 'obra_id', t: 'obra' },
+      { h: 'Ponto_1', f: 'ponto_1', t: 'texto', larg: 60 }, { h: 'db', f: 'db', t: 'num' }, { h: 'Ponto2', f: 'ponto2', t: 'texto', larg: 60 }, { h: 'db3', f: 'db3', t: 'num' }],
+  },
+  acoes_sga: {
+    aba: 'Ações SGA', filtro: 'todos', desc: 'Pessoas alcançadas pelas ações do SGA, por mês. "Todos" = total do ano (anos antes de 2025).',
+    antes: 'Pessoas digitado como conta (<code>=297+2+10+32</code>); o detalhe de cada ação ficava fora da tabela.',
+    depois: 'Um número por mês, com histórico de quem alterou.',
+    cols: [{ h: 'Ano', f: 'ano', t: 'anosel' }, { h: 'Mês', f: 'mes', t: 'mes', todos: true }, { h: 'Pessoas', f: 'pessoas', t: 'int' }],
+  },
+  impressoes: {
+    aba: 'Impressões', filtro: 'todos', desc: 'Consumo mensal de impressão da empresa. Total de pág e % Colorido vêm do relatório por conta que se sobe em <b>Impressões por setor</b>.',
+    antes: 'Fórmulas e valores misturados na mesma coluna (% P&B digitado em uns meses, calculado em outros). Preço por página solto nas células T7/T8.',
+    depois: 'Digita-se Total de pág, % Colorido, Pág Dupla e as economias; o resto é calculado. O preço por página fica em Cadastros → Parâmetros.',
+    cols: [{ h: 'Ano', f: 'ano', t: 'anosel' }, { h: 'Mês', f: 'mes', t: 'mes' }, { h: 'Mês/Ano', t: 'mesano' }, { h: 'Total de pág', f: 'total_pag', t: 'int' },
+      { h: 'Custos', t: 'calc', fn: l => l.total_pag == null || l.pct_colorido == null ? '' : 'R$ ' + fmt(l.total_pag * ((1 - l.pct_colorido) * precoPb() + l.pct_colorido * precoCor())), dica: 'Total × (% P&B × preço P&B + % Colorido × preço cor)' },
+      { h: '% P&B', t: 'calc', fn: l => l.pct_colorido == null ? '' : pctTxt(1 - l.pct_colorido), dica: '1 − % Colorido' },
+      { h: 'Pag P&B', t: 'calc', fn: l => l.total_pag == null || l.pct_colorido == null ? '' : fmt(l.total_pag * (1 - l.pct_colorido), 0) },
+      { h: '% Colorido', f: 'pct_colorido', t: 'pct' },
+      { h: 'Pag Colorido', t: 'calc', fn: l => l.total_pag == null || l.pct_colorido == null ? '' : fmt(l.total_pag * l.pct_colorido, 0) },
+      { h: 'Pág Simples', oculta: true, t: 'calc', fn: l => l.pag_dupla == null ? '' : pctTxt(1 - l.pag_dupla), dica: '1 − Pág Dupla' },
+      { h: 'Pág Dupla', f: 'pag_dupla', t: 'pct', oculta: true }, { h: 'Economia preto e branco', f: 'economia_pb', t: 'int', oculta: true }, { h: 'Economia Colorido', f: 'economia_colorido', t: 'int', oculta: true },
+      { h: 'Economia Total', oculta: true, t: 'calc', fn: l => l.economia_pb == null && l.economia_colorido == null ? '' : fmt((l.economia_pb || 0) + (l.economia_colorido || 0), 0) },
+      { h: 'impressões simples poderiam ter sido feitas duplas', f: 'simples_duplas', t: 'pct', oculta: true }, { h: 'Economia de folhas', f: 'economia_folhas', t: 'int', oculta: true },
+      { h: 'Economia mínima', t: 'calc', fn: l => l.total_pag == null ? '' : fmt(l.total_pag * 0.2, 0), dica: 'Total de pág × 20%' }],
+  },
+  impressoes_setor: {
+    aba: 'Impressões por setor', filtro: 'mes', desc: 'Páginas por setor no mês (relatório de impressão). O mesmo relatório também preenche Total de pág e % Colorido na aba Impressões.', colar: ['nome', 'pb', 'cor'],
+    antes: 'Export colado à mão; "%" às vezes como texto (\'17,19%\'), contas como <code>=101+23</code>.',
+    depois: 'Use o botão "Colar do relatório" e cole as linhas do relatório de impressão: Páginas e % são calculados.',
+    cols: [{ h: 'Mês/Ano', t: 'mesano' }, { h: 'Nome', f: 'nome', t: 'texto', larg: 230 }, { h: 'P&B', f: 'pb', t: 'int' }, { h: 'Cor', f: 'cor', t: 'int' },
+      { h: 'Páginas', f: 'paginas', t: 'calc', guarda: true, fn: l => (l.pb == null && l.cor == null) ? null : (l.pb || 0) + (l.cor || 0), fmtv: v => v == null ? '' : fmt(v, 0), dica: 'P&B + Cor' },
+      { h: '%', f: 'pct', t: 'calc', guarda: true, porTotal: 1, fmtv: v => pctTxt(v), dica: 'Páginas ÷ total de páginas do mês' }],
+  },
+  impressoes_pessoa: {
+    aba: 'Impressões por pessoa', filtro: 'mes', desc: 'Páginas por usuário no mês (relatório de impressão).', colar: ['usuario', 'conta_atual', 'pb', 'cor'],
+    antes: 'Export colado à mão (cerca de 260 linhas por mês), algumas sem Mês/Ano.', depois: 'Use o botão "Colar do relatório" e cole as linhas do relatório de impressão: Páginas e % são calculados.',
+    cols: [{ h: 'Mês/Ano', t: 'mesano' }, { h: 'Usuário', f: 'usuario', t: 'texto', larg: 300 }, { h: 'Conta atual', f: 'conta_atual', t: 'lista', larg: 160 }, { h: 'P&B', f: 'pb', t: 'int' }, { h: 'Cor', f: 'cor', t: 'int' },
+      { h: 'Páginas', f: 'paginas', t: 'calc', guarda: true, fn: l => (l.pb == null && l.cor == null) ? null : (l.pb || 0) + (l.cor || 0), fmtv: v => v == null ? '' : fmt(v, 0), dica: 'P&B + Cor' },
+      { h: '%', f: 'pct', t: 'calc', guarda: true, porTotal: 100, fmtv: v => v == null ? '' : fmt(v, 2), dica: 'Páginas ÷ total do mês × 100' }],
+  },
+};
+// situação de uma ação do Plano: [rótulo, cor, categoria do filtro]
+function situacaoPlano(l) {
+  if (/^realizad/i.test(l.status || '')) return ['Concluída', 'ok', 'Concluída'];
+  if (!l.prazo) return ['Sem prazo', 'na', 'Sem prazo'];
+  const dias = Math.round((new Date(String(l.prazo).slice(0, 10) + 'T00:00') - new Date(new Date().toISOString().slice(0, 10) + 'T00:00')) / 864e5);
+  if (dias < 0) return [`Prazo vencido há ${-dias} dia(s)`, 'bad', 'Prazo vencido'];
+  if (dias <= 7) return [dias === 0 ? 'Vence hoje' : `Vence em ${dias} dia(s)`, 'warn', 'Vence em até 7 dias'];
+  return ['No prazo', 'ok', 'No prazo'];
+}
+const SITUACOES_PLANO = ['No prazo', 'Vence em até 7 dias', 'Prazo vencido', 'Sem prazo', 'Concluída'];
+const precoPb = () => (E.cad.parametros.preco_pagina_pb || {}).valor ?? 0.05;
+const precoCor = () => (E.cad.parametros.preco_pagina_cor || {}).valor ?? 0.30;
+
+// aba de consulta trazida como está na planilha (relatório antigo, sem formato de tabela)
+async function telaCongelada(el, aba) {
+  const linhas = await api('GET', '/api/congelada?aba=' + encodeURIComponent(aba));
+  const ncol = Math.max(0, ...linhas.map(l => l.valores.length));
+  const letra = i => { let s = ''; i++; while (i > 0) { const r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; };
+  const cel = v => v === null || v === undefined ? '<td></td>' : typeof v === 'number' ? `<td class="n">${Number.isInteger(v) ? v : fmt(v, 2)}</td>` : /^#(REF|N\/A|VALOR|DIV)/i.test(String(v)) ? `<td class="erro">${esc(v)}</td>` : `<td>${esc(v)}</td>`;
+  const erros = linhas.reduce((s, l) => s + l.valores.filter(v => /^#(REF|N\/A|VALOR|DIV)/i.test(String(v))).length, 0);
+  el.innerHTML = `<div class="cab"><div><p class="eyebrow">Lançamentos · só consulta</p><h1>${esc(aba)}</h1><p>Relatório antigo (2015–2024) trazido do jeito que está na planilha, para consulta. Não é tabela de lançamento e não entra no painel.${erros ? ` As ${erros} células em vermelho (#REF!) já estavam quebradas na planilha.` : ''}</p></div>
+    </div>
+    <div class="card"><div class="grade-wrap"><table class="planilha"><thead><tr><th></th>${Array.from({ length: ncol }, (_, i) => `<th>${letra(i)}</th>`).join('')}</tr></thead><tbody>
+    ${linhas.map(l => `<tr><td class="lin">${l.linha}</td>${Array.from({ length: ncol }, (_, i) => cel(l.valores[i])).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+}
+
+// Relatório de impressão (.xls/.xlsx do sistema de impressão): lê no servidor, mostra o que entraria e só grava depois do "Importar"
+const REL_IMPRESSAO = ['impressoes_setor', 'impressoes_pessoa']; // Impressões não tem botão: é alimentada pelo relatório de Impressões por setor
+const lerBase64 = arq => new Promise((ok, erro) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = () => erro(new Error('não consegui ler o arquivo')); r.readAsDataURL(arq); });
+const dataBr = d => String(d).slice(0, 10).split('-').reverse().join('/');
+async function subirRelatorioImpressao(id, arq) {
+  if (E.sujo.size) { toast('Salve ou descarte as alterações pendentes antes de subir o relatório.', true); return; }
+  let conteudo, p;
+  try { conteudo = await lerBase64(arq); p = await api('POST', '/api/impressoes/relatorio', { nome: arq.name, conteudo, tela: id }); }
+  catch (e) { toast(e.message, true); return; }
+  const conta = p.tipo === 'conta', ig = p.ignorados || {}, h = p.hoje || {}, ht = h.tabela || {};
+  const alvoNome = conta ? 'Impressões por setor' : 'Impressões por pessoa';
+  const linhas = p.linhas || [];
+  const pctCel = v => v == null ? '' : conta ? pctTxt(v) : fmt(v, 2);
+  const corpo = linhas.map(x => `<tr><td>${esc(conta ? x.nome : x.usuario)}</td>${conta ? '' : `<td>${esc(x.conta_atual || '')}</td>`}<td class="n">${fmt(x.pb, 0)}</td><td class="n">${fmt(x.cor, 0)}</td><td class="n">${fmt(x.paginas, 0)}</td><td class="n">${pctCel(x.pct)}</td></tr>`).join('');
+  const avisos = (p.avisos || []).map(a => `<p class="msg-erro">${esc(a)}</p>`).join('');
+  const f = await modal(`<h3>Relatório de ${esc(compTxt(p.competencia))}</h3>
+    <p>${conta ? 'Relatório por conta' : 'Relatório por usuários'} · período de <b>${dataBr(p.periodo.de)}</b> a <b>${dataBr(p.periodo.ate)}</b> · arquivo ${esc(arq.name)}</p>
+    ${p.parcial ? '<p class="msg-erro">O relatório não cobre o mês inteiro. Quando o mês terminar, suba o relatório completo: ele substitui este.</p>' : ''}${avisos}
+    <p><b>O que vai entrar em ${esc(compTxt(p.competencia))}:</b></p>
+    <ul style="margin:4px 0 10px 18px">
+      ${conta ? `<li><b>Impressões</b>: Total de pág <b>${fmt(p.total.paginas, 0)}</b> e % Colorido <b>${pctTxt(p.pct_colorido)}</b>${h.mensal ? ` (hoje: ${fmt(h.mensal.total_pag, 0)} pág.${h.mensal.pct_colorido != null ? ' e ' + pctTxt(+h.mensal.pct_colorido) : ''})` : ' (mês ainda sem linha)'}. Custos, % P&amp;B, Pag P&amp;B, Pag Colorido e Economia mínima são calculados.</li>` : ''}
+      <li><b>${alvoNome}</b>: ${linhas.length} linha(s), ${fmt(linhas.reduce((s, x) => s + (x.paginas || 0), 0), 0)} páginas${ht.n ? `. O mês já tem <b>${ht.n}</b> linha(s) (${esc(ht.origens || '')}): serão <b>substituídas</b>` : ''}.</li>
+      ${conta ? '' : `<li class="dica">Ficam de fora: Estações Locais (${(ig.estacoes_locais || {}).linhas || 0} linha(s), ${fmt((ig.estacoes_locais || {}).paginas || 0, 0)} pág.) e FG\Unknown (${fmt((ig.unknown || {}).paginas || 0, 0)} pág.). O % é o do relatório, sobre o total da empresa (${fmt(p.total && p.total.paginas, 0)} pág.).</li>`}
+    </ul>
+    <div class="grade-wrap" style="max-height:260px;overflow:auto"><table class="grade"><thead><tr><th>${conta ? 'Nome' : 'Usuário'}</th>${conta ? '' : '<th>Conta atual</th>'}<th class="n">P&amp;B</th><th class="n">Cor</th><th class="n">Páginas</th><th class="n">%</th></tr></thead><tbody>${corpo}</tbody></table></div>
+    ${h.fechado ? '<p class="dica" style="margin-top:10px">Este mês está fechado: informe o motivo.</p><textarea id="motivo" placeholder="Motivo (obrigatório)"></textarea>' : ''}
+    <div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn" data-r="ok">Importar</button></div>`,
+    { largura: 760, validar: fm => h.fechado && !$('#motivo', fm).value.trim() ? 'Informe o motivo da correção.' : '' });
+  if (!f) return;
+  try {
+    const r = await api('POST', '/api/impressoes/relatorio', { nome: arq.name, conteudo, tela: id, aplicar: true, motivo: h.fechado ? $('#motivo', f).value.trim() : undefined });
+    toast(`Relatório importado em ${compTxt(p.competencia)}. O painel é atualizado em instantes.`);
+    if (p.competencia !== E.comp) { E.comp = E.compInicio = p.competencia; try { sessionStorage.setItem('amb_comp', E.comp); } catch (e) {} }
+    await render();
+  } catch (e) { toast(e.message, true); }
+}
+async function telaLista(el, id) {
+  const C = LISTAS_UI[id], ed = C.filtro === 'mes' ? editavel() : pode();
+  const campos = ed && !C.soExcluir; // lista que vem de sistema (Reclamações): só exclui linha
+  const ano = E.comp.slice(0, 4);
+  const q = C.filtro === 'mes' ? 'competencia=' + E.comp : C.filtro === 'ano' ? 'ano=' + ano : '';
+  let dados = await api('GET', `/api/lista/${id}?${q}`);
+  // filtros locais do Plano de Ação
+  const filt = E.filtLista = E.filtLista && E.filtLista.id === id ? E.filtLista : { id, obra: '', status: '', ano: String(new Date().getFullYear()), mes: '', situacao: '' };
+  const anoDe = l => l.ano || (l.data ? +String(l.data).slice(0, 4) : null);
+  const anosComDado = [...new Set(dados.map(anoDe).filter(Boolean))].sort((a, b) => b - a);
+  const todosOsDados = dados;
+  const temAnoMes = C.cols.some(c => c.t === 'anosel');
+  const porAno = ['acoes_sga', 'impressoes'].includes(id); // uma linha por mês: a tela é do ano
+  const agrupa = C.filtro === 'todos' && (temAnoMes || C.cols.some(c => c.h === 'Mês/Ano'));
+  // Ano e Mês saem; fica só a coluna Mês/Ano (nas listas que não tinham, entra no lugar do Ano)
+  let cols = C.cols;
+  if (temAnoMes) { const tem = C.cols.some(c => c.t === 'mesano'); cols = []; C.cols.forEach(c => { if (c.t === 'anosel') { if (!tem) cols.push({ h: 'Mês/Ano', t: 'mesano' }); } else if (c.t !== 'mes') cols.push(c); }); }
+  if (C.filtro === 'todos') dados = dados.filter(l => (!filt.obra || l.obra_id === +filt.obra) && (!filt.ano || agrupa || !anoDe(l) || anoDe(l) === +filt.ano)
+    && (!filt.status || (l.status || '').toLowerCase().startsWith(filt.status.toLowerCase())) && (!filt.situacao || situacaoPlano(l)[2] === filt.situacao));
+  cols.filter(c => c.t === 'lista').forEach(c => { SUG[id + c.f] = [...new Set(dados.map(l => l[c.f]).filter(Boolean).concat(c.padrao ? [c.padrao] : []))].sort(); });
+  const mesDe = l => C.filtro === 'mes' ? E.comp : l.data ? String(l.data).slice(0, 7) : (l.ano && l.mes ? `${l.ano}-${String(l.mes).padStart(2, '0')}` : null);
+  // grupo (mês/ano) de cada linha; mês 0 = total do ano (Ações SGA)
+  const chaveMes = l => mesDe(l) || (temAnoMes && l.ano && l.mes === 0 ? l.ano + '-00' : '');
+  const rotuloGrupo = k => !k ? 'Sem data' : k.endsWith('-00') ? 'Total de ' + k.slice(0, 4) : cap1(compTxt(k));
+  const chaveFiltro = l => id === 'plano_acao' ? (l.prazo ? String(l.prazo).slice(0, 7) : '') : chaveMes(l);
+  if (porAno) dados = dados.filter(l => anoDe(l) === +ano);
+  else if (agrupa) dados = dados.filter(l => chaveMes(l) === E.comp);
+  else if (id === 'plano_acao') dados = dados.filter(l => chaveFiltro(l) === E.comp);
+  const cabGrupo = k => `<tr class="gm" data-gm="${k}"><td colspan="${cols.length + 1}">${rotuloGrupo(k)}</td></tr>`;
+  const obrasOpc = v => obrasAtivas().concat(E.cad.obras.filter(o => !o.ativa && o.id === v)).map(o => `<option value="${o.id}" ${o.id === v ? 'selected' : ''}>${esc(o.nome)}</option>`).join('');
+  const totalPag = dados.reduce((s, l) => s + (l.paginas || 0), 0);
+  const cel = (c, l, nova) => {
+    const d = campos ? '' : 'disabled', v = l[c.f], w = c.larg ? `style="width:${c.larg}px;text-align:left"` : '';
+    const m = mesDe(l);
+    switch (c.t) {
+      case 'obra': return `<td><select data-f="${c.f}" ${d} style="min-width:140px">${nova ? '<option value="">— Obra —</option>' : ''}${obrasOpc(v)}</select></td>`;
+      case 'ano': return `<td class="calc">${C.filtro === 'mes' ? E.comp.slice(0, 4) : ano}</td>`;
+      case 'mesnome': return `<td class="calc">${m ? MES_NOME[+m.slice(5) - 1] : ''}</td>`;
+      case 'mesano': return `<td class="calc" data-mesano>${m ? mesCols(m).mesAno : temAnoMes && l.mes === 0 && l.ano ? 'Ano ' + l.ano : ''}</td>`;
+      case 'anosel': { const anos = []; for (let a = +E.comp.slice(0, 4) + 1; a >= 2021; a--) anos.push(a); return `<td><select data-f="${c.f}" ${d}>${nova ? '' : ''}${anos.map(a => `<option ${a === v ? 'selected' : ''}>${a}</option>`).join('')}</select></td>`; }
+      case 'mes': return `<td><select data-f="${c.f}" ${d}>${nova ? '<option value="">—</option>' : ''}${c.todos ? `<option value="0" ${v === 0 ? 'selected' : ''}>Todos</option>` : ''}${MES_NOME.map((n, i) => `<option value="${i + 1}" ${v === i + 1 ? 'selected' : ''}>${n}</option>`).join('')}</select></td>`;
+      case 'pct': return `<td class="n"><input class="c" data-f="${c.f}" data-tipo="pct" data-k="x" inputmode="decimal" value="${v != null ? fmt(v * 100, 2) : ''}" ${d}></td>`;
+      case 'num': return `<td class="n"><input class="c" data-f="${c.f}" data-tipo="num" data-k="x" inputmode="decimal" value="${v != null ? fmt(v, 2) : ''}" ${d}></td>`;
+      case 'int': return `<td class="n"><input class="c" data-f="${c.f}" data-tipo="int" data-k="x" inputmode="numeric" value="${v != null ? v : ''}" ${d}></td>`;
+      case 'data': return `<td><input class="c h" type="date" style="width:140px" data-f="${c.f}" data-tipo="txt" data-k="x" value="${v ? String(v).slice(0, 10) : ''}" ${d}></td>`;
+      case 'simnao': return `<td><select data-f="${c.f}" ${d}><option value=""></option><option ${v === true ? 'selected' : ''}>Sim</option><option ${v === false ? 'selected' : ''}>Não</option></select></td>`;
+      case 'opcoes': { const op = [...new Set(c.opcoes.concat(v && !c.opcoes.includes(v) ? [v] : []))]; return `<td><select data-f="${c.f}" ${d}><option value=""></option>${op.map(o => `<option ${o === v ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></td>`; }
+      case 'lista': return `<td><input class="c t" list="sug-${id}${c.f}" ${w} data-f="${c.f}" data-tipo="txt" data-k="x" value="${esc(v ?? (nova && c.padrao) ?? '')}" ${d}></td>`;
+      case 'calc': {
+        // linha vinda do relatório de impressão: o % é o do relatório (sobre o total da empresa), não o da soma das linhas
+        const val = c.porTotal ? (l.origem === 'relatorio' && l[c.f] != null ? +l[c.f] : l.paginas != null && totalPag ? l.paginas / totalPag * c.porTotal : null) : c.fn(l);
+        return `<td class="n calc" data-calc="${cols.indexOf(c)}">${c.fmtv ? c.fmtv(val) : (val ?? '')}</td>`;
+      }
+      default: return `<td><input class="c t" ${w} data-f="${c.f}" data-tipo="txt" data-k="x" value="${esc(v ?? '')}" ${d}></td>`;
+    }
+  };
+  const th = c => {
+    const oc = c.oculta ? ' oculta' : '';
+    if (c.t === 'calc') return thCalc(c.h, 'n' + oc + (c.novo ? ' novo' + (c.sempre ? '' : ' extra') : ''), c.dica || undefined);
+    if (c.novo) return thNovo(c.h, oc, true, c.sempre);
+    return `<th class="${['pct', 'num', 'int'].includes(c.t) ? 'n' : ''}${oc}" ${c.dica ? `title="${esc(c.dica)}"` : ''}>${esc(c.h)}</th>`;
+  };
+  // ordena por mês/ano (mais recente primeiro) e separa cada mês com um cabeçalho
+  const ordenadas = agrupa ? [...dados].sort((a, b) => { const x = chaveMes(a), y = chaveMes(b); return x === y ? 0 : !x ? 1 : !y ? -1 : y.localeCompare(x); }) : dados;
+  const corpo = () => { let ult; return ordenadas.map(l => { const k = agrupa ? chaveMes(l) : null; ult = k; return linha(l); }).join(''); };
+  const linha = (l, nova) => `<tr data-id="${l.id}"${temAnoMes ? ` data-ano="${l.ano ?? ''}" data-mes="${l.mes ?? ''}"` : ''}>${cols.map(c => cel(c, l, nova)).join('')}<td>${ed ? '<button class="btn sec peq" data-del title="excluir linha">✕</button>' : ''}</td></tr>`;
+    const seletor = C.filtro === 'mes' || (agrupa && !porAno) || id === 'plano_acao' ? seletorComp() : C.filtro === 'ano' || porAno ? `<div class="comp"><button data-ano="-1">‹</button><span class="campo" style="padding:6px 14px">${ano}</span><button data-ano="1">›</button></div>` : '';
+  const temObra = cols.some(c => c.t === 'obra');
+  const comRegistro = new Set(todosOsDados.map(l => l.obra_id));
+  const filtros = C.filtro !== 'todos' ? '' : (temObra ? `<select id="f-obra" aria-label="Empreendimento"><option value="">Todas as obras</option>${E.cad.obras.filter(o => o.ativa || comRegistro.has(o.id)).map(o => `<option value="${o.id}" ${String(o.id) === filt.obra ? 'selected' : ''}>${esc(o.nome)}</option>`).join('')}</select>` : '')
+    + (!agrupa && anosComDado.length ? `<select id="f-ano"><option value="">Todos os anos</option>${[...new Set([...anosComDado, new Date().getFullYear()])].sort((a, b) => b - a).map(a => `<option ${String(a) === filt.ano ? 'selected' : ''}>${a}</option>`).join('')}</select>` : '')
+    + (id === 'plano_acao' ? `<select id="f-sit"><option value="">Todas as situações</option>${SITUACOES_PLANO.map(x => `<option ${x === filt.situacao ? 'selected' : ''}>${x}</option>`).join('')}</select>` : '')
+    + (id === 'plano_acao' ? `<select id="f-status"><option value="">Todos os status</option>${['A iniciar', 'Em andamento', 'Realizado'].map(s => `<option ${s === filt.status ? 'selected' : ''}>${s}</option>`).join('')}</select>` : '');
+  const filtrado = !!(filt.obra || (!agrupa && filt.ano) || filt.mes || filt.status || filt.situacao);
+  // vazio que explica o motivo e o que fazer (em vez de só "Nada lançado")
+  const vazioLista = () => filtrado && C.filtro === 'todos'
+    ? '<p class="vazio" id="l-vazio">Nenhum registro com estes filtros. <button class="btn sec peq" id="limpar-f">Limpar filtros</button></p>'
+    : `<p class="vazio" id="l-vazio">${porAno ? 'Nada lançado em ' + ano + '. Use as setas do ano para ver outro' : C.filtro === 'mes' || agrupa || id === 'plano_acao' ? 'Nada lançado em ' + compTxt(E.comp) + '. Use o seletor de mês para ver outro período' : C.filtro === 'ano' ? 'Nada registrado em ' + ano + '. Use as setas do ano para ver outro' : 'Esta lista ainda não tem registros'}${campos ? ' ou clique em "+ Linha" para lançar.' : '.'}</p>`;
+  el.innerHTML = `<div class="cab"><div><p class="eyebrow">Lançamentos</p><h1>${esc(C.aba)}</h1><p>${C.desc}</p></div>
+      <div class="ferr">${C.filtro === 'mes' ? seloFechado() : ''}${seletor}</div></div>
+    ${barra(filtros, (campos && REL_IMPRESSAO.includes(id) ? `<button class="btn sec" id="sobe-rel" title="${id === 'impressoes_pessoa' ? 'Relatório por usuários' : 'Relatório por conta'}, como exportado do sistema de impressão">Subir relatório ${id === 'impressoes_pessoa' ? 'por usuários' : 'por conta'}</button><input type="file" id="arq-rel" accept=".xls,.xlsx" hidden> ` : '') + (campos ? '<button class="btn" id="add-l">+ Linha</button>' : ''))}
+    ${caixaPlanilha(C.antes, C.depois)}
+    <div class="card"><div class="grade-wrap"><table class="grade" id="tab-lista"><thead><tr>${cols.map(th).join('')}<th></th></tr></thead><tbody>
+    ${corpo()}</tbody></table></div>
+    ${dados.length ? '' : vazioLista()}
+    <span class="dica" id="l-cont" aria-live="polite">${dados.length} linha(s)</span>${legenda()}</div>
+    ${cols.filter(c => c.t === 'lista').map(c => `<datalist id="sug-${id}${c.f}">${(SUG[id + c.f] || []).map(s => `<option value="${esc(s)}">`).join('')}</datalist>`).join('')}`;
+  const tb = $('#tab-lista tbody', el);
+  const trs = () => $$('tr:not(.gm)', tb);
+  let novas = 0;
+  const lerLinha = tr => {
+    const l = { id: /^n/.test(tr.dataset.id) ? null : +tr.dataset.id };
+    cols.forEach(c => {
+      if (!c.f || c.t === 'calc') return;
+      const i = $(`[data-f="${c.f}"]`, tr); if (!i) return;
+      const v = i.value;
+      l[c.f] = c.t === 'pct' ? (lerNum(v) == null ? null : lerNum(v) / 100) : ['num', 'int'].includes(c.t) ? lerNum(v)
+        : c.t === 'obra' || c.t === 'mes' || c.t === 'anosel' ? (v === '' ? null : +v) : c.t === 'simnao' ? (v === '' ? null : v === 'Sim') : (v.trim() || null);
+    });
+    if (temAnoMes) { l.ano = tr.dataset.ano === '' ? null : +tr.dataset.ano; l.mes = tr.dataset.mes === '' ? null : +tr.dataset.mes; }
+    const reg = l.id ? dados.find(d => String(d.id) === String(l.id)) : null;
+    if (reg && reg.origem === 'relatorio' && reg.pct != null) l.pctRel = +reg.pct; // % do relatório: não se recalcula
+    return l;
+  };
+  const recalcular = () => {
+    const linhas = trs().filter(tr => !tr.classList.contains('del')).map(tr => [tr, lerLinha(tr)]);
+    linhas.forEach(([tr, l]) => cols.forEach((c, i) => { if (c.t === 'calc' && !c.porTotal) { const v = c.fn(l); l[c.f] = v; const td = $(`[data-calc="${i}"]`, tr); if (td) td.innerHTML = c.fmtv ? c.fmtv(v) : (v ?? ''); } }));
+    const tot = linhas.reduce((s, [, l]) => s + (l.paginas || 0), 0);
+    linhas.forEach(([tr, l]) => cols.forEach((c, i) => { if (c.porTotal) { const v = l.pctRel != null ? l.pctRel : l.paginas != null && tot ? l.paginas / tot * c.porTotal : null; const td = $(`[data-calc="${i}"]`, tr); if (td) td.innerHTML = c.fmtv(v); } }));
+    if (C.filtro !== 'mes') linhas.forEach(([tr, l]) => { const td = $('[data-mesano]', tr); const m = mesDe(l); if (td) td.textContent = m ? mesCols(m).mesAno : ''; });
+  };
+  const ligar = tr => {
+    $$('input.c', tr).forEach(i => { i.dataset.k = 'l:' + tr.dataset.id + '|' + i.dataset.f; });
+    ligarCelulas(tr, recalcular);
+    $$('select', tr).forEach(s => s.onchange = () => { marcarSujo('l:' + tr.dataset.id + '|' + s.dataset.f, s.value); recalcular(); });
+    const x = $('[data-del]', tr); if (x) x.onclick = () => {
+      if (/^n/.test(tr.dataset.id)) { [...E.sujo.keys()].filter(k => k.startsWith('l:' + tr.dataset.id + '|')).forEach(desmarcarSujo); tr.remove(); recalcular(); return; } // linha nova, ainda não gravada
+      const l = lerLinha(tr), m = mesDe(l);
+      excluirLinha(`Vai excluir esta linha de <b>${esc(C.aba)}</b>${l.obra_id ? ' (' + esc(obraNome(l.obra_id)) + (m ? ', ' + mesCols(m).mesAno : '') + (l.cod_chamado ? ', chamado ' + esc(l.cod_chamado) : '') + ')' : ''}.${C.soExcluir ? ' Se ela veio do Salesforce, não volta na próxima sincronização.' : ''}`,
+        motivo => api('PUT', `/api/lista/${id}`, { competencia: E.comp, ano, linhas: [{ id: l.id, excluir: true }], motivo }));
+    };
+  };
+  trs().forEach(ligar);
+  const nova = (vals = {}) => {
+    const v0 = $('#l-vazio', el); if (v0) v0.remove();
+    // linha nova nasce no mês atual (ano e mês não se escolhem mais)
+    if (temAnoMes && vals.ano === undefined) {
+      vals.ano = +E.comp.slice(0, 4); vals.mes = +E.comp.slice(5);
+      if (porAno) { const usados = new Set(trs().map(tr => +tr.dataset.mes)); for (let m = 1; m <= 12; m++) if (!usados.has(m)) { vals.mes = m; break; } } // primeiro mês do ano ainda sem lançamento
+    }
+    if (id === 'plano_acao' && vals.prazo === undefined) vals.prazo = E.comp === compAtual() ? new Date().toLocaleDateString('sv-SE') : E.comp + '-01';
+    if (!temAnoMes && cols.some(c => c.f === 'data') && vals.data === undefined) vals.data = E.comp === compAtual() ? new Date().toLocaleDateString('sv-SE') : E.comp + '-01';
+    const html = linha({ id: 'n' + (++novas), ...vals }, true);
+    let tr;
+    if (agrupa) { tb.insertAdjacentHTML('afterbegin', html); tr = tb.firstElementChild; } // mês atual = o mais recente: vai para o topo
+    else { tb.insertAdjacentHTML('afterbegin', html); tr = tb.firstElementChild; }
+    marcarTabela($('#tab-lista', el)); ligar(tr); marcarSujo('l:' + tr.dataset.id + '|nova', true); return tr;
+  };
+  const add = $('#add-l', el); if (add) add.onclick = () => { const tr = nova(); const f = $('select,input', tr); f && f.focus(); };
+  const subir = $('#sobe-rel', el), arqRel = $('#arq-rel', el);
+  if (subir) { subir.onclick = () => arqRel.click(); arqRel.onchange = () => { const a = arqRel.files[0]; arqRel.value = ''; if (a) subirRelatorioImpressao(id, a); }; }
+  const fs = $('#f-status', el);
+  $$('[data-ano]', el).forEach(b => b.onclick = () => trocarComp(somarMes(E.comp, 12 * +b.dataset.ano)));
+  const fo = $('#f-obra', el);
+  if (fo) fo.onchange = () => { if (E.sujo.size) { fo.value = filt.obra; return toast('Salve ou descarte antes de filtrar.', true); } filt.obra = fo.value; render(); };
+  if (fs) fs.onchange = () => { if (E.sujo.size) return toast('Salve ou descarte antes de filtrar.', true); filt.status = fs.value; render(); };
+  const fa = $('#f-ano', el), fsi = $('#f-sit', el);
+  if (fa) fa.onchange = () => { if (E.sujo.size) { fa.value = filt.ano; return toast('Salve ou descarte antes de filtrar.', true); } filt.ano = fa.value; filt.mes = ''; render(); };
+  if (fsi) fsi.onchange = () => { if (E.sujo.size) return toast('Salve ou descarte antes de filtrar.', true); filt.situacao = fsi.value; render(); };
+  const valCel = td => { const i = $('input,select', td); return i ? (i.tagName === 'SELECT' ? (i.selectedOptions[0] || {}).text || '' : i.value) : td.textContent; };
+  // ordenação: clique no cabeçalho (reordena as linhas na tela; não altera dados)
+  $$('#tab-lista thead th', el).forEach((th, i) => {
+    if (i >= cols.length) return;
+    th.classList.add('ord'); th.tabIndex = 0; th.setAttribute('role', 'columnheader'); th.title = (th.title ? th.title + ' · ' : '') + 'Clique para ordenar';
+    const ordenar = () => {
+      const asc = th.getAttribute('aria-sort') !== 'ascending';
+      $$('#tab-lista thead th', el).forEach(x => x.removeAttribute('aria-sort'));
+      th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
+      const blocos = []; let b = null;
+      [...tb.children].forEach(tr => { if (tr.classList.contains('gm')) { b = { cab: tr, rs: [] }; blocos.push(b); } else { if (!b) { b = { cab: null, rs: [] }; blocos.push(b); } b.rs.push(tr); } });
+      const todos = trs().map(tr => valCel(tr.cells[i]).trim());
+      const num = todos.every(v => v === '' || (lerNum(v) !== null && !Number.isNaN(lerNum(v))));
+      blocos.forEach(bl => {
+        const linhas = bl.rs.map(tr => ({ tr, v: valCel(tr.cells[i]).trim() }));
+        linhas.sort((a, b) => {
+          if (a.v === '' || b.v === '') return a.v === b.v ? 0 : a.v === '' ? 1 : -1; // vazios sempre no fim
+          const r = num ? lerNum(a.v) - lerNum(b.v) : a.v.localeCompare(b.v, 'pt-BR', { numeric: true, sensitivity: 'base' });
+          return asc ? r : -r;
+        });
+        if (bl.cab) tb.appendChild(bl.cab);
+        linhas.forEach(x => tb.appendChild(x.tr));
+      });
+    };
+    th.onclick = ordenar; th.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ordenar(); } };
+  });
+  const lf = $('#limpar-f', el);
+  if (lf) lf.onclick = () => { if (E.sujo.size) return toast('Salve ou descarte antes de limpar os filtros.', true); Object.assign(filt, { obra: '', status: '', ano: '', mes: '', situacao: '' }); render(); };
+  E.salvar = motivo => {
+    recalcular();
+    const sujas = new Set([...E.sujo.keys()].map(k => k.slice(2).split('|')[0]));
+    // % sobre o total do mês: muda para todas as linhas quando o total muda
+    const pc = cols.find(c => c.porTotal);
+    const vivas = trs().filter(tr => !tr.classList.contains('del'));
+    const tot = pc ? vivas.reduce((s, tr) => { const l = lerLinha(tr); return s + (l.pb || 0) + (l.cor || 0); }, 0) : 0;
+    const linhas = [];
+    for (const tr of trs()) {
+      const rid = tr.dataset.id, l = lerLinha(tr);
+      if (tr.classList.contains('del')) { if (l.id && sujas.has(rid)) linhas.push({ id: l.id, excluir: true }); continue; }
+      cols.filter(c => c.guarda && !c.porTotal).forEach(c => { l[c.f] = c.fn(l); });
+      let mudou = sujas.has(rid);
+      if (pc) {
+        const v = l.pctRel != null ? l.pctRel : tot && l.paginas != null ? Math.round(l.paginas / tot * pc.porTotal * 1e6) / 1e6 : null;
+        const reg = dados.find(d => String(d.id) === rid);
+        // tolerância de 0,05 ponto percentual: o % importado da planilha tinha arredondamento próprio
+        if (reg && (reg[pc.f] == null) !== (v == null || false)) mudou = true;
+        else if (reg && v != null && Math.abs(reg[pc.f] - v) > 0.0005 * pc.porTotal) mudou = true;
+        l[pc.f] = v; delete l.pctRel;
+      }
+      if (mudou) linhas.push(l);
+    }
+    if (!linhas.length) return Promise.resolve({ resumo: {} });
+    return api('PUT', `/api/lista/${id}`, { competencia: E.comp, ano, linhas, motivo });
+  };
+}
+
+// ── Cadastros ──────────────────────────────────────────────────────────────
+// nomes como na planilha: de onde cada lista vinha
+const CAD_TABS = [['obras', 'Obras'], ['tipos', 'Resíduos Detalhados'], ['ucs', 'Água e luz: Obra/setor'], ['assuntos', 'Tipo de Não Conformidades LAI/EIV'], ['parametros', 'Parâmetros']];
+// o que cada lista alimenta e o que acontece ao mudar (texto de apoio no topo da aba)
+const CAD_INFO = {
+  obras: 'O Total m² alimenta o Avanço m² (Total m² × Avanço %) e o kg/m² dos resíduos. Obra inativa some das grades de lançamento; o histórico dela continua nos painéis. Meta Kg vazia usa a meta padrão (Parâmetros).',
+  tipos: 'Kg = m³ lançado × densidade. Mudar a densidade recalcula o Kg de todos os meses daquele resíduo (o m³ digitado não muda). Sem densidade, o Kg fica sem valor e a tela de Resíduos avisa.',
+  ucs: 'São as linhas da aba Água e luz. "Soma em" faz uma unidade (por exemplo, uma sala) somar em outra (a Sede); a que recebe a soma não é digitada.',
+  assuntos: 'Lista padronizada que se escolhe na aba NC LAI e EIV; o "Top NCs" do painel conta por ela. Desativar tira da escolha, mas os lançamentos antigos continuam.',
+  parametros: 'Valores globais usados nos cálculos, como preço por página (Impressões), meta padrão de resíduo (kg/m²) e limite de ruído (dB). Mudar um valor muda todo cálculo que o usa.',
+};
+// onde cada campo é usado: [campo, onde aparece, entra em cálculo?]
+const CAD_USO = {
+  obras: [
+    ['Total m²', 'Avanço físico (coluna Total m²) e painel', 'Sim: Avanço m² = Total m² × Avanço %, base do kg/m² (resíduos) e do luz/água por m²'],
+    ['Meta Kg', 'Resíduos m³m² (Meta Kg e situação) e painel', 'Sim: meta comparada com o kg/m²; vazia usa a meta padrão de Parâmetros'],
+    ['Ativa', 'Grades de lançamento', 'Não: só decide se a obra aparece; o histórico continua'],
+    ['Observação', 'Só aqui no Cadastro (lista e busca)', 'Não'],
+  ],
+  tipos: [
+    ['Densidade', 'SOMA RESÍDUOS, Resíduos m³m² e painel', 'Sim: Kg = m³ × densidade; kg/m² = Kg ÷ Avanço m². Mudar recalcula todos os meses'],
+    ['Classe', 'Coluna Classe em SOMA RESÍDUOS e painel', 'Só agrupamento, não entra em conta'],
+    ['Perigoso', 'Selo "perigoso" em SOMA RESÍDUOS', 'Não: aviso visual'],
+    ['Ordem na tela', 'Ordem dos resíduos na grade', 'Não'],
+    ['Ativo', 'Escolha no "+ Linha" de SOMA RESÍDUOS', 'Não; o histórico continua'],
+  ],
+  ucs: [
+    ['Soma em', 'Água e luz (a unidade que recebe a soma não é digitada) e painel', 'Sim: Sede = soma das salas; o painel não conta a linha somada em dobro'],
+    ['Obra vinculada', 'Água e luz e painel', 'Sim: liga ao Avanço m² da obra para luz kWh/m² e água m³/m²'],
+    ['Tipo / Ordem / Ativa', 'Aparência e quais linhas aparecem', 'Não'],
+  ],
+  assuntos: [
+    ['Nome do tipo de NC', 'Lista de escolha em NC LAI e EIV e Top NCs do painel', 'O painel conta por ele; não entra em outra conta'],
+    ['Ativo', 'Escolha em NC LAI e EIV', 'Não; lançamentos antigos continuam'],
+  ],
+  parametros: [
+    ['Meta padrão de resíduo (kg/m²)', 'Obras sem Meta Kg própria: Resíduos m³m² e painel', 'Sim'],
+    ['Limite de ruído (dB)', 'Ruído: sinaliza medição acima do limite', 'Sim (só na tela)'],
+    ['Preço por página P&B e colorida', 'Impressões e painel', 'Sim: custo = páginas × preço'],
+  ],
+};
+let cadTab = 'obras', cadBusca = '', cadEstado = 'ativos';
+const semAcento = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+async function telaCadastros(el) {
+  E.cad = await api('GET', '/api/cadastros');
+  desenharCad(el);
+}
+function desenharCad(el) {
+  const adm = ehAdmin();
+  el.innerHTML = `<div class="cab"><div><h1>Cadastros</h1><p>${adm ? 'Tudo o que antes era digitado em cada linha da planilha. Alterações ficam no histórico.' : 'Consulta. Só administradores alteram cadastros.'}</p></div></div>
+    <div class="card"><div class="tabs" role="tablist">${CAD_TABS.map(([k, n]) => `<button role="tab" aria-selected="${k === cadTab}" data-tab="${k}" class="${k === cadTab ? 'ativo' : ''}">${n}</button>`).join('')}</div>
+      <p class="cad-info">${CAD_INFO[cadTab]}</p>
+      <details class="cad-uso"><summary>Onde cada campo é usado</summary><table class="grade"><thead><tr><th>Campo</th><th>Onde aparece</th><th>Entra em cálculo?</th></tr></thead><tbody>${CAD_USO[cadTab].map(([c, o, k]) => `<tr><td><b>${c}</b></td><td>${o}</td><td>${k}</td></tr>`).join('')}</tbody></table></details>
+      <div class="cad-barra"><input type="search" class="campo" id="cad-busca" placeholder="Buscar…" aria-label="Buscar no cadastro" value="${esc(cadBusca)}">
+        ${cadTab === 'parametros' ? '' : `<select id="cad-estado" aria-label="Situação"><option value="ativos" ${cadEstado === 'ativos' ? 'selected' : ''}>Só ativos</option><option value="inativos" ${cadEstado === 'inativos' ? 'selected' : ''}>Só inativos</option><option value="todos" ${cadEstado === 'todos' ? 'selected' : ''}>Todos</option></select>`}
+        <span class="dica" id="cad-cont" aria-live="polite"></span></div>
+      <div class="grade-wrap" id="cad-corpo"></div></div>`;
+  $$('[data-tab]', el).forEach(b => b.onclick = () => { cadTab = b.dataset.tab; cadBusca = ''; desenharCad(el); });
+  const bu = $('#cad-busca', el), es = $('#cad-estado', el);
+  bu.oninput = () => { cadBusca = bu.value; pintarCad(el); };
+  if (es) es.onchange = () => { cadEstado = es.value; pintarCad(el); };
+  pintarCad(el);
+}
+function pintarCad(el) {
+  const adm = ehAdmin(), C = E.cad, corpo = $('#cad-corpo', el);
+  const sim = b => b ? '<span class="selo ok">sim</span>' : '<span class="selo na">não</span>';
+  const btn = (ent, id) => adm ? `<button class="btn sec peq" data-ed="${ent}" data-id="${id ?? ''}">${id ? 'editar' : '+ novo'}</button>` : '';
+  const q = semAcento(cadBusca.trim());
+  const passa = (it, ...campos) => (!q || semAcento(campos.join(' ')).includes(q)) && (cadTab === 'parametros' || cadEstado === 'todos' || (cadEstado === 'ativos') === !!(it.ativa ?? it.ativo));
+  const cls = it => (it.ativa ?? it.ativo) === false ? ' class="inativa"' : '';
+  let html = '', n = 0, total = 0;
+  if (cadTab === 'obras') {
+    const L = C.obras; total = L.length; const R = L.filter(o => passa(o, o.nome, o.observacao)); n = R.length;
+    html = `<table class="grade"><thead><tr><th>Obra</th><th class="n" title="Era a coluna Total m² da aba Avanço físico">Total m²</th><th class="n" title="Era a coluna Meta Kg da aba SOMA RESÍDUOS (kg/m²)">Meta Kg</th><th>Ativa</th><th>Observação</th><th>${btn('obra')}</th></tr></thead><tbody>
+    ${R.map(o => `<tr${cls(o)}><td>${esc(o.nome)}</td><td class="n">${o.area_total_m2 ? fmt(o.area_total_m2) : '<span class="selo warn">sem Total m²</span>'}</td><td class="n">${o.meta_residuo_kg_m2 != null ? fmt(o.meta_residuo_kg_m2, 1) : '<span class="dica">padrão ' + fmt(C.parametros.meta_residuo_kg_m2_padrao.valor, 1) + '</span>'}</td><td>${sim(o.ativa)}</td><td class="dica">${esc(o.observacao)}</td><td>${btn('obra', o.id)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  if (cadTab === 'tipos') {
+    const L = C.tipos; total = L.length; const R = L.filter(t => passa(t, t.nome, 'classe ' + t.classe, t.perigoso ? 'perigoso' : '')); n = R.length;
+    html = `<table class="grade"><thead><tr><th>Classe</th><th>Resíduos Detalhados</th><th class="n" title="kg/m³ — era fixa na fórmula da coluna Densidade">Densidade</th><th>Perigoso</th><th>Ativo</th><th>${btn('tipo_residuo')}</th></tr></thead><tbody>
+    ${R.map(t => `<tr${cls(t)}><td><b>${t.classe}</b></td><td>${esc(t.nome)}${t.legado ? ' <span class="selo na">histórico</span>' : ''}</td><td class="n">${t.densidade_kg_m3 != null ? fmt(t.densidade_kg_m3) : '<span class="selo warn">sem densidade</span>'}</td><td>${sim(t.perigoso)}</td><td>${sim(t.ativo)}</td><td>${btn('tipo_residuo', t.id)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  if (cadTab === 'ucs') {
+    const L = C.ucs; total = L.length; const nomeUc = u => u.agrupa_em_id ? (L.find(x => x.id === u.agrupa_em_id) || {}).nome || '' : '';
+    const R = L.filter(u => passa(u, u.nome, u.tipo, u.obra_id ? obraNome(u.obra_id) : '', nomeUc(u))); n = R.length;
+    html = `<table class="grade"><thead><tr><th title="Como aparece na coluna Obra da aba Água e luz">Obra (Água e luz)</th><th>Tipo</th><th>Obra vinculada</th><th>Soma em</th><th>Ativa</th><th>${btn('unidade_consumidora')}</th></tr></thead><tbody>
+    ${R.map(u => `<tr${cls(u)}><td>${esc(u.nome)}</td><td>${u.tipo}</td><td>${u.obra_id ? esc(obraNome(u.obra_id)) : ''}</td><td>${esc(nomeUc(u))}</td><td>${sim(u.ativa)}</td><td>${btn('unidade_consumidora', u.id)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  if (cadTab === 'assuntos') {
+    const L = C.assuntos; total = L.length; const R = L.filter(a => passa(a, a.nome, a.tipo)); n = R.length;
+    html = `<table class="grade"><thead><tr><th>Tipo</th><th>Tipo de Não Conformidades LAI/EIV</th><th>Ativo</th><th>${btn('assunto_nc')}</th></tr></thead><tbody>
+    ${R.map(a => `<tr${cls(a)}><td>${a.tipo}</td><td>${esc(a.nome)}</td><td>${sim(a.ativo)}</td><td>${btn('assunto_nc', a.id)}</td></tr>`).join('')}</tbody></table>`;
+  }
+  if (cadTab === 'parametros') {
+    const L = Object.values(C.parametros); total = L.length; const R = L.filter(p => passa(p, p.descricao, p.chave)); n = R.length;
+    html = `<table class="grade"><thead><tr><th>Parâmetro</th><th class="n">Valor</th><th></th></tr></thead><tbody>
+    ${R.map(p => `<tr><td>${esc(p.descricao)}<br><span class="dica">${p.chave}</span></td><td class="n">${fmt(p.valor, 1)}</td><td>${adm ? `<button class="btn sec peq" data-par="${p.chave}">editar</button>` : ''}</td></tr>`).join('')}</tbody></table>`;
+  }
+  if (!n) html += `<p class="vazio">${total ? 'Nada encontrado com esse filtro.' + (cadEstado !== 'todos' && cadTab !== 'parametros' ? ' Experimente "Todos" em Situação.' : '') : 'Nada cadastrado ainda.'}</p>`;
+  corpo.innerHTML = html;
+  $('#cad-cont', el).textContent = n === total ? `${total} item(ns)` : `${n} de ${total}`;
+  $$('[data-ed]', corpo).forEach(b => b.onclick = () => editarCadastro(b.dataset.ed, +b.dataset.id || null, el));
+  $$('[data-par]', corpo).forEach(b => b.onclick = async () => {
+    const p = C.parametros[b.dataset.par];
+    const f = await modal(`<h3>${esc(p.descricao)}</h3><div class="form-cad"><label class="cheio">Valor<input id="p-v" inputmode="decimal" value="${fmt(p.valor, 2)}"></label></div><div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn" data-r="ok">Gravar</button></div>`,
+      { validar: f => { const v = lerNum($('#p-v', f).value); return v === null || Number.isNaN(v) ? 'Informe um número (ex.: 0,35).' : ''; } });
+    if (!f) return;
+    try { await api('PUT', '/api/parametros/' + p.chave, { valor: lerNum($('#p-v', f).value) }); toast('Parâmetro gravado.'); telaCadastros(el); }
+    catch (e) { toast(e.message, true); }
+  });
+}
+async function editarCadastro(ent, id, el) {
+  const C = E.cad;
+  const lista = ent === 'obra' ? C.obras : ent === 'tipo_residuo' ? C.tipos : ent === 'unidade_consumidora' ? C.ucs : C.assuntos;
+  const it = lista.find(x => x.id === id) || { ativa: true, ativo: true };
+  const inp = (n, rot, v, extra = '', dica = '') => `<label>${rot}<input name="${n}" value="${esc(v ?? '')}" ${extra}>${dica ? `<span class="dica">${dica}</span>` : ''}</label>`;
+  const ck = (n, rot, v, dica = '') => `<label style="flex-direction:row;align-items:center;gap:6px;flex-wrap:wrap"><input type="checkbox" name="${n}" ${v ? 'checked' : ''}> ${rot}${dica ? `<span class="dica" style="flex-basis:100%">${dica}</span>` : ''}</label>`;
+  const sel = (n, rot, opts, v) => `<label>${rot}<select name="${n}">${opts.map(([k, t]) => `<option value="${k}" ${String(k) === String(v ?? '') ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select></label>`;
+  const DESATIVAR = 'Desmarcar tira da escolha nos lançamentos; o histórico continua.';
+  let campos = '';
+  if (ent === 'obra') campos = inp('nome', 'Obra', it.nome) + inp('area_total_m2', 'Total m²', it.area_total_m2 != null ? fmt(it.area_total_m2) : '', 'inputmode="decimal"', 'Base do Avanço m² e do kg/m².') + inp('meta_residuo_kg_m2', 'Meta Kg (kg/m²)', it.meta_residuo_kg_m2 != null ? fmt(it.meta_residuo_kg_m2, 1) : '', 'inputmode="decimal"', 'Deixe vazio para usar a meta padrão (' + fmt(C.parametros.meta_residuo_kg_m2_padrao.valor, 1) + ').') + ck('ativa', 'Obra ativa (aparece nos lançamentos)', it.ativa, DESATIVAR) + `<label class="cheio">Observação<input name="observacao" value="${esc(it.observacao ?? '')}"></label>`;
+  if (ent === 'tipo_residuo') campos = inp('nome', 'Resíduos Detalhados', it.nome) + sel('classe', 'Classe', [['A', 'A'], ['B', 'B'], ['C', 'C'], ['D', 'D']], it.classe) + inp('densidade_kg_m3', 'Densidade (kg/m³)', it.densidade_kg_m3 != null ? fmt(it.densidade_kg_m3) : '', 'inputmode="decimal"', 'Vazio = sem densidade (o Kg não é calculado). Mudar recalcula todos os meses.') + inp('ordem', 'Ordem na tela', it.ordem ?? 100, 'inputmode="numeric"', 'Menor número aparece primeiro.') + ck('perigoso', 'Resíduo perigoso', it.perigoso) + ck('ativo', 'Ativo', it.ativo, DESATIVAR);
+  if (ent === 'unidade_consumidora') campos = inp('nome', 'Obra (como na aba Água e luz)', it.nome) + sel('tipo', 'Tipo', [['obra', 'Obra'], ['administrativo', 'Administrativo']], it.tipo || 'administrativo') + sel('obra_id', 'Obra (se for de obra)', [['', '—'], ...C.obras.map(o => [o.id, o.nome])], it.obra_id) + sel('agrupa_em_id', 'Soma em (ex.: sala → Sede)', [['', '—'], ...C.ucs.filter(u => u.id !== id).map(u => [u.id, u.nome])], it.agrupa_em_id) + inp('ordem', 'Ordem na tela', it.ordem ?? 100, 'inputmode="numeric"') + ck('ativa', 'Ativa', it.ativa, DESATIVAR);
+  if (ent === 'assunto_nc') campos = sel('tipo', 'Tipo', [['LAI/EIV', 'LAI/EIV'], ['LAI', 'LAI (histórico)'], ['EIV', 'EIV (histórico)']], it.tipo || 'LAI/EIV') + inp('nome', 'Tipo de Não Conformidade', it.nome) + ck('ativo', 'Ativo', it.ativo, DESATIVAR);
+  const NUMS = { area_total_m2: 'Total m²', meta_residuo_kg_m2: 'Meta Kg', densidade_kg_m3: 'Densidade', ordem: 'Ordem' };
+  const validar = f => {
+    const v = n => { const i = $(`[name="${n}"]`, f); return i ? i.value : ''; };
+    if (!v('nome').trim()) return 'Informe o nome.';
+    const igual = lista.find(x => x.id !== id && semAcento(x.nome).trim() === semAcento(v('nome')).trim() && (ent !== 'assunto_nc' || x.tipo === v('tipo')));
+    if (igual) return `Já existe um cadastro chamado "${igual.nome}".`;
+    for (const [n, rot] of Object.entries(NUMS)) {
+      if (!$(`[name="${n}"]`, f)) continue;
+      const x = lerNum(v(n));
+      if (Number.isNaN(x) || (x !== null && x < 0)) return `${rot}: informe um número maior ou igual a zero.`;
+      if (n === 'ordem' && x !== null && !Number.isInteger(x)) return 'Ordem: informe um número inteiro.';
+    }
+    return '';
+  };
+  const f = await modal(`<h3>${id ? 'Editar' : 'Novo'} · ${{ obra: 'Obra', tipo_residuo: 'Resíduos Detalhados', unidade_consumidora: 'Obra/setor de Água e luz', assunto_nc: 'Tipo de Não Conformidade LAI/EIV' }[ent]}</h3><form class="form-cad" onsubmit="return false">${campos}</form><div class="acoes"><button class="btn sec" data-r="nao">Cancelar</button><button class="btn" data-r="ok">Gravar</button></div>`, { largura: 620, validar });
+  if (!f) return;
+  const item = { id };
+  $$('[name]', f).forEach(i => {
+    if (i.type === 'checkbox') item[i.name] = i.checked;
+    else if (/m2|kg|ordem/.test(i.name)) { const n = lerNum(i.value); item[i.name] = n; }
+    else item[i.name] = i.value === '' ? null : i.value;
+  });
+  try { await api('PUT', '/api/cadastros/' + ent, item); toast('Cadastro gravado.'); telaCadastros(el); }
+  catch (e) { toast(e.message, true); }
+}
+
+// ── Histórico ──────────────────────────────────────────────────────────────
+const NOMES_TAB = { avanco_fisico: 'Avanço físico', conformidade: 'Conformidade LAI.EIV', conformidade_nc: 'NC LAI e EIV', medicao_ruido: 'Ruído', residuo: 'SOMA RESÍDUOS', consumo: 'Água e luz', meta_conformidade: 'Metas LAI EIV', integracao_diferenca: 'Integrações (decisão)', auditoria_ambiental: 'Auditoria Ambientais', plano_acao: 'Plano de Ação', emergencia: 'Emergências Ambientais', reclamacao: 'Reclamações vizinhos', eco_urbana: 'Eco urbana', acoes_sga: 'Ações SGA', impressoes: 'Impressões', impressoes_setor: 'Impressões por setor', impressoes_pessoa: 'Impressões por pessoa', obra: 'Cadastro: Obras', tipo_residuo: 'Cadastro: Resíduos Detalhados', unidade_consumidora: 'Cadastro: Água e luz (Obra/setor)', assunto_nc: 'Cadastro: Tipo de NC LAI/EIV', parametro: 'Cadastro: Parâmetros' };
+const CAMPOS = { avanco_pct: ['Avanço %', 'pct'], percentual: ['PERCENTUAL', 'pct'], meta: ['META', 'pct'], itens_conformes: ['Itens conformes'], itens_avaliados: ['Itens avaliados'], volume_m3: ['m³'], luz_kwh: ['Luz (kwh)'], agua_m3: ['Água (m³)'], db: ['dB'], horario: ['Horário'], ponto: ['Ponto'], empresa: ['Empresa'], obra_id: ['Obra'], assunto: ['NC LAI/EIV'], densidade_kg_m3: ['Densidade'], area_total_m2: ['Total m²'], meta_residuo_kg_m2: ['Meta Kg'], nome: ['Nome'], classe: ['Classe'], ativo: ['Ativo'], ativa: ['Ativa'], valor: ['Valor'], realizado: ['Realizado'], ocorrencias: ['Principais ocorrências'], indicador: ['Indicador'], analise: ['Análise'], acao: ['Ação'], responsavel: ['Responsável'], prazo: ['Prazo'], status: ['Status'], data: ['Mês/Ano'], fonte: ['Fonte'], n_fmc: ['N° FMC'], ocorrencia: ['Ocorrência'], status_acoes: ['Status/Ações'], categoria: ['Categoria'], canal: ['Canal'], cod_chamado: ['Cod. Chamado'], ponto_1: ['Ponto_1'], ponto2: ['Ponto2'], db3: ['db3'], ano: ['Ano'], mes: ['Mês'], pessoas: ['Pessoas'], total_pag: ['Total de pág'], pct_colorido: ['% Colorido', 'pct'], pag_dupla: ['Pág Dupla', 'pct'], economia_pb: ['Economia preto e branco'], economia_colorido: ['Economia Colorido'], simples_duplas: ['impressões simples poderiam ter sido feitas duplas'], economia_folhas: ['Economia de folhas'], nome_setor: ['Nome'], usuario: ['Usuário'], conta_atual: ['Conta atual'], pb: ['P&B'], cor: ['Cor'], paginas: ['Páginas'], pct: ['%'], decisao: ['Decisão'] };
+let histFiltro = { tabela: '', competencia: '', grupo: '', origem: '' };
+const nomePessoa = l => l === 'sistema' ? 'Sistema (Salesforce e Prevision)' : l;
+async function telaHistorico(el) {
+  const qs = new URLSearchParams(Object.entries(histFiltro).filter(([, v]) => v)).toString();
+  const { itens: h, resumo } = await api('GET', '/api/historico?limite=500&' + qs);
+  const val = (c, v) => v === null || v === undefined ? '∅' : (CAMPOS[c] && CAMPOS[c][1] === 'pct' && typeof v === 'number') ? fmtPct(v, 2) : typeof v === 'number' ? fmt(v, v % 1 ? 2 : 0) : String(v);
+  const diff = x => {
+    const cs = [...new Set([...Object.keys(x.antes || {}), ...Object.keys(x.depois || {})])];
+    return cs.map(c => `<div class="diff">${esc((CAMPOS[c] || [c])[0])}: ${x.antes ? `<del>${esc(val(c, x.antes[c]))}</del> ` : ''}${x.depois ? `<ins>${esc(val(c, x.depois[c]))}</ins>` : ''}</div>`).join('');
+  };
+  // contagem de tudo o que o filtro pega (não só das linhas que cabem na tela)
+  const soma = (g, acao) => resumo.filter(r => r.grupo === g && (!acao || r.acao === acao)).reduce((s, r) => s + r.n, 0);
+  const pessoas = [...new Set(resumo.map(r => r.login))].sort((a, b) => (a === 'sistema') - (b === 'sistema') || a.localeCompare(b));
+  const por = (l, g, acao) => resumo.filter(r => r.login === l && r.grupo === g && r.acao === acao).reduce((s, r) => s + r.n, 0);
+  const cartao = (g, titulo, dica) => `<div class="card" style="flex:1;min-width:260px;margin:0"><h2 style="font-size:15px;margin:0 0 2px">${titulo}</h2><p class="dica" style="margin:0 0 8px">${dica}</p>
+    <div style="display:flex;gap:18px;flex-wrap:wrap"><div><b style="font-size:22px">${fmt(soma(g), 0)}</b><div class="dica">registros</div></div>
+    <div><b style="font-size:22px">${fmt(soma(g, 'incluir'), 0)}</b><div class="dica">incluídos</div></div><div><b style="font-size:22px">${fmt(soma(g, 'alterar'), 0)}</b><div class="dica">alterados</div></div><div><b style="font-size:22px">${fmt(soma(g, 'excluir'), 0)}</b><div class="dica">excluídos</div></div></div></div>`;
+  const cel = (l, g) => `${por(l, g, 'incluir')} / ${por(l, g, 'alterar')} / ${por(l, g, 'excluir')}`;
+  el.innerHTML = `<div class="cab"><div><h1>Histórico</h1><p>Toda inclusão, alteração e exclusão feita em <b>Lançamentos</b> e em <b>Cadastros</b>, com quem fez, quando e o valor de antes e o de depois. O que chega sozinho do Salesforce e do Prevision aparece como "Sistema".</p></div>
+    <div class="ferr"><select id="h-grupo" aria-label="Área"><option value="">Lançamentos e Cadastros</option><option value="lancamentos" ${histFiltro.grupo === 'lancamentos' ? 'selected' : ''}>Só Lançamentos</option><option value="cadastros" ${histFiltro.grupo === 'cadastros' ? 'selected' : ''}>Só Cadastros</option></select>
+    <select id="h-origem" aria-label="Quem fez"><option value="">Pessoas e sistema</option><option value="pessoas" ${histFiltro.origem === 'pessoas' ? 'selected' : ''}>Só pessoas</option><option value="sistema" ${histFiltro.origem === 'sistema' ? 'selected' : ''}>Só o que veio do sistema</option></select>
+    <select id="h-tab" aria-label="Tela"><option value="">Todas as telas</option>${Object.entries(NOMES_TAB).map(([k, n]) => `<option value="${k}" ${k === histFiltro.tabela ? 'selected' : ''}>${n}</option>`).join('')}</select>
+    <input type="month" id="h-comp" class="campo" value="${histFiltro.competencia}" aria-label="Mês"><button class="btn sec" id="h-limpa">Limpar</button></div></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">${cartao('lancamentos', 'Lançamentos', 'Todas as telas do menu Lançamentos')}${cartao('cadastros', 'Cadastros', 'Obras, resíduos, água e luz, tipos de NC e parâmetros')}</div>
+    ${pessoas.length ? `<details class="card" style="margin-bottom:12px"><summary style="cursor:pointer"><b>Quem fez o quê</b> <span class="dica">(incluídos / alterados / excluídos)</span></summary>
+      <div class="grade-wrap"><table class="grade"><thead><tr><th>Pessoa</th><th>Lançamentos</th><th>Cadastros</th></tr></thead><tbody>${pessoas.map(l => `<tr><td>${esc(nomePessoa(l))}</td><td>${cel(l, 'lancamentos')}</td><td>${cel(l, 'cadastros')}</td></tr>`).join('')}</tbody></table></div></details>` : ''}
+    <div class="card"><div class="grade-wrap">${h.length ? `<table class="grade"><thead><tr><th>Quando</th><th>Quem</th><th>Tela</th><th>Registro</th><th>Ação</th><th>Alteração</th><th>Motivo</th></tr></thead><tbody>
+    ${h.map(x => `<tr><td class="dica" style="white-space:nowrap">${esc(x.quando)}</td><td>${x.login === 'sistema' ? '<span class="selo na">Sistema</span>' : esc(x.login)}</td><td>${esc(NOMES_TAB[x.tabela] || x.tabela)}</td>
+      <td>${esc(Object.entries(x.chave).filter(([k]) => k !== 'id' || !x.chave.obra).map(([k, v]) => k === 'competencia' ? compCurta(v) : v).join(' · '))}</td>
+      <td>${{ incluir: '<span class="selo ok">incluiu</span>', alterar: '<span class="selo warn">alterou</span>', excluir: '<span class="selo bad">excluiu</span>' }[x.acao]}</td><td>${diff(x)}</td><td class="dica">${esc(x.motivo)}</td></tr>`).join('')}
+    </tbody></table>${soma('lancamentos') + soma('cadastros') > h.length ? `<p class="dica" style="margin:8px 0 0">Mostrando os ${h.length} registros mais recentes de ${soma('lancamentos') + soma('cadastros')}. Use os filtros para chegar nos mais antigos.</p>` : ''}` : '<div class="vazio">Nenhum registro com estes filtros. Toda inclusão, alteração ou exclusão feita daqui para frente aparece nesta lista.</div>'}</div></div>`;
+  const filtra = (k, e) => { histFiltro[k] = e.target.value; telaHistorico(el); };
+  $('#h-grupo', el).onchange = e => filtra('grupo', e); $('#h-origem', el).onchange = e => filtra('origem', e);
+  $('#h-tab', el).onchange = e => filtra('tabela', e); $('#h-comp', el).onchange = e => filtra('competencia', e);
+  $('#h-limpa', el).onclick = () => { histFiltro = { tabela: '', competencia: '', grupo: '', origem: '' }; telaHistorico(el); };
+}
+// ── Usuários ───────────────────────────────────────────────────────────────
+async function telaUsuarios(el) {
+  const { usuarios, fixos } = await api('GET', '/api/usuarios');
+  const st = { pendente: 'warn', aprovado: 'ok', rejeitado: 'bad' };
+  el.innerHTML = `<div class="cab"><div><h1>Usuários</h1><p>Quem entra com a conta da rede pela primeira vez aparece aqui como pendente. <b>Consulta</b> só vê; <b>lançamento</b> lança e corrige meses abertos; <b>administrador</b> também cadastra, fecha meses e aprova acessos.</p></div></div>
+    <div class="card"><div class="grade-wrap"><table class="grade"><thead><tr><th>Usuário</th><th>Situação</th><th>Nível</th><th>Pedido</th><th>Decidido</th><th>Último acesso</th><th></th></tr></thead><tbody>
+    ${usuarios.map(u => { const fixo = fixos.includes(u.login); return `<tr><td><b>${esc(u.nome || u.login)}</b><br><span class="dica">${esc(u.login)} ${esc(u.email)}</span></td>
+      <td><span class="selo ${st[u.situacao]}">${u.situacao}</span></td>
+      <td>${fixo ? 'administrador (fixo)' : `<select data-niv="${esc(u.login)}">${[['leitor', 'consulta'], ['editor', 'lançamento'], ['admin', 'administrador']].map(([k, n]) => `<option value="${k}" ${k === u.nivel ? 'selected' : ''}>${n}</option>`).join('')}</select>`}</td>
+      <td class="dica">${esc(u.pedido_em)}</td><td class="dica">${u.decidido_por ? esc(u.decidido_por) + '<br>' + esc(u.decidido_em) : ''}</td><td class="dica">${esc(u.ultimo_acesso)}</td>
+      <td style="white-space:nowrap">${fixo ? '' : `<button class="btn peq" data-ap="${esc(u.login)}">${u.situacao === 'aprovado' ? 'atualizar' : 'aprovar'}</button> <button class="btn sec peq" data-rj="${esc(u.login)}">excluir</button>`}</td></tr>`; }).join('')}
+    </tbody></table></div></div>`;
+  const decidir = async (login, situacao) => {
+    const nivel = $(`[data-niv="${CSS.escape(login)}"]`, el).value;
+    try { await api('POST', '/api/usuarios/decidir', { login, situacao, nivel }); toast('Acesso atualizado.'); telaUsuarios(el); } catch (e) { toast(e.message, true); }
+  };
+  $$('[data-ap]', el).forEach(b => b.onclick = () => decidir(b.dataset.ap, 'aprovado'));
+  $$('[data-rj]', el).forEach(b => b.onclick = async () => {
+    if (!(await confirmar('Excluir usuário', 'O cadastro é removido e a pessoa perde o acesso. Se ela entrar de novo com a conta da rede, volta como pendente, para você aprovar.', 'Excluir', true))) return;
+    try { await api('POST', '/api/usuarios/excluir', { login: b.dataset.rj }); toast('Usuário excluído.'); telaUsuarios(el); } catch (e) { toast(e.message, true); }
+  });
+}
+
+// ── Integrações: Salesforce e Prevision (via DW) ───────────────────────────
+// Nada se digita aqui. O sistema busca sozinho, 3x ao dia, as reclamações de vizinhos (Salesforce) e o avanço
+// físico (Prevision). Esta tela serve para (1) decidir as diferenças entre a planilha e esses sistemas,
+// (2) ligar contas e projetos novos a uma obra e (3) conferir o que veio, para excluir em Lançamentos a linha que
+// não faça sentido ou corrigir na origem a informação errada.
+async function telaIntegracoes(el) {
+  const r = await api('GET', '/api/integracoes');
+  const sf = r.fontes.salesforce, pv = r.fontes.prevision;
+  const res = x => (x && x.resumo) || {};
+  const estado = x => !x ? '<span class="selo na">ainda não rodou</span>' : x.status === 'ok' ? '<span class="selo ok">ok</span>' : x.status === 'erro' ? '<span class="selo bad">erro</span>' : '<span class="selo warn">rodando</span>';
+  const dataBr = d => d ? d.slice(8, 10) + '/' + d.slice(5, 7) + '/' + d.slice(0, 4) : '';
+  const compBr = c => c.slice(5, 7) + '/' + c.slice(0, 4);
+  const pend = res(sf).pendentes || [], invalidos = res(pv).divergentes || [], sem = res(pv).semObra || [];
+  const dif = r.diferencas.filter(d => d.situacao === 'pendente'), decididas = r.diferencas.filter(d => d.situacao !== 'pendente');
+  const aba = E.integAba === 'avanco' ? 'avanco' : 'reclamacao', fonteAba = aba === 'avanco' ? 'prevision' : 'salesforce';
+  const difAba = dif.filter(d => d.fonte === fonteAba), decididasAba = decididas.filter(d => d.fonte === fonteAba);
+  const aprova = pode();
+  const nomeFonte = f => f === 'prevision' ? 'Prevision' : 'Salesforce';
+  const cab = (titulo, x) => x && x.erro ? `<div class="card" style="margin-bottom:12px"><h2 style="font-size:16px;margin:0 0 6px">${titulo} ${estado(x)}</h2><p class="msg-erro" style="margin:0">${esc(x.erro)}</p></div>` : '';
+  const obraOpts = sug => '<option value="">— Obra —</option>' + obrasAtivas().map(o => `<option value="${o.id}" ${o.id === sug ? 'selected' : ''}>${esc(o.nome)}</option>`).join('');
+  // valores de uma diferença, no jeito de cada fonte
+  const valor = (d, v) => !v ? '—' : d.fonte === 'prevision' ? fmt(v.avanco_pct * 100, 2) + '%'
+    : `${v.data ? dataBr(v.data) : ''} · ${esc(obraNome(v.obra_id))}<br><span class="dica">${esc(v.ocorrencia || '')}</span>`;
+  // chamados pendentes de ligação: por conta (uma escolha vale para todos os chamados dela)
+  const contas = new Map();
+  for (const c of pend) {
+    if (c.motivo === 'mês fechado' || !c.conta_id) continue;
+    const g = contas.get(c.conta_id) || { conta_id: c.conta_id, conta: c.conta, chamados: [], sugestao: c.sugestao };
+    g.chamados.push(c); contas.set(c.conta_id, g);
+  }
+  const mesFechado = pend.filter(c => c.motivo === 'mês fechado'), semConta = pend.filter(c => c.motivo !== 'mês fechado' && !c.conta_id);
+  const nPend = { sf: dif.filter(d => d.fonte === 'salesforce').length + contas.size + mesFechado.length + semConta.length,
+    pv: dif.filter(d => d.fonte === 'prevision').length + sem.length + invalidos.length };
+  const secao = (titulo, n, corpo, aberta) => `<details class="card" style="margin-bottom:12px" ${aberta ? 'open' : ''}><summary style="cursor:pointer;font-size:15px"><b>${titulo}</b> <span class="selo ${n ? 'warn' : 'na'}">${n}</span></summary>${corpo}</details>`;
+  const anosPv = [...new Set(r.doPrevision.map(x => x.comp.slice(0, 4)))], obrasPv = [...new Set(r.doPrevision.map(x => x.obra))].sort();
+  const anosSf = [...new Set(r.doSalesforce.map(x => x.data.slice(0, 4)))], obrasSf = [...new Set(r.doSalesforce.map(x => x.obra))].sort();
+  const filtros = (id, anos, obras) => `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0"><select data-fl="${id}-ano" aria-label="Ano"><option value="">Todos os anos</option>${anos.map(a => `<option>${a}</option>`).join('')}</select>
+    <select data-fl="${id}-obra" aria-label="Obra"><option value="">Todas as obras</option>${obras.map(o => `<option>${esc(o)}</option>`).join('')}</select><span class="dica" data-cont="${id}"></span></div>`;
+  el.innerHTML = `<div class="cab"><div><h1>Integrações</h1><p>O sistema busca sozinho, no DW corporativo, as <b>reclamações de vizinhos</b> (Salesforce) e o <b>avanço físico</b> (Prevision) às <b>${r.horarios.join(', ')}</b>, e o Painel é atualizado em seguida. <b>Nada se digita aqui</b>: esta tela mostra o que veio dos sistemas e pede a sua decisão quando a planilha e o sistema divergem.</p></div>
+      <div class="ferr">${ehAdmin() ? '<button class="btn sec" id="i-rodar">Buscar agora</button>' : ''}</div></div>
+    ${r.rodando ? '<p class="selo warn">Há uma busca em andamento…</p>' : ''}
+    <div class="pills" role="tablist" aria-label="Integração">
+      <button class="pill ${aba === 'reclamacao' ? 'ativo' : ''}" role="tab" data-iaba="reclamacao">Reclamações vizinhos · Salesforce${nPend.sf ? ` <span class="selo warn">${nPend.sf} a resolver</span>` : ''}</button>
+      <button class="pill ${aba === 'avanco' ? 'ativo' : ''}" role="tab" data-iaba="avanco">Avanço físico · Prevision${nPend.pv ? ` <span class="selo warn">${nPend.pv} a resolver</span>` : ''}</button></div>
+    ${aba === 'reclamacao'
+      ? cab('Salesforce', sf)
+      : cab('Prevision', pv)}
+    <p class="dica" style="margin:0 0 12px">O que entra sozinho aparece em <b>Lançamentos</b>; o que o sistema não consegue decidir sozinho aparece abaixo, para uma pessoa resolver.${r.excluidas[fonteAba] ? ` Já foram excluídas de propósito em Lançamentos ${r.excluidas[fonteAba]} ${aba === 'avanco' ? 'mês(es) do Prevision' : 'chamado(s) do Salesforce'}; elas não voltam nas próximas buscas.` : ''}</p>
+    ${difAba.length ? secao('Planilha × ' + nomeFonte(fonteAba) + ': qual valor vale?', difAba.length, `<p class="dica">Estes registros existem na planilha antiga e no sistema de origem, com valores diferentes. Escolha <b>manter a planilha</b> ou <b>usar o valor do sistema</b>. A escolha fica guardada, vai para o Histórico e a pergunta só volta se o valor do sistema mudar.</p>
+      ${aprova ? `<p style="margin:0 0 8px"><button class="btn sec peq" data-todas="planilha">Manter a planilha em todas</button> <button class="btn sec peq" data-todas="sistema">Usar o sistema em todas</button></p>` : ''}
+      <div class="grade-wrap" style="max-height:50vh;overflow:auto"><table class="grade"><thead><tr><th>Fonte</th><th>Registro</th><th>Na planilha</th><th>No sistema</th><th></th></tr></thead><tbody>
+      ${difAba.map(d => `<tr data-did="${d.id}"><td>${nomeFonte(d.fonte)}</td><td><b>${esc(d.titulo)}</b></td><td>${valor(d, d.planilha)}</td><td>${valor(d, d.sistema)}</td>
+        <td style="white-space:nowrap">${aprova ? `<button class="btn sec peq" data-dec="planilha">Manter a planilha</button> <button class="btn peq" data-dec="sistema">Usar ${nomeFonte(d.fonte)}</button>` : '<span class="dica">só consulta</span>'}</td></tr>`).join('')}</tbody></table></div>`, true) : ''}
+    ${aba === 'avanco' && sem.length ? secao('Projetos do Prevision sem obra', sem.length, `<p class="dica">Projetos em construção que ainda não foram ligados a uma obra. Escolha a obra, ou marque que não é obra do ambiental.</p>
+      <div class="grade-wrap"><table class="grade"><thead><tr><th>Projeto no Prevision</th><th>Obra no sistema</th><th></th></tr></thead><tbody>
+      ${sem.map(p => `<tr data-pid="${esc(p.project_id)}" data-nome="${esc(p.nome)}"><td><b>${esc(p.nome)}</b> <span class="dica">#${esc(p.project_id)}</span></td><td><select>${obraOpts(p.sugestao)}</select></td>
+        <td style="white-space:nowrap">${aprova ? '<button class="btn peq" data-m="1">Ligar</button> <button class="btn sec peq" data-m="0">Não é obra do ambiental</button>' : ''}</td></tr>`).join('')}</tbody></table></div>`, true) : ''}
+    ${aba === 'reclamacao' && contas.size ? secao('Chamados sem obra: corrigir no Salesforce', contas.size, `<p class="dica">A obra do chamado vem do Salesforce, não é escolhida aqui. O sistema entra sozinho quando o nome da obra aparece no nome da conta ou no assunto; estas contas não trazem nenhuma obra reconhecível: peça para ajustar o nome da conta no Salesforce. Assim que a busca seguinte enxergar a obra, os chamados entram sozinhos em Reclamações vizinhos.</p>
+      <div class="grade-wrap" style="max-height:35vh;overflow:auto"><table class="grade"><thead><tr><th>Cod. Chamado</th><th>Aberto em</th><th>Conta no Salesforce</th><th>Assunto</th><th>Categoria</th><th>Status</th><th>Motivo</th></tr></thead><tbody>
+      ${[...contas.values()].flatMap(g => g.chamados).sort((a, b) => b.data.localeCompare(a.data)).map(c => `<tr><td>${esc(c.numero)}</td><td>${dataBr(c.data)}</td><td><b>${esc(c.conta || '—')}</b></td><td style="text-align:left;min-width:200px">${esc(c.assunto || '')}</td><td>${esc(c.categoria || '')}</td><td>${esc(c.status || '')}</td><td><span class="selo warn">obra não identificada</span><br><span class="dica">nem a conta nem o assunto citam uma obra</span></td></tr>`).join('')}</tbody></table></div>`, true) : ''}
+    ${aba === 'reclamacao' && (mesFechado.length || semConta.length) ? secao('Chamados que não entraram', mesFechado.length + semConta.length, `<p class="dica">${mesFechado.length ? 'Chamados de um <b>mês já fechado</b>: um administrador precisa reabrir o mês para eles entrarem. ' : ''}${semConta.length ? 'Chamados <b>sem conta</b> no Salesforce: preencha a conta no Salesforce.' : ''}</p>
+      <div class="grade-wrap" style="max-height:35vh;overflow:auto"><table class="grade"><thead><tr><th>Cod. Chamado</th><th>Aberto em</th><th>Conta no Salesforce</th><th>Assunto</th><th>Motivo</th></tr></thead><tbody>
+      ${mesFechado.concat(semConta).map(c => `<tr><td>${esc(c.numero)}</td><td>${dataBr(c.data)}</td><td>${esc(c.conta || '—')}</td><td>${esc(c.assunto)}</td><td><span class="selo warn">${esc(c.motivo === 'mês fechado' ? 'mês fechado' : 'sem conta no Salesforce')}</span></td></tr>`).join('')}</tbody></table></div>`, false) : ''}
+    ${aba === 'avanco' && invalidos.length ? secao('Corrigir no Prevision', invalidos.length, `<p class="dica">Valores que o Prevision enviou fora de 0–100%. Não entram no sistema: peça ao Planejamento para corrigir lá.</p>
+      <div class="grade-wrap" style="max-height:35vh;overflow:auto"><table class="grade"><thead><tr><th>Obra</th><th>Mês</th><th>No sistema</th><th>No Prevision</th></tr></thead><tbody>
+      ${invalidos.map(d => `<tr><td>${esc(d.obra)}</td><td>${compBr(d.comp + '-01')}</td><td>${d.sistema == null ? '—' : fmt(d.sistema * 100, 2) + '%'}</td><td>${fmt(d.prevision * 100, 2)}%</td></tr>`).join('')}</tbody></table></div>`, false) : ''}
+    ${aba !== 'avanco' ? '' : secao('O que veio do Prevision · Avanço físico', r.doPrevision.length, `<p class="dica">Só consulta. Se uma linha não fizer sentido, exclua em <a href="#avanco">Lançamentos → Avanço físico</a> (ela não volta). Se um valor estiver errado, corrija no Prevision: a próxima busca traz o valor certo.</p>
+      ${filtros('pv', anosPv, obrasPv)}<div class="grade-wrap" style="max-height:50vh;overflow:auto"><table class="grade" id="t-pv"><thead><tr><th>Obra</th><th>Mês</th><th class="n">Avanço %</th><th>Atualizado em</th></tr></thead><tbody>
+      ${r.doPrevision.map(x => `<tr data-ano="${x.comp.slice(0, 4)}" data-obra="${esc(x.obra)}"><td>${esc(x.obra)}</td><td>${compBr(x.comp + '-01')}</td><td class="n">${fmt(x.avanco_pct * 100, 2)}%</td><td class="dica">${esc(x.atualizado_em)}</td></tr>`).join('')}</tbody></table></div>
+      ${r.doPrevision.length ? '' : '<p class="vazio">Ainda não chegou nada do Prevision.</p>'}`, true)}
+    ${aba !== 'reclamacao' ? '' : secao('O que veio do Salesforce · Reclamações de vizinhos', r.doSalesforce.length, `<p class="dica">Só consulta. Se uma linha não fizer sentido, exclua em <a href="#reclamacao">Lançamentos → Reclamações vizinhos</a> (ela não volta). Se uma informação estiver errada, corrija no Salesforce.</p>
+      ${filtros('sf', anosSf, obrasSf)}<div class="grade-wrap" style="max-height:50vh;overflow:auto"><table class="grade" id="t-sf"><thead><tr><th>Aberto em</th><th>Obra</th><th>Cod. Chamado</th><th>Categoria</th><th>Ocorrência</th><th>Status/Ações</th></tr></thead><tbody>
+      ${r.doSalesforce.map(x => `<tr data-ano="${x.data.slice(0, 4)}" data-obra="${esc(x.obra)}"><td>${dataBr(x.data)}</td><td>${esc(x.obra)}</td><td>${esc(x.cod_chamado || '')}</td><td>${esc(x.categoria || '')}</td><td style="text-align:left;min-width:260px">${esc(x.ocorrencia || '')}</td><td style="text-align:left">${esc(x.status_acoes || '')}</td></tr>`).join('')}</tbody></table></div>
+      ${r.doSalesforce.length ? '' : '<p class="vazio">Ainda não chegou nada do Salesforce.</p>'}`, true)}
+    ${decididasAba.length ? secao('Decisões já tomadas', decididasAba.length, `<div class="grade-wrap" style="max-height:35vh;overflow:auto"><table class="grade"><thead><tr><th>Fonte</th><th>Registro</th><th>Decisão</th><th>Quem</th></tr></thead><tbody>
+      ${decididasAba.map(d => `<tr><td>${nomeFonte(d.fonte)}</td><td>${esc(d.titulo)}</td><td>${d.situacao === 'planilha' ? 'Manteve a planilha' : 'Usou o ' + nomeFonte(d.fonte)}</td><td class="dica">${esc(d.decidido_por || '')}<br>${esc(d.decidido_em || '')}</td></tr>`).join('')}</tbody></table></div>`, false) : ''}`;
+  // filtros locais das listas "o que veio de..."
+  for (const id of ['pv', 'sf']) {
+    const a = $(`[data-fl="${id}-ano"]`, el), o = $(`[data-fl="${id}-obra"]`, el); if (!a) continue;
+    const aplicar = () => {
+      let vis = 0; const trs = $$(`#t-${id} tbody tr`, el);
+      trs.forEach(tr => { const ok = (!a.value || tr.dataset.ano === a.value) && (!o.value || tr.dataset.obra === o.value); tr.style.display = ok ? '' : 'none'; if (ok) vis++; });
+      $(`[data-cont="${id}"]`, el).textContent = vis === trs.length ? trs.length + ' linha(s)' : vis + ' de ' + trs.length + ' linha(s)';
+    };
+    a.onchange = o.onchange = aplicar; aplicar();
+  }
+  $$('[data-iaba]', el).forEach(b => b.onclick = () => { E.integAba = b.dataset.iaba; telaIntegracoes(el); });
+  const rodar = $('#i-rodar', el);
+  if (rodar) rodar.onclick = async () => {
+    rodar.disabled = true; toast('Buscando no DW…');
+    try { const x = await api('POST', '/api/integracoes/rodar'); toast(x.ok ? 'Busca concluída.' : x.erro, !x.ok); } catch (e) { toast(e.message, true); }
+    telaIntegracoes(el);
+  };
+  // decisão de uma diferença (uma, ou todas de uma vez)
+  const decidir = async (ids, decisao) => {
+    let ok = 0;
+    for (const id of ids) {
+      try { await api('POST', '/api/integracoes/diferenca', { id, decisao }); ok++; } catch (e) { toast(e.message, true); break; }
+    }
+    if (ok) toast(ok === 1 ? 'Decisão registrada.' : ok + ' decisões registradas.');
+    telaIntegracoes(el);
+  };
+  $$('[data-dec]', el).forEach(b => b.onclick = () => { b.disabled = true; decidir([+b.closest('tr').dataset.did], b.dataset.dec); });
+  $$('[data-todas]', el).forEach(b => b.onclick = async () => {
+    const d = b.dataset.todas;
+    if (await confirmar(d === 'planilha' ? 'Manter a planilha em todas?' : 'Usar o valor do sistema em todas?',
+      `Vale para as ${difAba.length} diferenças pendentes. ${d === 'planilha' ? 'Os valores da planilha continuam como estão.' : 'Os valores da planilha são trocados pelos do Salesforce e do Prevision.'} Cada decisão fica no Histórico.`, 'Confirmar')) decidir(difAba.map(x => x.id), d);
+  });
+  $$('[data-m]', el).forEach(b => b.onclick = async () => {
+    const tr = b.closest('tr'), ignorar = b.dataset.m === '0', obra = $('select', tr).value;
+    if (!ignorar && !obra) return toast('Escolha a obra.', true);
+    if (ignorar && !(await confirmar('Não é obra do ambiental', 'O projeto "' + esc(tr.dataset.nome) + '" deixa de aparecer aqui e não entra no avanço físico.', 'Confirmar'))) return;
+    b.disabled = true;
+    try { await api('POST', '/api/integracoes/prevision', { project_id: tr.dataset.pid, nome: tr.dataset.nome, obra_id: obra ? +obra : null, ignorar }); toast('Salvo. O avanço físico dessa obra foi buscado.'); telaIntegracoes(el); }
+    catch (e) { toast(e.message, true); b.disabled = false; }
+  });
+}
+// ── início ─────────────────────────────────────────────────────────────────
+(async function () {
+  aplicarPrefs();
+  if (AMBIENTE === 'homologacao') { $('#faixa-hml').hidden = false; document.title = '[HML] ' + document.title; }
+  if (E.token) {
+    try { E.usuario = (await api('GET', '/api/auth/sessao')).usuario; await entrar(); return; } catch (e) {}
+  }
+  sairLocal();
+})();
+</script>
+</body>
+</html>

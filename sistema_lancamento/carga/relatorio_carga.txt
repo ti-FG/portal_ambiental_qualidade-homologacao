@@ -1,0 +1,26 @@
+OBRA NOVA na planilha, cadastrada no sistema: Central Tower (confirmar área total e meta no cadastro)
+Planilha: C:\Apps\Dash_ambiental_qualidade\Controle Ambiental 2025_oficial_db.xlsx
+Gerado em: 30/10/2026 17:02
+aviso do leitor: ATENCAO Conformidade_LAI_EIV: ha 9 linha(s) com dados ABAIXO do intervalo Conformidade LAI.EIV da tabela nomeada. Essas linhas nao entram no modelo. Corrija o intervalo da tabela no Excel.
+Tipos de resíduo SEM densidade (na planilha davam Kg = 0; aqui o kg fica em branco até a área informar): LÃ DE PET; TELA DE PROTEÇÃO; NÃO RECICLADO (FITAS ADESIVAS, LIXAS ENTRE OUTROS); EFLUENTE CONTAMINADO (LÍQUIDO); RESÍDUO CONTAMINADO (SÓLIDO)
+Resíduos: 1832 lançamentos (obra × mês × tipo); 28 linhas da planilha sem m³ (grade pré-criada) ignoradas; 899 lançamentos até 2025 só por classe -> tipo "Classe X (sem detalhe)", sem densidade.
+Avanço físico: 191 lançamentos.
+Metas de conformidade: 74 vigências. O primeiro valor de cada obra vale desde 01/2024 (a planilha aplicava a meta de ago/25 a todo o histórico). Meses vazios mantêm a meta anterior — na planilha, ficavam sem meta ou com 0.
+Obras sem nenhuma meta de conformidade: North Tower, Central Tower
+Conformidade: 303 lançamentos (só o %: a planilha não guardava itens conformes/avaliados).
+NC LAI/EIV: 17 assuntos cadastrados, 61 apontamentos.
+Ruído: 290 medições; 13 linhas com dB 0 ou vazio ignoradas (obra sem medição no mês).
+Consumo com 2 linhas na planilha, guardadas as duas: Assistência técnica 2025-03-01
+Água e luz: 25 unidades consumidoras, 687 lançamentos (inclui linhas em branco, com luz e água NULL, e a Sede como digitada na planilha).
+Obras marcadas INATIVAS (sem lançamento desde antes de 06/2026; reativar no cadastro se ainda estiverem em obra): Blue Coast (último 01/2026), Boreal (último 08/2025), Grand Place (último 09/2025), Horizon (último 11/2025)
+Unidades consumidoras INATIVAS (obra inativa ou sem conta há 6+ meses): Blue Coast, Boreal, Grand Place, Horizon, ITC Busness SL 612, ITC Busness SL 613, Senna
+Auditoria Ambientais: 54 auditorias. Ano/Mês CONTRADIZEM o Mês/Ano em: Grand Place OUTUBRO/2026 × Mês/Ano 04/09/2025 (valeu o Mês/Ano).
+Plano de Ação: 52 ações.
+Emergências Ambientais: 19 registros; 3 linha(s) só com obra e data, sem ocorrência/FMC/status, ignoradas.
+Reclamações vizinhos: 23 chamados (o canal Ouvidoria/Relacionamento, que vinha no texto da Obra, virou campo próprio).
+Eco urbana: 14 medições.
+Ações SGA: 19 linhas (as contas de calculadora, ex. =297+2+10+32, entram pelo resultado).
+Impressões: 33 meses.
+Impressoes por setor: 1040 linhas.
+Impressoes por pessoa: 5155 linhas.
+Histórico de resíduos: 74 linhas trazidas como consulta, do jeito que estão na planilha (relatório antigo, sem formato de tabela).
