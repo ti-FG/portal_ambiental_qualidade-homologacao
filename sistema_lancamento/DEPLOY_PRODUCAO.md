@@ -8,16 +8,23 @@ como está (ver `../DEPLOY_PRODUCAO.md`).
 Testado em 03/11/2026 em clone limpo no servidor de homologação (155), em portas
 isoladas (8097 e 15450), sem tocar no 8095 nem no DW. Resultado no fim deste arquivo.
 
-## 0. Decisões que têm de estar tomadas antes de começar
+## 0. O que já está decidido e o que falta
 
-| # | Decisão | Por quê |
+**Banco de produção: já decidido.** É o schema `portal_ambiental_qualidade` no DW
+(`dw_fg`, 192.168.100.104:5433), criado e carregado em 30/10/2026 para este sistema. Ele já tem
+as tabelas e os dados. A HML roda num PGlite local só porque era homologação; produção aponta
+para o DW.
+
+O que falta, e é de quem tem acesso:
+
+| # | O que falta | Detalhe |
 |---|---|---|
-| 1 | **Qual banco de produção?** O 152 (`fg_apps`, schema e role `app_ambiental` pedidos à TI) ou o schema `portal_ambiental_qualidade` que já existe no DW (`dw_fg`, criado à mão em 30/10/2026) | Hoje a HML roda num PGlite local; **nada aponta para o DW**. Os schemas `portal_*` do DW são réplicas do 152, então o criado à mão pode colidir quando o do 152 for promovido |
-| 2 | **Usuário de serviço só leitura no DW** (`DWC_PG*`) para Salesforce e Prevision | A credencial atual é pessoal (`natalia_costa`) |
+| 1 | **Usuário do app no DW** (`PG*`) | Com escrita no schema `portal_ambiental_qualidade`. A credencial atual é pessoal (`natalia_costa`, dona do schema) |
+| 2 | **Usuário de serviço só leitura no DW** (`DWC_PG*`) para Salesforce e Prevision (`silver.*`) | Hoje é a mesma credencial pessoal |
 | 3 | **Conta de bind do AD** (`LDAP_BIND_*`) | A de HML é `sa_automacao.users@FG.local`; confirmar que vale em produção |
 | 4 | **Porta e liberação de firewall** | Proposta: 8095. Está livre no 151 em 03/11/2026. O alerta HmlGov da 8095 na HML nunca foi aprovado |
 
-Sem as decisões 1 e 2 o sistema sobe, mas sem dado ou sem a busca no Salesforce/Prevision.
+Sem o item 1 o sistema não grava; sem o 2 não busca no Salesforce/Prevision.
 
 ## 1. Onde instalar (importante)
 
@@ -46,27 +53,39 @@ O schema é idempotente: pode ser reaplicado.
 psql "host=<host> port=<porta> dbname=<banco> user=<dono_do_schema>" -f ..\db\schema.sql
 ```
 
-- **Schema novo e vazio:** depois do `schema.sql`, aplicar `db/carga_homologacao.sql`. São os
-  **mesmos dados do sistema de homologação (8095) em 03/11/2026, sem o que foi feito para teste**.
-  Tem um guard: se o schema já tiver obras, aborta sem gravar nada.
-  `db/carga_inicial.sql` (planilha pura, de 21/10) **não** é a carga de produção: não traz as
-  escolhas da Qualidade nem o que foi lançado depois.
-- **Schema do DW já carregado (decisão 1):** aplicar só o `schema.sql`. **Nunca** rodar
-  `carga_inicial.sql` nele (começa com `TRUNCATE` e apaga as escolhas de Reclamações e Avanço);
-  `carga_homologacao.sql` aborta nele pelo guard. Esse schema tem dados diferentes dos da HML
-  (ver abaixo).
+**Produção = schema do DW, que já existe com dados.** Como esse schema já tem dados, o que se
+aplica nele é:
 
-**O que a `carga_homologacao.sql` leva e o que não leva** (gerada por `db/exportar_homologacao.js`,
-só leitura na HML; para regerar: `node db\exportar_homologacao.js db\carga_homologacao.sql`):
-- Fora, por serem de teste: obra, unidade consumidora, assunto de NC e tipo de resíduo chamados
-  "Teste" (nenhum lançamento estava ligado a eles) e o GESSO / Blue View / set-2026, que tinha 1 m³
-  de teste e volta a 0, o valor da planilha.
-- Fora, por não serem dados: `usuario`, `sessao`, `auditoria` (acessos), `log_alteracao` e
-  `sincronizacao`. Em produção cada pessoa pede acesso no primeiro login e o administrador aprova
-  (`ADMIN_LOGINS` já cobre a administradora).
-- Dentro, e **diferente do schema do DW**: os meses de avanço físico gravados pela sincronização com
-  o Prevision na HML (201 linhas de avanço no total) e o relatório de impressão de outubro (parcial,
-  01 a 29/10) subido em 30/10. No DW esses dados não entraram.
+1. `db/schema.sql` (idempotente, só cria/ajusta objetos). O DW já o recebeu em 30/10; reaplicar é
+   seguro.
+2. `db/atualizar_dw_para_homologacao.sql`, **uma vez**, com o dono do schema. Leva o DW ao mesmo
+   estado do sistema de homologação (8095) em 03/11/2026, sem o que foi teste. Só **acrescenta** o
+   que a HML tem e o DW não, e atualiza 80 valores de avanço. Não apaga nada. Tem guard: aborta se
+   já foi aplicado.
+
+Nunca rodar `carga_inicial.sql` no DW (começa com `TRUNCATE` e apaga as escolhas de Reclamações e
+Avanço) nem `carga_homologacao.sql` (aborta pelo guard: o schema já tem obras).
+
+**O que o `atualizar_dw_para_homologacao.sql` faz** (comparado em 03/11/2026, tabela por tabela,
+DW × HML sem teste; as outras 24 tabelas já eram iguais):
+
+| Tabela | O que muda no DW |
+|---|---|
+| `avanco_fisico` | 80 meses passam ao valor do Prevision (6 casas) e `origem='prevision'`; no DW estavam com o valor da planilha arredondado em 4 casas (ex.: 0,024700 → 0,024456). Mais 10 meses novos, um por obra, trazidos pela sincronização de 01/11 |
+| `impressoes`, `impressoes_setor`, `impressoes_pessoa` | 1 + 53 + 278 linhas do relatório de impressão de outubro (parcial, 01 a 29/10), subido em 30/10 |
+| `reclamacao` | 3 chamados do Salesforce importados em 01/11 |
+| `salesforce_conta` | 1 conta ligada a obra em 01/11 |
+
+Fica de fora, por ser teste: obra, unidade consumidora, assunto de NC e tipo de resíduo chamados
+"Teste" (nenhum lançamento estava ligado a eles) e o GESSO / Blue View / set-2026 (1 m³ de teste na
+HML; no DW já está 0, o valor da planilha).
+Fica de fora, por não ser dado: `usuario`, `sessao`, `auditoria` (acessos), `log_alteracao` e
+`sincronizacao`. Em produção cada pessoa pede acesso no primeiro login e o administrador aprova
+(`ADMIN_LOGINS` já cobre a administradora).
+
+`db/carga_homologacao.sql` (a HML inteira, sem teste, para schema **vazio**) serve para subir um
+banco novo, não para o DW. Os dois arquivos foram gerados por leitura da HML
+(`db/exportar_homologacao.js` gera a carga completa).
 
 ## 3. `.env` de produção
 
@@ -76,10 +95,10 @@ Criar `sistema_lancamento\www\.env` (nunca versionar; o `.gitignore` já ignora)
 PORT=8095
 AMBIENTE=producao
 
-PGHOST=...
-PGPORT=...
-PGDATABASE=...
-PGUSER=...
+PGHOST=192.168.100.104
+PGPORT=5433
+PGDATABASE=dw_fg
+PGUSER=...          # usuário do app, com escrita no schema (item 1 da seção 0)
 PGPASSWORD=...
 APP_SCHEMA=portal_ambiental_qualidade
 DB_POOL_MAX=4
@@ -158,6 +177,11 @@ banco vazio, comparada com a HML tabela por tabela (contagem e hash do conteúdo
 as 27 tabelas conferem; o guard aborta numa segunda aplicação; as sequências de id ficam acima do
 maior id. Única diferença esperada: `parametro.atualizado_em`, que o `schema.sql` preenche na
 semeadura.
+
+**Testado (atualização do DW, 03/11/2026):** o `atualizar_dw_para_homologacao.sql` **não** foi aplicado
+no DW. Foi testado por simulação: banco PGlite no estado do DW (HML sem as linhas que o script traz,
+com os 80 valores de avanço de volta ao da planilha), script aplicado sem erro, guard aborta numa
+segunda aplicação, e o resultado fica igual à HML sem teste em todas as tabelas comparadas.
 
 **Não testado:**
 - login pelo AD (o clone de teste subiu sem `LDAP_*`);
