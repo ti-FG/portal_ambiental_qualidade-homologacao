@@ -6,6 +6,7 @@ são gravados no PostgreSQL (schema `portal_ambiental_qualidade`) e os painéis
 passam a ler do banco.
 
 **Homologação:** http://10.1.1.155:8095/ (servidor vSRV-HML-DEV)
+**Produção:** passo a passo e decisões pendentes em [DEPLOY_PRODUCAO.md](DEPLOY_PRODUCAO.md)
 
 ## Estado em 21/10/2026: primeira versão para demonstração
 
