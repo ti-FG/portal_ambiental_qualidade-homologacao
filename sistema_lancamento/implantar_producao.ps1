@@ -13,9 +13,12 @@
 #   -SemBanco    nao mexe no banco
 #   -SemServico  nao cria/reinicia o servico (para testar)
 #   -Sim         nao pergunta antes de aplicar a atualizacao no DW
+#   -TrocarSite  nao pergunta antes de parar o site IIS que ocupa a porta (o dashboard
+#                antigo na 8080); sem isso o script pergunta
 # =============================================================================
-param([switch]$SemBanco, [switch]$SemServico, [switch]$Sim)
+param([switch]$SemBanco, [switch]$SemServico, [switch]$Sim, [switch]$TrocarSite)
 $ErrorActionPreference = 'Stop'
+$iisParado = $null
 
 $Raiz    = $PSScriptRoot
 $Www     = Join-Path $Raiz 'www'
@@ -98,8 +101,30 @@ if ($SemServico) {
   } else {
     nssm install $Servico $node server.js | Out-Null
   }
+
+  # Porta ocupada: se for um site do IIS (o dashboard antigo na 8080), o sistema novo ocupa o lugar dele.
   $dono = Get-NetTCPConnection -LocalPort $porta -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
-  if ($dono) { Falha "a porta $porta ja esta em uso (PID $($dono.OwningProcess)); nada foi iniciado" }
+  if ($dono) {
+    $appcmd = Join-Path $env:windir 'System32\inetsrv\appcmd.exe'
+    $siteIIS = $null
+    if (Test-Path $appcmd) {
+      $linha = & $appcmd list site | Where-Object { $_ -match "bindings:[^)]*:${porta}:" } | Select-Object -First 1
+      if ($linha -and ($linha -match 'SITE "([^"]+)"')) { $siteIIS = $Matches[1] }
+    }
+    if (-not $siteIIS) { Falha "a porta $porta ja esta em uso (PID $($dono.OwningProcess)) e nao e um site do IIS; nada foi iniciado" }
+
+    Write-Host "A porta $porta e do site IIS '$siteIIS'. O sistema novo vai ocupar o lugar dele (os arquivos do site NAO sao apagados)." -ForegroundColor Yellow
+    if (-not $TrocarSite) {
+      $resp = Read-Host "Parar o site '$siteIIS' e subir o sistema novo na $porta? [s/N]"
+      if ($resp -notmatch '^(s|S|y|Y)') { Falha 'cancelado. Nada foi alterado no IIS' }
+    }
+    & $appcmd stop site /site.name:"$siteIIS" | Out-Null
+    & $appcmd set site /site.name:"$siteIIS" /serverAutoStart:false | Out-Null   # nao volta sozinho no reinicio
+    Start-Sleep -Seconds 3
+    if (Get-NetTCPConnection -LocalPort $porta -State Listen -ErrorAction SilentlyContinue) { Falha "a porta $porta continua em uso depois de parar o site '$siteIIS'" }
+    $iisParado = $siteIIS
+    Write-Host "site IIS '$siteIIS' parado"
+  }
 
   nssm set $Servico AppDirectory $Www | Out-Null
   nssm set $Servico DisplayName 'FG Lancamentos Ambientais' | Out-Null
@@ -137,7 +162,13 @@ if ($SemServico) {
 
 Write-Host ''
 Write-Host 'PRONTO.' -ForegroundColor Green
-Write-Host "Falta: liberar a porta $porta no firewall, abrir http://10.1.1.151:$porta/ e entrar com um login do AD."
+if ($iisParado) {
+  Write-Host "Abra http://10.1.1.151:$porta/ e entre com um login do AD (a porta ja estava liberada: era a do site '$iisParado')."
+  Write-Host "Para VOLTAR ao dashboard antigo: Stop-Service $Servico ; & '$env:windir\System32\inetsrv\appcmd.exe' start site /site.name:`"$iisParado`" ; e depois set site /site.name:`"$iisParado`" /serverAutoStart:true"
+  Write-Host "O refresh das 03:00 do dashboard antigo (servico FGDashAmbiental, tarefa Dashboard_FG_RefreshService) continua rodando; pode ser desativado quando quiser." -ForegroundColor Yellow
+} else {
+  Write-Host "Falta: liberar a porta $porta no firewall (se ainda nao estiver), abrir http://10.1.1.151:$porta/ e entrar com um login do AD."
+}
 if ($envTxt -match '(?m)^\s*SYNC_AUTO\s*=\s*0') {
   Write-Host 'Depois de conferir, troque SYNC_AUTO=0 para 1 no .env e rode: nssm restart FGAmbientalQualidade'
 }

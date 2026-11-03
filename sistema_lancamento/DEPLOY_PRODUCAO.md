@@ -13,7 +13,15 @@ como está (ver `../DEPLOY_PRODUCAO.md`).
    `cd C:\Apps\portal_ambiental_qualidade\sistema_lancamento` e `.\implantar_producao.ps1`
    Na primeira vez o script cria o `.env` e abre o Bloco de Notas: preencher só as linhas com `???`
    (as senhas, que a Natália passa por fora), salvar e rodar o script de novo.
-3. Liberar a porta 8095 no firewall e abrir `http://10.1.1.151:8095/`.
+3. Abrir `http://10.1.1.151:8080/` e entrar com um login do AD. A porta já está liberada.
+
+**A porta é a 8080, a mesma do dashboard antigo: o sistema novo ocupa o lugar dele.** O script
+detecta que a 8080 é do site IIS `DashboardFG`, **pergunta** antes de pará-lo e o deixa sem iniciar
+sozinho no reinício. Nada é apagado: a pasta e o HTML antigos continuam em
+`C:\Apps\Dash_ambiental_qualidade`. Para voltar atrás, o próprio script imprime o comando no fim.
+O dashboard novo fica em `/painel` dentro do sistema. O refresh das 03:00 do dashboard antigo
+(serviço `FGDashAmbiental` na 8081 e tarefa `Dashboard_FG_RefreshService`) continua rodando sem
+ninguém servir o resultado; pode ser desativado depois.
 
 O script faz o resto: instala as dependências, aplica o schema e a atualização de dados no DW
 (pergunta antes, e só aplica uma vez), cria o serviço `FGAmbientalQualidade` e confere
@@ -37,7 +45,7 @@ O que falta, e é de quem tem acesso:
 | 1 | **Usuário do app no DW** (`PG*`) | Com escrita no schema `portal_ambiental_qualidade`. A credencial atual é pessoal (`natalia_costa`, dona do schema) |
 | 2 | **Usuário de serviço só leitura no DW** (`DWC_PG*`) para Salesforce e Prevision (`silver.*`) | Hoje é a mesma credencial pessoal |
 | 3 | **Conta de bind do AD** (`LDAP_BIND_*`) | A de HML é `sa_automacao.users@FG.local`; confirmar que vale em produção |
-| 4 | **Porta e liberação de firewall** | Proposta: 8095. Está livre no 151 em 03/11/2026. O alerta HmlGov da 8095 na HML nunca foi aprovado |
+| 4 | ~~Porta e firewall~~ **Decidido: 8080** (a mesma do dashboard antigo, já liberada) | O site IIS `DashboardFG` dessa porta é parado pelo script, com confirmação. Se alguém ainda usar o dashboard antigo, avisar antes |
 
 Sem o item 1 o sistema não grava; sem o 2 não busca no Salesforce/Prevision.
 
@@ -107,7 +115,7 @@ banco novo, não para o DW. Os dois arquivos foram gerados por leitura da HML
 Criar `sistema_lancamento\www\.env` (nunca versionar; o `.gitignore` já ignora):
 
 ```
-PORT=8095
+PORT=8080
 AMBIENTE=producao
 
 PGHOST=192.168.100.104
@@ -162,9 +170,9 @@ Criar antes a pasta `logs` (está no `.gitignore`).
 
 ## 5. Conferência depois de subir
 
-1. `http://10.1.1.151:8095/api/saude` deve responder `"ok":true` e `"banco":"ok"`; `"ad":true` se o
+1. `http://10.1.1.151:8080/api/saude` deve responder `"ok":true` e `"banco":"ok"`; `"ad":true` se o
    `LDAP_*` estiver preenchido.
-2. `http://10.1.1.151:8095/api/versao` mostra `"ambiente":"producao"`.
+2. `http://10.1.1.151:8080/api/versao` mostra `"ambiente":"producao"`.
 3. Entrar com o login do AD (`natalia.costa` é admin pelo `ADMIN_LOGINS`).
 4. Tela **Início** abre o mês; tela **Painel** (ou `/painel`) abre o dashboard gerado do banco.
 5. Sem login, `/api/cadastros` deve dar 401, e `/.env`, `/server.js` e `/dados.js` devem dar 404.
@@ -201,9 +209,13 @@ segunda aplicação, e o resultado fica igual à HML sem teste em todas as tabel
 **Testado (`implantar_producao.ps1`, 03/11/2026, Windows PowerShell 5.1, banco temporário PGlite):**
 sintaxe; recusa `.env` com `???` listando os campos; recusa rodar dentro da pasta da 8080;
 `npm ci`; aplica o `schema.sql` e a atualização de dados; numa segunda execução reconhece
-"já aplicada" e segue; com o banco fora do ar para e diz "schema.sql falhou". **Não testado:** a
-criação do serviço NSSM e a conferência final (`/api/saude`, 404 em `/.env`), porque a criação de
-serviço foi bloqueada na sessão de testes. É a primeira coisa que o script faz de novo no 151.
+"já aplicada" e segue; com o banco fora do ar para e diz "schema.sql falhou". A detecção do site
+IIS dono da porta foi testada só em leitura (acha o `Default Web Site` na 80 no servidor de
+homologação e o `DashboardFG` na 8080 no formato do 151; não confunde 8080 com 18080).
+**Não testado:** parar o site IIS (`appcmd stop site` / `serverAutoStart:false`), a criação do
+serviço NSSM e a conferência final (`/api/saude`, 404 em `/.env`). Esses três são mudanças de
+sistema (IIS e serviço do Windows), não foram feitos na sessão de testes e rodam pela primeira vez
+no 151. Se algum falhar, o script para e mostra o erro.
 
 **Não testado:**
 - login pelo AD (o clone de teste subiu sem `LDAP_*`);
