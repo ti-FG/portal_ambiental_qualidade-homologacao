@@ -22,8 +22,13 @@ from collections import OrderedDict, defaultdict
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
-ETL = r'C:\Apps\Dash_ambiental_qualidade\etl'
-PLANILHA = r'C:\Apps\Dash_ambiental_qualidade\Controle Ambiental 2025_oficial_db.xlsx'
+# No repositório o ETL e a planilha ficam na pasta acima de sistema_lancamento;
+# DASH_DIR sobrescreve; o caminho antigo da homologação é o último recurso.
+DASH = os.environ.get('DASH_DIR') or os.path.dirname(RAIZ)
+if not os.path.isdir(os.path.join(DASH, 'etl')):
+    DASH = r'C:\Apps\Dash_ambiental_qualidade'
+ETL = os.path.join(DASH, 'etl')
+PLANILHA = os.path.join(DASH, 'Controle Ambiental 2025_oficial_db.xlsx')
 sys.path.insert(0, ETL)
 
 from openpyxl import load_workbook  # noqa: E402

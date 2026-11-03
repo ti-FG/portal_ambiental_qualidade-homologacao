@@ -25,7 +25,12 @@ import time
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.dirname(AQUI)
-DASH = r'C:\Apps\Dash_ambiental_qualidade'
+# Pasta do dashboard (gerar_dashboard_pbix.py, etl/, planilha). No repositório é a
+# pasta acima de sistema_lancamento; DASH_DIR sobrescreve; o caminho antigo da
+# homologação só vale se o gerador não estiver ali.
+DASH = os.environ.get('DASH_DIR') or os.path.dirname(RAIZ)
+if not os.path.exists(os.path.join(DASH, 'gerar_dashboard_pbix.py')):
+    DASH = r'C:\Apps\Dash_ambiental_qualidade'
 GERADOR = os.path.join(DASH, 'gerar_dashboard_pbix.py')
 PLANILHA = os.path.join(DASH, 'Controle Ambiental 2025_oficial_db.xlsx')
 SAIDA_DIR = os.path.join(RAIZ, 'www', 'painel')
