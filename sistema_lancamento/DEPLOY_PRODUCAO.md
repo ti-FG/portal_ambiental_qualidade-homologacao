@@ -46,10 +46,27 @@ O schema é idempotente: pode ser reaplicado.
 psql "host=<host> port=<porta> dbname=<banco> user=<dono_do_schema>" -f ..\db\schema.sql
 ```
 
-- **Schema novo e vazio:** depois do `schema.sql`, aplicar `db/carga_inicial.sql`. É o histórico
-  da planilha de 21/10/2026, **sem** as escolhas da Qualidade (Salesforce, Prevision, Sede).
+- **Schema novo e vazio:** depois do `schema.sql`, aplicar `db/carga_homologacao.sql`. São os
+  **mesmos dados do sistema de homologação (8095) em 03/11/2026, sem o que foi feito para teste**.
+  Tem um guard: se o schema já tiver obras, aborta sem gravar nada.
+  `db/carga_inicial.sql` (planilha pura, de 21/10) **não** é a carga de produção: não traz as
+  escolhas da Qualidade nem o que foi lançado depois.
 - **Schema do DW já carregado (decisão 1):** aplicar só o `schema.sql`. **Nunca** rodar
-  `carga_inicial.sql` nele: começa com `TRUNCATE` e apaga as escolhas de Reclamações e Avanço.
+  `carga_inicial.sql` nele (começa com `TRUNCATE` e apaga as escolhas de Reclamações e Avanço);
+  `carga_homologacao.sql` aborta nele pelo guard. Esse schema tem dados diferentes dos da HML
+  (ver abaixo).
+
+**O que a `carga_homologacao.sql` leva e o que não leva** (gerada por `db/exportar_homologacao.js`,
+só leitura na HML; para regerar: `node db\exportar_homologacao.js db\carga_homologacao.sql`):
+- Fora, por serem de teste: obra, unidade consumidora, assunto de NC e tipo de resíduo chamados
+  "Teste" (nenhum lançamento estava ligado a eles) e o GESSO / Blue View / set-2026, que tinha 1 m³
+  de teste e volta a 0, o valor da planilha.
+- Fora, por não serem dados: `usuario`, `sessao`, `auditoria` (acessos), `log_alteracao` e
+  `sincronizacao`. Em produção cada pessoa pede acesso no primeiro login e o administrador aprova
+  (`ADMIN_LOGINS` já cobre a administradora).
+- Dentro, e **diferente do schema do DW**: os meses de avanço físico gravados pela sincronização com
+  o Prevision na HML (201 linhas de avanço no total) e o relatório de impressão de outubro (parcial,
+  01 a 29/10) subido em 30/10. No DW esses dados não entraram.
 
 ## 3. `.env` de produção
 
@@ -135,6 +152,12 @@ foi aplicado em banco compartilhado, o `schema.sql` só cria e ajusta objetos do
 - painel gerado 100% do banco (19 tabelas do banco, nenhuma da planilha), em 4,8 s, **a partir
   dos caminhos relativos do repositório** (corrigido no commit `f20a8ba`: antes apontava para
   `C:\Apps\Dash_ambiental_qualidade` escrito no código).
+
+**Testado (carga de dados, 03/11/2026):** `carga_homologacao.sql` aplicada sobre o `schema.sql` num
+banco vazio, comparada com a HML tabela por tabela (contagem e hash do conteúdo, excluindo o teste):
+as 27 tabelas conferem; o guard aborta numa segunda aplicação; as sequências de id ficam acima do
+maior id. Única diferença esperada: `parametro.atualizado_em`, que o `schema.sql` preenche na
+semeadura.
 
 **Não testado:**
 - login pelo AD (o clone de teste subiu sem `LDAP_*`);
