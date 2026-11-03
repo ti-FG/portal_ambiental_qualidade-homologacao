@@ -5,6 +5,21 @@ que substitui a planilha. Ele **não** é o dashboard de `http://10.1.1.151:8080
 aquele é o HTML gerado pelo `gerar_dashboard_pbix.py` na raiz do repositório e continua
 como está (ver `../DEPLOY_PRODUCAO.md`).
 
+## Caminho rápido (3 passos)
+
+1. Clonar fora do site da 8080:
+   `git clone https://github.com/ti-FG/portal_ambiental_qualidade-homologacao.git C:\Apps\portal_ambiental_qualidade`
+2. No PowerShell **como Administrador**:
+   `cd C:\Apps\portal_ambiental_qualidade\sistema_lancamento` e `.\implantar_producao.ps1`
+   Na primeira vez o script cria o `.env` e abre o Bloco de Notas: preencher só as linhas com `???`
+   (as senhas, que a Natália passa por fora), salvar e rodar o script de novo.
+3. Liberar a porta 8095 no firewall e abrir `http://10.1.1.151:8095/`.
+
+O script faz o resto: instala as dependências, aplica o schema e a atualização de dados no DW
+(pergunta antes, e só aplica uma vez), cria o serviço `FGAmbientalQualidade` e confere
+`/api/saude`. Para na primeira falha e diz o que está errado. Pode ser rodado de novo para
+atualizar o sistema. O resto deste arquivo é a referência do que o script faz.
+
 Testado em 03/11/2026 em clone limpo no servidor de homologação (155), em portas
 isoladas (8097 e 15450), sem tocar no 8095 nem no DW. Resultado no fim deste arquivo.
 
@@ -182,6 +197,13 @@ semeadura.
 no DW. Foi testado por simulação: banco PGlite no estado do DW (HML sem as linhas que o script traz,
 com os 80 valores de avanço de volta ao da planilha), script aplicado sem erro, guard aborta numa
 segunda aplicação, e o resultado fica igual à HML sem teste em todas as tabelas comparadas.
+
+**Testado (`implantar_producao.ps1`, 03/11/2026, Windows PowerShell 5.1, banco temporário PGlite):**
+sintaxe; recusa `.env` com `???` listando os campos; recusa rodar dentro da pasta da 8080;
+`npm ci`; aplica o `schema.sql` e a atualização de dados; numa segunda execução reconhece
+"já aplicada" e segue; com o banco fora do ar para e diz "schema.sql falhou". **Não testado:** a
+criação do serviço NSSM e a conferência final (`/api/saude`, 404 em `/.env`), porque a criação de
+serviço foi bloqueada na sessão de testes. É a primeira coisa que o script faz de novo no 151.
 
 **Não testado:**
 - login pelo AD (o clone de teste subiu sem `LDAP_*`);
