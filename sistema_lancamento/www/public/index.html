@@ -919,12 +919,12 @@ async function telaConformidade(el) {
     ${caixaPlanilha('PERCENTUAL digitado, às vezes como fórmula (<code>=53/57</code>). A META vinha de um PROCV que <b>sempre lia a coluna de ago/25</b> (Senna ficou com META 0 em 11 meses), e a META2 era a meta digitada de novo.', 'PERCENTUAL igual ao da planilha (ou calculado, se você informar os itens). META é a do mês na aba Metas LAI EIV — por isso existe uma só; a META2 deixou de existir.')}
     ${barra('', botaoIncluir('Obra', E.cad.obras.filter(o => !obras.includes(o)).length))}
     <div class="card"><div class="grade-wrap"><table class="grade"><thead><tr>
-      <th>OBRA</th>${thMes('MÊS')}<th class="n">PERCENTUAL</th>${thCalc('META', 'n', 'Vem da aba Metas LAI EIV, do mês (era PROCV)')}
+      <th>OBRA</th>${thMes('MÊS')}<th class="n">PERCENTUAL</th>${thCalc('META', 'n', 'Vem da aba Metas LAI EIV, do mês. Editável por administrador: grava na aba Metas LAI EIV')}
       ${thNovo('Itens conformes', 'n', true)}${thNovo('Itens avaliados', 'n')}${thNovo('Situação')}<th></th></tr></thead><tbody>
     ${obras.map(o => { const c = por[o.id] || {}; const meta = M.metas[o.id];
       return `<tr data-obra="${o.id}"><td>${esc(o.nome)}</td>${tdMes()}
       <td class="n"><input class="c" data-k="${o.id}|percentual" data-col="pc" data-tipo="pct" inputmode="decimal" value="${c.percentual != null ? fmt(c.percentual * 100, 2) : ''}" ${ed ? '' : 'disabled'}></td>
-      <td class="n calc">${meta != null ? fmtPct(meta, 0) : '<span class="selo warn">sem META</span>'}</td>
+      <td class="n"><input class="c" data-k="${o.id}|meta" data-tipo="pct" inputmode="decimal" placeholder="sem META" value="${meta != null ? fmtPct(meta, 0) : ''}" ${ehAdmin() && ed ? '' : 'disabled'}></td>
       <td class="n novo1"><input class="c" data-k="${o.id}|itens_conformes" data-col="ic" data-tipo="int" inputmode="numeric" value="${c.itens_conformes ?? ''}" ${ed ? '' : 'disabled'}></td>
       <td class="n"><input class="c" data-k="${o.id}|itens_avaliados" data-col="ia" data-tipo="int" inputmode="numeric" value="${c.itens_avaliados ?? ''}" ${ed ? '' : 'disabled'}></td>
       <td data-situ="${o.id}">${situ(c.percentual, meta)}</td><td>${por[o.id] ? btnExcluir(ed) : ''}</td></tr>`; }).join('')}
@@ -937,15 +937,28 @@ async function telaConformidade(el) {
       const ic = lerNum($(`[data-k="${oid}|itens_conformes"]`, el).value), ia = lerNum($(`[data-k="${oid}|itens_avaliados"]`, el).value);
       if (ic != null && ia) { const p = $(`[data-k="${oid}|percentual"]`, el); p.value = fmt(ic / ia * 100, 2); p.dispatchEvent(new Event('input')); }
     }
-    const p = lerNum($(`[data-k="${oid}|percentual"]`, el).value);
-    $(`[data-situ="${oid}"]`, el).innerHTML = situ(p == null ? null : p / 100, M.metas[oid]);
+    const p = lerNum($(`[data-k="${oid}|percentual"]`, el).value), mt = lerNum($(`[data-k="${oid}|meta"]`, el).value);
+    $(`[data-situ="${oid}"]`, el).innerHTML = situ(p == null ? null : p / 100, mt == null || Number.isNaN(mt) ? null : mt / 100);
   });
-  E.salvar = motivo => {
-    const ids = [...new Set([...E.sujo.keys()].map(k => k.split('|')[0]))];
-    return api('PUT', '/api/lancamentos/conformidade', { competencia: E.comp, motivo, linhas: ids.map(oid => {
+  $$('input[data-k$="|meta"]', el).forEach(inp => inp.addEventListener('blur', () => {   // 90 -> 90% ao sair da célula
+    const n = lerNum(inp.value);
+    if (n === null || Number.isNaN(n) || n < 0 || n > 100) return;
+    const txt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(n) + '%';
+    if (inp.value !== txt) { inp.value = txt; inp.dispatchEvent(new Event('input')); }
+  }));
+  E.salvar = async motivo => {
+    const chaves = [...E.sujo.keys()].map(k => k.split('|'));
+    const ids = [...new Set(chaves.filter(k => k[1] !== 'meta').map(k => k[0]))];
+    const metas = [...new Set(chaves.filter(k => k[1] === 'meta').map(k => k[0]))];
+    const rs = [];
+    // a META editada aqui é gravada na aba Metas LAI EIV, no mês da tela (vale também para os meses seguintes em branco)
+    for (const oid of metas) { const mt = lerNum($(`[data-k="${oid}|meta"]`, el).value); rs.push(await api('PUT', '/api/metas', { obra_id: +oid, vigente_desde: E.comp, meta: mt == null ? null : mt / 100 })); }
+    if (ids.length) rs.push(await api('PUT', '/api/lancamentos/conformidade', { competencia: E.comp, motivo, linhas: ids.map(oid => {
       const v = c => $(`[data-k="${oid}|${c}"]`, el).value, p = lerNum(v('percentual'));
       return { obra_id: +oid, itens_conformes: lerNum(v('itens_conformes')), itens_avaliados: lerNum(v('itens_avaliados')), percentual: p == null ? null : p / 100, observacao: (por[oid] || {}).observacao || null };
-    }) });
+    }) }));
+    if (metas.length) E.cad = await api('GET', '/api/cadastros');
+    return rs;
   };
 }
 
@@ -1218,10 +1231,17 @@ async function telaMetas(el) {
     <div class="card"><div class="grade-wrap"><table class="grade metas"><thead><tr><th>Obra</th>${meses.map(c => `<th class="n${c === hoje ? ' atual' : ''}">${rotulo(c)}</th>`).join('')}</tr></thead><tbody>
     ${E.cad.obras.filter(o => o.ativa || vig[o.id]).map(o => `<tr><td>${esc(o.nome)}${o.ativa ? '' : ' <span class="selo na">inativa</span>'}</td>${meses.map(c => {
       const ex = explicita(o.id, c), her = vigente(o.id, c);
-      return `<td class="n"><input class="c m" data-k="${o.id}|${c}" data-col="${c}" data-tipo="pct" inputmode="decimal" value="${ex ? fmt(ex.meta * 100, 0) : ''}" ${ed ? '' : 'disabled'}></td>`; }).join('')}</tr>`).join('')}
+      return `<td class="n"><input class="c m" data-k="${o.id}|${c}" data-col="${c}" data-tipo="pct" inputmode="decimal" value="${ex ? fmt(ex.meta * 100, 0) + '%' : ''}" ${ed ? '' : 'disabled'}></td>`; }).join('')}</tr>`).join('')}
     </tbody></table></div><p class="dica">Valores em %. Célula vazia: vale a meta do mês anterior. ${ed ? 'Apagar uma célula volta a valer a meta anterior.' : 'Só administradores alteram metas.'}</p></div>`;
   $$('[data-am]', el).forEach(b => b.onclick = () => { if (E.sujo.size) return toast('Salve ou descarte as alterações antes de trocar de ano.', true); E.anoMetas = String(+anoM + +b.dataset.am); telaMetas(el).then(() => aplicarColunas(el)); });
   ligarCelulas(el);
+  // digitou 90 -> ao sair da célula vira 90% (padrão igual ao dos valores já gravados)
+  $$('input.c.m', el).forEach(inp => inp.addEventListener('blur', () => {
+    const n = lerNum(inp.value);
+    if (n === null || Number.isNaN(n) || n < 0 || n > 100) return;
+    const txt = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(n) + '%';
+    if (inp.value !== txt) { inp.value = txt; inp.dispatchEvent(new Event('input')); }
+  }));
   E.salvar = async () => {
     let n = 0;
     for (const k of E.sujo.keys()) {
