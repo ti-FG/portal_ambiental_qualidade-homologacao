@@ -2343,10 +2343,13 @@ function renderTopNcs(obraF, anoF) {
     </li>`).join('');
 }
 
+// Obras já entregues: não aparecem na tabela de conformidade LAI/EIV (pedido da área, 25/11/2026).
+const CONF_OBRAS_OCULTAS = ['Blue Coast', 'Boreal', 'Grand Place', 'Horizon'];
+
 function renderHeatmap(obraF, anoF) {
   const cont = document.getElementById('heatmap-container');
   let meses = D.conf_meses || [];
-  let obras = Object.keys(D.conf_heatmap || {});
+  let obras = Object.keys(D.conf_heatmap || {}).filter(o => !CONF_OBRAS_OCULTAS.includes(o));
   if (obraF) obras = obras.filter(o => o === obraF);
   if (anoF && anoF !== 'all') meses = meses.filter(m => noPeriodo(m, anoF));
   if (!meses.length || !obras.length) {
@@ -5079,7 +5082,7 @@ function renderResiduos(obraF, anoF) {
           ${meses.map(m => `<td style="text-align:center; color:var(--gz4)">${m.realizado != null ? m.realizado + '%' : '—'}</td>`).join('')}
         </tr>
       </tbody></table>`;
-      html += '<div style="font-size:10px; color:var(--gz4); margin-top:8px"><i class="ti ti-info-circle"></i> Coluna "destinação adequada" pendente no modelo · CONAMA 307 Classe D (perigosos)</div>';
+      html += '<div style="font-size:10px; color:var(--gz4); margin-top:8px"><i class="ti ti-info-circle"></i> CONAMA 307 Classe D (perigosos) · 100% nos meses com geração de Classe D; "—" = sem geração no mês</div>';
       resPerEl.innerHTML = html;
     }
   }
